@@ -14,6 +14,7 @@ import "./FormularioNeumaticos.css";
 import BusSelector from "../../components/BusSelector/BusSelector";
 import PhotoSelector from "../../components/PhotoSelector/PhotoSelector";
 import { guardarDato, obtenerDato } from "../../utils/storage";
+import { apiClient } from "../../api/apiClient";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -184,20 +185,21 @@ export default function FormularioNeumaticos({
         await guardarDato("usuario_rut", chofer.trim());
       }
 
-      console.log("Enviando reporte de neumático al backend:", API_URL);
-      const response = await fetch(API_URL, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const textErr = await response.text().catch(() => "");
-        throw new Error(
-          `Error en servidor (${response.status}): ${textErr || response.statusText}`
-        );
+      console.log("Enviando reporte de neumático al backend via apiClient (/api/v1/formularioNeumatico)...");
+      let resData;
+      try {
+        const response = await apiClient.post("/api/v1/formularioNeumatico", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        resData = response.data;
+      } catch (errPost) {
+        // Fallback en caso de endpoint legado /formularioNeumatico
+        const response = await apiClient.post("/formularioNeumatico", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        resData = response.data;
       }
 
-      const resData = await response.json().catch(() => ({}));
       console.log("Respuesta servidor:", resData);
 
       setShowConfirmModal(false);

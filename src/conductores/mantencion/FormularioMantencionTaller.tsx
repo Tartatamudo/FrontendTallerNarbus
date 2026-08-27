@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, CheckCircle2, RefreshCw, Wrench, AlertCircle, X, Check, Send, Edit3, ClipboardList } from 'lucide-react';
 import axios from 'axios';
+import { apiClient } from '../../api/apiClient';
 import './FormularioMantencionTaller.css';
 import BusSelector, { type BusItem } from '../../components/BusSelector/BusSelector';
 import PhotoSelector from '../../components/PhotoSelector/PhotoSelector';
@@ -153,8 +154,18 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
         estado: 'PENDIENTE'
       };
 
-      console.log("Enviando Solicitud Taller al backend:", API_URL, payload);
-      const res = await axios.post(API_URL, payload);
+      console.log("Enviando Solicitud Taller al backend via apiClient (/api/v1/mantencion/solicitudes)...");
+      let res;
+      try {
+        res = await apiClient.post("/api/v1/mantencion/solicitudes", payload);
+      } catch (errPost) {
+        // Fallback a /api/v1/mantencion/solicitudTaller o endpoint legado
+        try {
+          res = await apiClient.post("/api/v1/mantencion/solicitudTaller", payload);
+        } catch (errFallback) {
+          res = await axios.post(API_URL, payload);
+        }
+      }
 
       const solicitudId = res.data?.solicitud_id || res.data?.id || res.data?.folio || 1;
 

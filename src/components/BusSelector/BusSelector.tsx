@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Bus, X, Check } from 'lucide-react';
 import axios from 'axios';
+import { apiClient } from '../../api/apiClient';
 import './BusSelector.css';
 
 export interface BusItem {
@@ -59,36 +60,20 @@ export default function BusSelector({
     setLoading(true);
     try {
       const cleanNum = queryStr.replace(/\D/g, '').trim();
-      const baseUrl = getBusesApiBaseUrl();
 
-      // Determinar payload exacto según requerimiento backend:
-      // Payload {"n_bus": 5} -> Retorna [501, 56, 59]
-      // Payload {} o {"n_bus": ""} -> Retorna la lista completa de números de buses.
-      let payload: Record<string, any> = {};
-      if (cleanNum !== '') {
-        const parsedNum = parseInt(cleanNum, 10);
-        payload = { n_bus: isNaN(parsedNum) ? cleanNum : parsedNum };
-      } else {
-        payload = { n_bus: "" };
-      }
-
-      // Probar POST /api/v1/buses/buscar o fallback POST /api/v1/buses/
-      const urlBuscar = baseUrl.endsWith('/buscar') ? baseUrl : `${baseUrl.replace(/\/+$/, '')}/buscar`;
-      const urlRoot = baseUrl.endsWith('/buscar') ? baseUrl.replace(/\/buscar$/, '/') : `${baseUrl.replace(/\/+$/, '')}/`;
-
+      // Consumir Endpoint Estandarizado: GET /api/v1/buses/buscar?query=...
       let res;
       try {
-        res = await axios.post(urlBuscar, payload, { timeout: 4000 });
-      } catch (errPostBuscar) {
-        try {
-          res = await axios.post(urlRoot, payload, { timeout: 4000 });
-        } catch (errPostRoot) {
-          // Fallback GET en caso de backend legado
-          res = await axios.get(baseUrl, {
-            params: { query: cleanNum, n_bus: cleanNum },
-            timeout: 4000
-          });
-        }
+        res = await apiClient.get('/api/v1/buses/buscar', {
+          params: { query: cleanNum },
+          timeout: 5000
+        });
+      } catch (errGet) {
+        // Fallback GET a /api/v1/buses en caso de entorno local
+        res = await apiClient.get('/api/v1/buses', {
+          params: { query: cleanNum },
+          timeout: 5000
+        });
       }
 
       if (res && res.data) {
