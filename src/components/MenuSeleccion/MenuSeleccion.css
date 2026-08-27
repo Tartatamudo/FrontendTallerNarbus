@@ -1,0 +1,187 @@
+/* =========================================================
+   MENU SELECCION STYLES
+========================================================= */
+
+.menu-wrapper {
+  background-color: #f1f5f9;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.menu-header-bar {
+  background-color: #005ea4;
+  width: 100%;
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 3px solid #004579;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.menu-header-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu-brand-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-logout-btn {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.menu-logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.85);
+  border-color: #ef4444;
+}
+
+.menu-main-content {
+  width: 100%;
+  max-width: 900px;
+  padding: 2.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-welcome-text {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.menu-welcome-title {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+
+.menu-welcome-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.menu-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .menu-options-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.menu-option-card {
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-option-card:hover {
+  border-color: #005ea4;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 94, 164, 0.15), 0 8px 10px -6px rgba(0, 94, 164, 0.1);
+}
+
+.menu-option-card:active {
+  transform: scale(0.98);
+}
+
+.menu-card-icon-box {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: transform 0.2s;
+}
+
+.menu-option-card:hover .menu-card-icon-box {
+  transform: scale(1.08);
+}
+
+.menu-card-icon-mantencion {
+  background-color: #eff6ff;
+  color: #005ea4;
+  border: 2px solid #bfdbfe;
+}
+
+.menu-card-icon-neumaticos {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 2px solid #bbf7d0;
+}
+
+.menu-card-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.menu-card-desc {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.menu-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #005ea4;
+}
