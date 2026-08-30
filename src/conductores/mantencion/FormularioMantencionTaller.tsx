@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, CheckCircle2, RefreshCw, Wrench, AlertCircle, X, Check, Send, Edit3, ClipboardList } from 'lucide-react';
-import axios from 'axios';
-import { apiClient } from '../../api/apiClient';
 import './FormularioMantencionTaller.css';
 import BusSelector, { type BusItem } from '../../components/BusSelector/BusSelector';
 import PhotoSelector from '../../components/PhotoSelector/PhotoSelector';
 import { guardarDato, obtenerDato } from '../../utils/storage';
-
-const API_URL = (import.meta.env.VITE_API_URL_MANTENCION || "http://192.168.1.135:8000/api/v1").replace(/\/formularioMantencionTaller\/?$/i, '').replace(/\/+$/, '') + "/solicitudTaller";
+import { crearSolicitud, type SolicitudCreateDTO } from './mantencionService';
 
 interface FallaItem {
   id: number;
@@ -70,14 +67,11 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
 
   const getEffectiveBusNumber = () => {
     if (selectedBusObj) {
-      return String(selectedBusObj.n_bus);
+      const match = String(selectedBusObj.n_bus).match(/\d+/);
+      return match ? match[0] : String(selectedBusObj.n_bus).trim();
     }
-    const clean = busSearchInput.replace(/[^0-9a-zA-Z]/g, '').trim();
-    if (clean) {
-      const match = busSearchInput.match(/\d+/);
-      return match ? match[0] : busSearchInput.trim();
-    }
-    return '';
+    const match = busSearchInput.match(/\d+/);
+    return match ? match[0] : busSearchInput.trim();
   };
 
   const handleToggleCategory = (label: string) => {
@@ -125,56 +119,32 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
 
   const handleFinalSubmit = async () => {
     const busNumber = getEffectiveBusNumber();
+    const cleanBusNumber = busNumber.replace(/\D/g, '') || busNumber.trim();
     const conductorFinal = conductorNombre.trim() || 'CONDUCTOR-NARBUS';
-
-    let usuarioIdNum: number | null = null;
-    const storedUserStr = await obtenerDato("user_data");
-    if (storedUserStr) {
-      try {
-        const u = JSON.parse(storedUserStr);
-        if (u && u.id) usuarioIdNum = u.id;
-      } catch (e) {
-        // ignore
-      }
-    }
 
     try {
       setSubmitting(true);
-      const payload = {
-        n_bus: busNumber,
-        usuario_id: usuarioIdNum,
-        id_bus: selectedBusObj ? selectedBusObj.id : null,
-        descripcion: descripcion.trim() || null,
-        items: itemsList.map((it, index) => ({
-          id: index + 1,
-          nombre: it.nombre,
-          resuelto: 'NO'
-        })),
-        foto_base64: fotoBase64 || null,
-        estado: 'PENDIENTE'
+      // Formatear payload según Catálogo Endpoint 2.3
+      const payload: SolicitudCreateDTO = {
+        n_bus: cleanBusNumber,
+        descripcion_general: descripcion.trim() || `Reporte de mantención para bus ${cleanBusNumber}`,
+        foto_url: fotoBase64 || null,
+        detalles: itemsList.map((it) => ({
+          falla_id: typeof it.id === 'number' && it.id < 100000 ? it.id : null,
+          descripcion_personalizada: it.nombre
+        }))
       };
 
-      console.log("Enviando Solicitud Taller al backend via apiClient (/api/v1/mantencion/solicitudes)...");
-      let res;
-      try {
-        res = await apiClient.post("/api/v1/mantencion/solicitudes", payload);
-      } catch (errPost) {
-        // Fallback a /api/v1/mantencion/solicitudTaller o endpoint legado
-        try {
-          res = await apiClient.post("/api/v1/mantencion/solicitudTaller", payload);
-        } catch (errFallback) {
-          res = await axios.post(API_URL, payload);
-        }
-      }
-
-      const solicitudId = res.data?.solicitud_id || res.data?.id || res.data?.folio || 1;
+      console.log("Enviando Solicitud Taller via crearSolicitud (POST /api/v1/mantencion/solicitudes):", payload);
+      const resData = await crearSolicitud(payload);
+      const solicitudId = resData?.id || 1;
 
       if (conductorFinal) {
         await guardarDato('usuario_rut', conductorFinal);
       }
       await guardarDato('ultimo_reporte_mantencion', JSON.stringify({
         id: solicitudId,
-        n_bus: busNumber,
+        n_bus: cleanBusNumber,
         conductor: conductorFinal,
         fecha: new Date().toLocaleString(),
         itemsCount: itemsList.length
@@ -183,14 +153,14 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
       setShowConfirmModal(false);
       setSubmittedSuccess({
         id: solicitudId,
-        n_bus: busNumber,
+        n_bus: cleanBusNumber,
         conductor: conductorFinal,
         itemsCount: itemsList.length
       });
     } catch (err: any) {
       console.error("Error al enviar reporte:", err);
       const detail = err?.response?.data?.detail;
-      setErrorMsg(detail || 'Ocurrió un error al enviar. Por favor reintenta.');
+      setErrorMsg(detail || 'Ocurrió un error al enviar la solicitud. Por favor reintenta.');
       setShowConfirmModal(false);
     } finally {
       setSubmitting(false);

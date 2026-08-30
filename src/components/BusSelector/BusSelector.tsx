@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Bus, X, Check } from 'lucide-react';
-import axios from 'axios';
 import { apiClient } from '../../api/apiClient';
 import './BusSelector.css';
 
@@ -20,23 +19,6 @@ export interface BusSelectorProps {
   onClearError?: () => void;
   className?: string;
 }
-
-const getBusesApiBaseUrl = (): string => {
-  const envBuses = import.meta.env.VITE_API_BUSES_URL;
-  if (envBuses) return envBuses.replace(/\/+$/, '');
-
-  const envMantencion = import.meta.env.VITE_API_URL_MANTENCION;
-  if (envMantencion) {
-    return envMantencion.replace(/\/formularioMantencionTaller\/?$/i, '') + '/buses';
-  }
-
-  const envNeumatico = import.meta.env.VITE_API_URL;
-  if (envNeumatico) {
-    return envNeumatico.replace(/\/formularioNeumatico\/?$/i, '') + '/buses';
-  }
-
-  return 'http://127.0.0.1:8000/api/v1/buses';
-};
 
 export default function BusSelector({
   value,

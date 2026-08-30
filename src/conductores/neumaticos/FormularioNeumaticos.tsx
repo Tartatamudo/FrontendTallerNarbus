@@ -16,10 +16,6 @@ import PhotoSelector from "../../components/PhotoSelector/PhotoSelector";
 import { guardarDato, obtenerDato } from "../../utils/storage";
 import { apiClient } from "../../api/apiClient";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://192.168.1.135:8000/api/v1/formularioNeumatico";
-
 interface FormularioNeumaticosProps {
   onVolver?: () => void;
 }
@@ -149,11 +145,19 @@ export default function FormularioNeumaticos({
   // Envío final al backend
   const handleFinalSubmit = async () => {
     const tipoBus = ruedasSeleccionadas.some((r) => r === "7" || r === "8")
-      ? "8 ruedas"
-      : "6 ruedas";
+      ? "Doble Piso"
+      : "Piso Simple";
 
     const motivoFinal = motivo === "Otro" ? otroMotivo.trim() : motivo;
     const choferFinal = chofer.trim() || "CHOFER-NARBUS";
+
+    const busFormatted = maquina.replace(/\D/g, "") || maquina.trim();
+
+    const precioLimpio = precio.replace(/\D/g, "");
+    const ruedasString = ruedasSeleccionadas
+      .sort((a, b) => Number(a) - Number(b))
+      .map((r) => `Rueda ${r}`)
+      .join(", ");
 
     const formData = new FormData();
     const storedUserStr = await obtenerDato("user_data");
@@ -167,13 +171,16 @@ export default function FormularioNeumaticos({
         // ignore
       }
     }
-    formData.append("chofer", choferFinal);
-    formData.append("maquina", maquina.trim());
+    formData.append("maquina", busFormatted);
     formData.append("tipo_bus", tipoBus);
-    formData.append("ruedas", JSON.stringify(ruedasSeleccionadas));
+    formData.append("ruedas", ruedasString);
     formData.append("motivo", motivoFinal);
-    formData.append("precio", precio.trim());
-    formData.append("marca_fuego", marcaFuego.trim());
+    if (precioLimpio) {
+      formData.append("precio", precioLimpio);
+    }
+    if (marcaFuego.trim()) {
+      formData.append("marca_fuego", marcaFuego.trim());
+    }
     if (foto) {
       formData.append("evidencia", foto);
     }
@@ -185,33 +192,27 @@ export default function FormularioNeumaticos({
         await guardarDato("usuario_rut", chofer.trim());
       }
 
-      console.log("Enviando reporte de neumático al backend via apiClient (/api/v1/formularioNeumatico)...");
-      let resData;
-      try {
-        const response = await apiClient.post("/api/v1/formularioNeumatico", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-        resData = response.data;
-      } catch (errPost) {
-        // Fallback en caso de endpoint legado /formularioNeumatico
-        const response = await apiClient.post("/formularioNeumatico", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-        resData = response.data;
-      }
+      console.log("Enviando reporte de neumático al backend via apiClient (POST /api/v1/formularioNeumatico)...");
+      const response = await apiClient.post("/api/v1/formularioNeumatico", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const resData = response.data;
 
       console.log("Respuesta servidor:", resData);
 
+      const recordData = resData?.data || resData || {};
+      const recordId = recordData.id || resData.reporte_id || resData.id || resData.folio || Math.floor(Math.random() * 90000 + 10000);
+
       setShowConfirmModal(false);
       setSubmittedSuccess({
-        id: resData.reporte_id || resData.id || resData.folio || Math.floor(Math.random() * 90000 + 10000),
-        chofer: chofer.trim(),
-        maquina: maquina.trim(),
-        tipoBus,
+        id: recordId,
+        chofer: choferFinal,
+        maquina: recordData.n_bus || busFormatted,
+        tipoBus: recordData.tipo_bus || tipoBus,
         ruedas: ruedasSeleccionadas,
-        motivo: motivoFinal,
-        precio: precio.trim(),
-        marcaFuego: marcaFuego.trim(),
+        motivo: recordData.motivo || motivoFinal,
+        precio: recordData.precio ? String(recordData.precio) : precio.trim(),
+        marcaFuego: recordData.marca_fuego || marcaFuego.trim(),
       });
     } catch (err: unknown) {
       console.error("Error al enviar reporte:", err);
@@ -539,18 +540,17 @@ export default function FormularioNeumaticos({
                   </div>
                   <span className="fn-optional-badge">Opcional</span>
                 </div>
-                <div className="fn-input-icon-wrapper">
-                  <Flame
-                    size={18}
-                    className="fn-input-icon text-orange-500"
-                  />
+                <div className="fn-price-container">
+                  <span className="fn-price-prefix flex items-center justify-center">
+                    <Flame size={18} className="text-orange-500" />
+                  </span>
                   <input
                     type="text"
                     inputMode="numeric"
                     placeholder="Ej: 123456"
                     value={marcaFuego}
                     onChange={manejarMarcaFuego}
-                    className="fn-input fn-input-with-icon"
+                    className="fn-price-input"
                   />
                 </div>
               </div>

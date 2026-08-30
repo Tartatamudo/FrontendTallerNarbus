@@ -6,12 +6,13 @@ import FormularioMantencionTaller from './conductores/mantencion/FormularioMante
 import FormularioNeumaticos from './conductores/neumaticos/FormularioNeumaticos';
 import ListaUsuarios from './supervisores/gestion_usuarios/ListaUsuarios';
 import DashboardMecanico from './mecanicos/revisiones/DashboardMecanico';
+import DashboardSupervision from './supervisores/supervision/DashboardSupervision';
 import TopBar from './components/TopBar/TopBar';
-import { logout } from './usuarios/auth/authService';
+import { logout, getStoredUser } from './usuarios/auth/authService';
 import { obtenerDato } from './utils/storage';
 import type { User } from './usuarios/auth/authTypes';
 
-type PantallaState = 'login' | 'menu' | 'mantencion' | 'neumaticos' | 'crear_usuario' | 'mecanico' | 'perfil';
+type PantallaState = 'login' | 'menu' | 'mantencion' | 'neumaticos' | 'crear_usuario' | 'mecanico' | 'perfil' | 'supervision';
 
 export default function App() {
   const [pantallaActual, setPantallaActual] = useState<PantallaState>('login');
@@ -22,6 +23,10 @@ export default function App() {
     const comprobarSesion = async () => {
       const sesionActiva = await obtenerDato('sesion_activa');
       if (sesionActiva === 'true') {
+        const storedUser = await getStoredUser();
+        if (storedUser) {
+          setCurrentUser(storedUser);
+        }
         setPantallaActual('menu');
       }
     };
@@ -63,6 +68,7 @@ export default function App() {
       {/* 📋 MENÚ PRINCIPAL ESTRUCTURADO POR ROLES */}
       {pantallaActual === 'menu' && (
         <MenuSeleccion
+          user={currentUser}
           onSelectOption={(opcion) => setPantallaActual(opcion)}
           onLogout={handleLogout}
         />
@@ -85,6 +91,13 @@ export default function App() {
         </div>
       )}
 
+      {/* 📊 MÓDULO SUPERVISORES: Telemetría KPIs y Auditoría Inmutable de Buses */}
+      {pantallaActual === 'supervision' && (
+        <div className="container max-w-6xl mx-auto p-4">
+          <DashboardSupervision onVolver={() => setPantallaActual('menu')} />
+        </div>
+      )}
+
       {/* 🔧 MÓDULO MECÁNICOS: Panel de Revisiones Taller */}
       {pantallaActual === 'mecanico' && (
         <div className="container max-w-4xl mx-auto p-4">
@@ -94,3 +107,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -12,6 +12,8 @@ interface CrearUsuarioProps {
 export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuarioProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [nombreCompleto, setNombreCompleto] = useState('');
+  const [rut, setRut] = useState('');
   const [rol, setRol] = useState<RolUsuario>('CONDUCTOR');
   const [conductorId, setConductorId] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -30,10 +32,12 @@ export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuario
     setSuccessMsg(null);
 
     try {
-      // Consumir Endpoint: POST /api/v1/auth/usuarios
+      // Consumir Endpoint 1.6: POST /api/v1/auth/usuarios
       const newUser = await crearUsuario({
         username: username.trim(),
         password,
+        nombre_completo: nombreCompleto.trim() || username.trim(),
+        rut: rut.trim() || '12345678-9',
         rol,
         conductor_id: conductorId ? parseInt(conductorId, 10) : null,
       });
@@ -41,6 +45,8 @@ export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuario
       setSuccessMsg(`¡Usuario "${newUser.username}" creado exitosamente con el rol ${newUser.rol}!`);
       setUsername('');
       setPassword('');
+      setNombreCompleto('');
+      setRut('');
       setConductorId('');
 
       if (onUsuarioCreado) {
@@ -88,22 +94,23 @@ export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuario
 
       <form onSubmit={handleSubmit} className="crear-usuario-grid">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre de Usuario</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre de Usuario *</label>
           <div className="relative flex items-center">
             <UserCheck size={18} className="absolute left-3 text-slate-400" />
             <input
               type="text"
-              placeholder="Ej: chofer_juan"
+              placeholder="Ej: chofer1"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white text-sm"
               disabled={loading}
+              required
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Contraseña</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Contraseña *</label>
           <div className="relative flex items-center">
             <Key size={18} className="absolute left-3 text-slate-400" />
             <input
@@ -113,8 +120,33 @@ export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuario
               onChange={(e) => setPassword(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white text-sm"
               disabled={loading}
+              required
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Nombre Completo</label>
+          <input
+            type="text"
+            placeholder="Ej: Pedro Mecánico"
+            value={nombreCompleto}
+            onChange={(e) => setNombreCompleto(e.target.value)}
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white text-sm"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">RUT</label>
+          <input
+            type="text"
+            placeholder="Ej: 12345678-9"
+            value={rut}
+            onChange={(e) => setRut(e.target.value)}
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white text-sm"
+            disabled={loading}
+          />
         </div>
 
         <div>
