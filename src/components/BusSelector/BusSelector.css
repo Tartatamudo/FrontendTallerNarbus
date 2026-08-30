@@ -1,0 +1,220 @@
+/* =========================================================
+   ESTILOS COMPONENTE REUTILIZABLE - BUS SELECTOR (NARBUS)
+   ========================================================= */
+
+.bus-selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  width: 100%;
+}
+
+.bus-selector-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bus-selector-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bus-selector-step-badge {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bus-selector-step-label {
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.bus-selector-required-badge {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #dc2626;
+  background-color: #fef2f2;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #fecaca;
+}
+
+.bus-selector-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.bus-selector-input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  padding-right: 2.75rem;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.bus-selector-input:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.bus-selector-input::placeholder {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.bus-selector-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2563eb;
+  pointer-events: none;
+}
+
+.bus-selector-clear-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.25rem;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.bus-selector-clear-btn:hover {
+  background-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.bus-selector-spinner {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: bus-selector-spin 0.6s linear infinite;
+}
+
+@keyframes bus-selector-spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+/* Floating Dropdown */
+.bus-selector-dropdown {
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 0.375rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: bus-selector-fade-in 0.15s ease-out;
+}
+
+@keyframes bus-selector-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bus-selector-dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bus-selector-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.bus-selector-dropdown-item:hover {
+  background-color: #eff6ff;
+}
+
+.bus-selector-dropdown-item:active {
+  background-color: #dbeafe;
+}
+
+.bus-selector-dropdown-item-selected {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.bus-selector-empty {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.bus-selector-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.bus-selector-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  display: inline-block;
+}

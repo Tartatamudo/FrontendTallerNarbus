@@ -706,8 +706,15 @@ button {
     0 4px 12px rgba(35, 103, 232, 0.25);
 }
 
-.submit-button:hover {
+.submit-button:hover:not(:disabled) {
   background: #1857ce;
+}
+
+.submit-button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.75;
 }
 
 .footer-help {
