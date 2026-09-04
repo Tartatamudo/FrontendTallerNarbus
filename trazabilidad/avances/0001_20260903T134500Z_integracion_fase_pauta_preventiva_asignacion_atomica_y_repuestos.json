@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 1,
+  "id": "AV-0001",
+  "timestamp": "2026-09-03T13:45:00Z",
+  "phase": "integracion_sistema_integral_v2",
+  "milestone": {
+    "id": "INTEG-1",
+    "name": "Integración Pauta Preventiva, Asignación Atómica y Control de Taller",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Integración completa de la filosofía operacional v2.0 del Backend: modal de Pauta Preventiva de 19 ítems (PautaPreventivaModal.tsx), asignación atómica granular de averías para mecánicos y supervisores (ModalAsignarFallas.tsx), control de presencia física en patio (en_taller en busesService.ts), reporte y visualización de falta de repuestos, validación estricta de checklist antes de la liberación del bus y manejador centralizado de excepciones NarbusException en src/utils/apiErrors.ts.",
+  "scope": {
+    "planned": [
+      "Crear modal especializado para inspección de 19 ítems de pauta preventiva.",
+      "Implementar autoasignación atómica por falla en DashboardMecanico.tsx.",
+      "Crear modal de asignación supervisora ModalAsignarFallas.tsx.",
+      "Desacoplar servicio de buses en busesService.ts con soporte para en_taller y rango 200-899.",
+      "Integrar reporte de bloqueo por falta de repuestos en averías.",
+      "Implementar validación y justificación obligatoria en finalización y liberación de buses.",
+      "Crear parser centralizado de errores apiErrors.ts para NarbusException.",
+      "Sincronizar contratos 05 y catálogo 06 en la carpeta de trazabilidad."
+    ],
+    "completed": [
+      "PautaPreventivaModal.tsx con agrupación por categorías de inspección, selección de OK/DEFECTO/NO_APLICA, campo obligatorio de observación y guardado batch (/mantencion/{id}/pauta).",
+      "Selección atómica de fallas en pestaña de pendientes y acción de autoasignación (/autoasignar).",
+      "ModalAsignarFallas.tsx integrado en DashboardSupervision.tsx con selección de colaboradores y averías específicas (/asignar).",
+      "busesService.ts creado con buscarNumerosBuses, obtenerBuses, obtenerBusPorId, obtenerBusPorNumero y actualizarEstadoEnTaller.",
+      "Pestaña de patio de taller en supervisión con conmutador en_taller y motivo de patio.",
+      "Modal de reporte de repuesto faltante (/repuesto) con comentarios y visualización con badge amarillo.",
+      "Modal de finalización con verificación estricta de checklist y solicitud de motivos condicionales de pauta o cierre parcial.",
+      "apiErrors.ts con función getApiErrorMessage que extrae errores de dominio, errores 422 de Pydantic y errores de conectividad.",
+      "Archivos 05_CONTRATOS_API_FRONTEND.md y 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md integrados en trazabilidad/."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Compilación y firma de release APK de Android (prevista para Fase 6)."
+    ]
+  },
+  "changes": [
+    { "path": "src/mecanicos/revisiones/PautaPreventivaModal.tsx", "action": "created", "summary": "Modal interactivo para evaluación y registro en lote de los 19 ítems de la pauta preventiva." },
+    { "path": "src/mecanicos/revisiones/PautaPreventivaModal.css", "action": "created", "summary": "Estilos con código de colores (verde OK, rojo DEFECTO, gris NO_APLICA) para la pauta." },
+    { "path": "src/supervisores/supervision/ModalAsignarFallas.tsx", "action": "created", "summary": "Modal de asignación de mecánicos a fallas específicas por parte de la supervisora." },
+    { "path": "src/buses/busesService.ts", "action": "created", "summary": "Servicio dedicado a catálogo de buses, filtros de flota taller (200-899) y presencia física en patio." },
+    { "path": "src/utils/apiErrors.ts", "action": "created", "summary": "Utilidad de extracción de mensajes de error unificada para NarbusException y Pydantic." },
+    { "path": "src/conductores/mantencion/mantencionService.ts", "action": "modified", "summary": "Nuevos endpoints de pauta preventiva, autoasignar, asignar, terminar-avance, repuestos y finalizar." },
+    { "path": "src/mecanicos/revisiones/DashboardMecanico.tsx", "action": "modified", "summary": "Integración de autoasignación atómica, botón de pauta preventiva, bloqueo por repuesto y cierre condicional." },
+    { "path": "src/supervisores/supervision/DashboardSupervision.tsx", "action": "modified", "summary": "Integración de pestaña de patio, asignación rápida desde alertas y filtros de auditoría." },
+    { "path": "src/supervisores/supervision/supervisionService.ts", "action": "modified", "summary": "Ampliación de DTOs para soporte de fallas bloqueadas por repuesto y presencia en patio." },
+    { "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md", "action": "created", "summary": "Documento de especificación contractual sincronizado con el backend v2.0." },
+    { "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md", "action": "created", "summary": "Catálogo exhaustivo de los 43 endpoints de la API." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Evaluación en Lote (Batch) de la Pauta Preventiva",
+      "rationale": "El mecánico realiza la inspección física de los 19 puntos y requiere guardar los resultados consolidados de una sola vez, en lugar de realizar 19 llamadas HTTP individuales.",
+      "consequences": "Mayor rapidez en terreno, menor latencia de red y atomicidad en el registro de la inspección."
+    },
+    {
+      "id": "DEC-002",
+      "title": "Exigencia Condicional de Motivos en Cierre de Orden",
+      "rationale": "Garantizar que ningún bus sea liberado del taller con revisiones incompletas o fallas abiertas sin que quede asentada la justificación técnica del responsable.",
+      "consequences": "Trazabilidad operacional estricta alineada con los requisitos de seguridad de Narbus."
+    },
+    {
+      "id": "DEC-003",
+      "title": "Parser Universal de Errores con Fallback Humano",
+      "rationale": "El backend estandarizó sus respuestas de error bajo { error: { message } } y Pydantic emite arrays en detail.",
+      "consequences": "La interfaz siempre muestra mensajes entendibles para mecánicos y choferes, eliminando alertas vacías o códigos HTTP crudos."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings en 28 archivos evaluados." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación limpia de TypeScript y bundle de producción generado en dist/ en 375ms." }
+  ],
+  "blockers": [],
+  "nextStep": "Ejecutar pruebas E2E integradas con el backend en entorno local y preparar compilación de APK en Android Studio.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "feature/modulo-supervision-taller", "commit": "local_working_tree", "dirty": true },
+  "notes": [
+    "Avance que consolida la sincronización total del Frontend con las Fases 1 a 5 del Backend Taller Narbus.",
+    "Se mantiene la compatibilidad con dispositivos móviles de taller vía Capacitor."
+  ]
+}

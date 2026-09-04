@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Wrench, Disc, ArrowRight, User as UserIcon, UserPlus, Shield, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { getStoredUser } from '../../usuarios/auth/authService';
+import { obtenerAlertasSupervision } from '../../supervisores/supervision/supervisionService';
 import type { User } from '../../usuarios/auth/authTypes';
 import './MenuSeleccion.css';
 
@@ -12,6 +13,7 @@ interface MenuSeleccionProps {
 
 export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(user || null);
+  const [alertasCount, setAlertasCount] = useState<number>(0);
 
   useEffect(() => {
     if (user) {
@@ -31,6 +33,14 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
   const isConductorOrAdmin = rol === 'CONDUCTOR' || rol === 'ADMIN';
   const isSupervisorOrAdmin = rol === 'SUPERVISOR' || rol === 'ADMIN';
   const isMecanicoOrAdmin = rol === 'MECANICO' || rol === 'ADMIN';
+
+  useEffect(() => {
+    if (isSupervisorOrAdmin) {
+      obtenerAlertasSupervision()
+        .then((a) => setAlertasCount(a.length))
+        .catch(() => setAlertasCount(0));
+    }
+  }, [isSupervisorOrAdmin]);
 
   return (
     <div className="menu-wrapper">
@@ -133,8 +143,13 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                   <div className="menu-card-icon-box bg-indigo-600 text-white">
                     <BarChart3 size={32} />
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-[10px] font-black bg-indigo-200 text-indigo-900 px-2 py-0.5 rounded-md">MÓDULO SUPERVISOR</span>
+                    {alertasCount > 0 && (
+                      <span className="text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full animate-pulse">
+                        {alertasCount} alerta(s) activa(s)
+                      </span>
+                    )}
                   </div>
                   <h3 className="menu-card-title">Supervisión y Auditoría Taller</h3>
                   <p className="menu-card-desc">

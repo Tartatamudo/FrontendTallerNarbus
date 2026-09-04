@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 6,
+  "id": "AV-HIST-006",
+  "timestamp": "2026-08-27T20:29:54Z",
+  "phase": "supervisores_gestion",
+  "milestone": {
+    "id": "SUP-1",
+    "name": "Módulo de Gestión de Usuarios para Supervisores",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación del módulo administrativo de usuarios: ListaUsuarios.tsx y CrearUsuario.tsx, permitiendo a los roles SUPERVISOR y ADMIN listar todas las cuentas registradas, crear nuevos operadores con su rol asignado y ejecutar deshabilitación controlada (soft-delete).",
+  "scope": {
+    "planned": [
+      "Crear servicio de listado, creación y baja de usuarios en authService.ts.",
+      "Desarrollar componente de listado ListaUsuarios.tsx con filtro y estado.",
+      "Desarrollar componente de formulario CrearUsuario.tsx.",
+      "Integrar confirmación modal para deshabilitación."
+    ],
+    "completed": [
+      "obtenerUsuarios, crearUsuario y deshabilitarUsuario añadidos a authService.ts.",
+      "ListaUsuarios.tsx con búsqueda reactiva, visualización de estado activo/inactivo y badges de rol.",
+      "CrearUsuario.tsx con validación de RUT, contraseñas coincidentes y selección de roles autorizados.",
+      "Confirmación de seguridad antes de ejecutar DELETE /api/v1/auth/usuarios/{id}."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Edición de contraseñas de terceros o reseteo administrativo."
+    ]
+  },
+  "changes": [
+    { "path": "src/supervisores/gestion_usuarios/ListaUsuarios.tsx", "action": "created", "summary": "Tablero de listado, búsqueda y control de operadores." },
+    { "path": "src/supervisores/gestion_usuarios/ListaUsuarios.css", "action": "created", "summary": "Estilos responsivos para la tabla y tarjetas de usuario." },
+    { "path": "src/supervisores/gestion_usuarios/CrearUsuario.tsx", "action": "created", "summary": "Formulario administrativo de creación de usuario." },
+    { "path": "src/supervisores/gestion_usuarios/CrearUsuario.css", "action": "created", "summary": "Estilos para el formulario de registro de usuario." },
+    { "path": "src/usuarios/auth/authService.ts", "action": "modified", "summary": "Inclusión de métodos administrativos obtenerUsuarios, crearUsuario y deshabilitarUsuario." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Soft-Delete con Confirmación Explícita",
+      "rationale": "Evitar borrados accidentales de cuentas de mecánicos o conductores activos en el taller.",
+      "consequences": "La cuenta se marca como inactiva inmediatamente en el backend y la UI actualiza su badge a 'Inactivo' sin perder la relación histórica de órdenes pasadas."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Sincronizar endpoints estandarizados con el Backend FastAPI.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "feature/supervisores-gestion", "commit": "496186f", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}

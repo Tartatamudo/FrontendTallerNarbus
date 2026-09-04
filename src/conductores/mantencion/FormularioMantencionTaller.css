@@ -278,6 +278,10 @@
   border-color: #005ea4;
 }
 
+.fmt-category-btn-full {
+  grid-column: span 2 / span 2;
+}
+
 /* Ítems Seleccionados */
 .fmt-selected-item {
   display: flex;

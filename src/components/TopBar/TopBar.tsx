@@ -15,12 +15,12 @@ export default function TopBar({ onLogout, onVolver }: TopBarProps) {
     const verificarSaludBackend = async () => {
       try {
         const res = await checkHealth();
-        if (res && res.status === 'healthy') {
+        if (res && (res.status === 'ok' || res.status === 'healthy')) {
           setHealthy(true);
         } else {
           setHealthy(false);
         }
-      } catch (err) {
+      } catch {
         setHealthy(false);
       }
     };

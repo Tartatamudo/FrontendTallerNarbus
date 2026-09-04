@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 7,
+  "id": "AV-HIST-007",
+  "timestamp": "2026-08-27T21:07:43Z",
+  "phase": "api_sincronizacion",
+  "milestone": {
+    "id": "SYNC-1",
+    "name": "Sincronización de Endpoints Estandarizados",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Sincronización completa de los endpoints del cliente Axios con los contratos REST del backend: búsqueda predictiva de buses (/buses/buscar), envío de reporte de neumáticos multipart (/neumaticos/formularioNeumatico) y solicitudes de mantención taller.",
+  "scope": {
+    "planned": [
+      "Alinear rutas en BusSelector hacia /api/v1/buses/buscar.",
+      "Ajustar payload y formato multipart de neumáticos.",
+      "Documentar endpoints en endpoints_documentacion.md."
+    ],
+    "completed": [
+      "BusSelector.tsx actualizado para consumir GET /api/v1/buses/buscar con query param.",
+      "FormularioNeumaticos.tsx ajustado para enviar multipart FormData con archivo fotográfico y parámetros estandarizados.",
+      "Documentación inicial de endpoints creada en la raíz del proyecto."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Módulo de telemetría y supervisión ejecutiva."
+    ]
+  },
+  "changes": [
+    { "path": "src/components/BusSelector/BusSelector.tsx", "action": "modified", "summary": "Ajuste de ruta a /api/v1/buses/buscar y fallback resiliente." },
+    { "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx", "action": "modified", "summary": "Estandarización del payload multipart para /formularioNeumatico." },
+    { "path": "endpoints_documentacion.md", "action": "created", "summary": "Documento con firmas de endpoints, payloads y respuestas esperadas." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Mecanismo de Fallback en Búsqueda de Buses",
+      "rationale": "Garantizar que si el endpoint específico de búsqueda no está disponible por versiones intermedias del backend, la app consulte el catálogo general.",
+      "consequences": "Alta resiliencia en entornos de desarrollo local."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Desarrollar módulo de supervisión integral con KPIs, alertas y auditoría inmutable.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "develop", "commit": "c78a8c6", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}

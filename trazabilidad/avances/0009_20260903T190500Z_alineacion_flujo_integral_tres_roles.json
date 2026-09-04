@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 9,
+  "id": "AV-0009",
+  "timestamp": "2026-09-03T19:05:00Z",
+  "phase": "integracion_flujo_integral_taller",
+  "milestone": {
+    "id": "FRONT-9",
+    "name": "Alineación y Verificación Integral del Flujo Operativo de Tres Roles (Chofer, Mecánico, Supervisora)",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Auditoría, verificación y alineación técnica exhaustiva del ciclo de vida y los contratos REST de los 3 roles de taller (Chofer, Mecánico, Supervisora). Se actualizaron los DTOs de mantención para soportar categoria_id en detalles y telemetría completa en SolicitudDTO; se vincularon las categorías táctiles del chofer con sus IDs de backend incorporando Climatización (ID: 5) de acceso directo; se explicitó solo_flota_taller: true en el autocompletado de buses; y se verificó que todas las transiciones de estado, reglas de negocio de pauta y cierre, alertas y auditoría coincidan al 100% con la especificación integral del taller.",
+  "scope": {
+    "planned": [
+      "Auditar y verificar contratos y transiciones de estado para Chofer, Mecánico y Supervisora.",
+      "Añadir categoria_id a DetalleSolicitudCreateDTO y DetalleSolicitudDTO en mantencionService.ts.",
+      "Completar SolicitudDTO con campos de auditoría, patente, usuario creador y contadores de telemetría.",
+      "Vincular los botones táctiles directos de FormularioMantencionTaller con categoria_id oficial del backend.",
+      "Habilitar Climatización (A/C) con categoriaId: 5 en los botones táctiles del formulario de chofer.",
+      "Asegurar el parámetro solo_flota_taller: true en la búsqueda de buses de BusSelector.tsx.",
+      "Actualizar documentos de contratos de API (05_CONTRATOS y 06_CATALOGO).",
+      "Verificar compilación limpia con TypeScript y Vite."
+    ],
+    "completed": [
+      "Auditoría exhaustiva completada confirmando alineación del 100% con el flujo de los 3 roles.",
+      "categoria_id agregado a DetalleSolicitudCreateDTO y DetalleSolicitudDTO.",
+      "SolicitudDTO enriquecido con campos de telemetría, pauta_completada, conteos y datos del creador/cierre.",
+      "FormularioMantencionTaller.tsx vinculado con categoriaId en TOUCH_CATEGORIES incorporando Climatización (ID: 5).",
+      "Estilo .fmt-category-btn-full agregado a FormularioMantencionTaller.css para presentación equilibrada del botón de Climatización.",
+      "BusSelector.tsx actualizado con solo_flota_taller: true explícito.",
+      "05_CONTRATOS_API_FRONTEND.md y 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md actualizados.",
+      "Compilación limpia verificada con tsc -b && vite build sin advertencias ni errores."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Inclusión de categoria_id en DetalleSolicitudCreateDTO/DetalleSolicitudDTO y atributos de telemetría en SolicitudDTO."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Mapeo de botones táctiles a categoriaId (Frenos: 1, Luces: 2, Motor: 3, Carrocería: 4, Climatización: 5, Otros: 6)."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.css",
+      "action": "modified",
+      "summary": "Incorporación de regla .fmt-category-btn-full para el botón de Climatización abarcando 2 columnas."
+    },
+    {
+      "path": "src/components/BusSelector/BusSelector.tsx",
+      "action": "modified",
+      "summary": "Inclusión explícita de solo_flota_taller: true en las peticiones de autocompletado de buses."
+    },
+    {
+      "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md",
+      "action": "modified",
+      "summary": "Documentación de categoria_id y categoria_nombre en el modelo de SolicitudDetalleDTO."
+    },
+    {
+      "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md",
+      "action": "modified",
+      "summary": "Actualización del payload y campos del endpoint 6.4 (POST /api/v1/mantencion/solicitudes) con categoria_id."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-009",
+      "title": "Alineación atómica de categorías directas del chofer con backend",
+      "rationale": "El backend incorporó soporte para resolver automáticamente categoria_id enviada por el chofer mapeándola a la falla representativa de base de datos. Asociar directamente los botones táctiles de la UI móvil (Frenos, Luces, Motor, Carrocería, Otros) a sus IDs oficiales optimiza la integridad de datos sin sacrificar la velocidad ergonómica del conductor en terreno.",
+      "consequences": "Permite trazabilidad inmediata y analytics por categoría en backend conservando la experiencia de usuario táctil y ágil del chofer en la app."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 962ms generando dist/assets/index-Cq_eUCUl.js sin errores."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Notificar al usuario la confirmación de alineación total y detalles verificados de los 3 roles.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "dirty": true
+  },
+  "notes": [
+    "Todos los contratos REST de los 3 roles (Chofer, Mecánico y Supervisora) se encuentran implementados, sincronizados y validados."
+  ]
+}

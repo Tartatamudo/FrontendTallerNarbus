@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 3,
+  "id": "AV-0003",
+  "timestamp": "2026-09-03T15:50:00Z",
+  "phase": "mecanicos_y_supervision_colaborativa",
+  "milestone": {
+    "id": "FRONT-3",
+    "name": "Autoasignación Atómica Colaborativa de Fallas con Compañeros",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de la autoasignación colaborativa de averías en el Dashboard de Mecánicos. Permite a los mecánicos autoasignarse averías específicas e invitar simultáneamente a compañeros de equipo a co-responsabilizarse sobre las mismas tareas, tanto por selección múltiple en lote como de forma directa sobre fallas puntuales.",
+  "scope": {
+    "planned": [
+      "Extensión de AutoasignarFallasDTO con colaboradores_ids opcionales.",
+      "Actualización del cliente HTTP mantencionService.autoasignarFallas para enviar colaboradores_ids.",
+      "Creación del componente ModalAutoasignarFallas con MecanicoSelector y feedback informativo de co-responsabilidad.",
+      "Integración de botón rápido 'Autoasignar' en cada tarjeta individual de avería en pendientes.",
+      "Sincronización de contratos 05_CONTRATOS_API_FRONTEND y 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.",
+      "Validación de compilación limpia de TypeScript y empaquetado con Vite."
+    ],
+    "completed": [
+      "Extensión de AutoasignarFallasDTO con colaboradores_ids?: number[].",
+      "Actualización de autoasignarFallas en src/conductores/mantencion/mantencionService.ts.",
+      "Creación de src/mecanicos/revisiones/modales/ModalAutoasignarFallas.tsx con MecanicoSelector, checklist de fallas seleccionadas y campo de nota inicial.",
+      "Modificación de src/mecanicos/revisiones/DashboardMecanico.tsx para conectar ModalAutoasignarFallas en autoasignación por lote y por avería individual.",
+      "Actualización de contratos técnicos en trazabilidad/05 y trazabilidad/06.",
+      "Ejecución y verificación exitosa de 'npm run build' (tsc -b && vite build en 3.15s sin errores)."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de modelos o esquemas en BackendTallerNarbus (manejados en su propio repositorio)."
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Agregado soporte para colaboradores_ids en AutoasignarFallasDTO y en la función autoasignarFallas."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalAutoasignarFallas.tsx",
+      "action": "created",
+      "summary": "Nuevo modal de autoasignación atómica con soporte para invitar compañeros mediante MecanicoSelector y botones táctiles optimizados para taller."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Integración del ModalAutoasignarFallas en la barra superior de pendientes y botón rápido 'Autoasignar' en cada tarjeta de avería."
+    },
+    {
+      "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md",
+      "action": "modified",
+      "summary": "Actualización de la sección 4.1 con el payload AutoasignarFallasDTO documentando colaboradores_ids."
+    },
+    {
+      "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md",
+      "action": "modified",
+      "summary": "Actualización del endpoint 6.10 documentando el campo colaboradores_ids y explicación de campos."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-003",
+      "title": "Autoasignación atómica colaborativa y acción rápida por falla individual",
+      "rationale": "En el flujo operativo de taller, los mecánicos frecuentemente se coordinan en parejas o grupos pequeños para abordar fallas complejas (ej. desmontaje de transmisión, frenos pesados) sin necesidad de esperar la intervención formal de un supervisor. Facilitar la invitación de compañeros directamente en el modal de autoasignación y añadir un botón de un solo toque en cada tarjeta de falla reduce la fricción en la asignación en terreno.",
+      "consequences": "Mayor agilidad en el taller, mejor trazabilidad de mecánicos co-responsables por avería y preservación de compatibilidad total cuando se trabaja en solitario (colaboradores_ids se omite de forma transparente)."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 3.15s generando dist/ sin advertencias ni errores de tipos."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas integradas de ciclo completo en entorno local y verificación de asignaciones en las vistas de mis trabajos y supervisión.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "dirty": true
+  },
+  "notes": [
+    "El backend confirmó la corrección del bug 500 de datetime offset en finalizar_solicitud y la recepción de colaboradores_ids en POST /{id}/autoasignar.",
+    "El frontend quedó 100% alineado con el nuevo comportamiento colaborativo."
+  ]
+}

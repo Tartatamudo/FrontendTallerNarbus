@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 8,
+  "id": "AV-HIST-008",
+  "timestamp": "2026-08-30T00:33:09Z",
+  "phase": "supervision_taller",
+  "milestone": {
+    "id": "SUP-2",
+    "name": "Módulo de Supervisión de Taller, KPIs y Centro de Alertas",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación del módulo de supervisión para el Taller Narbus: DashboardSupervision.tsx con telemetría en tiempo real, KPIs ejecutivos, tablero de auditoría inmutable de buses (/supervision/auditoria/buses-taller), centro de alertas proactivas (/supervision/alertas) y componente MecanicoSelector para búsqueda y asignación colaborativa.",
+  "scope": {
+    "planned": [
+      "Crear servicio supervisionService.ts con DTOs de auditoría, alertas y resumen.",
+      "Desarrollar componente MecanicoSelector para autocompletado de personal.",
+      "Desarrollar DashboardSupervision.tsx con pestañas de alertas, resumen y auditoría.",
+      "Integrar contador de alertas en MenuSeleccion.tsx."
+    ],
+    "completed": [
+      "supervisionService.ts con llamadas a /supervision/alertas, /auditoria/buses-taller y /resumen-taller.",
+      "MecanicoSelector.tsx con debounce reactivo y búsqueda por nombre consumiendo /api/v1/auth/mecanicos/buscar.",
+      "DashboardSupervision.tsx con interfaz de tarjetas ejecutivas de estado, gráficos de fallas y tarjetas expandibles de trazabilidad.",
+      "Insignia animada de alertas en tiempo real en el botón de supervisión del menú principal."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Control físico de patio (incorporado en la fase siguiente).",
+      "Pauta preventiva de 19 ítems."
+    ]
+  },
+  "changes": [
+    { "path": "src/supervisores/supervision/supervisionService.ts", "action": "created", "summary": "Servicio de supervisión con tipos de alertas, auditoría y resumen." },
+    { "path": "src/supervisores/supervision/DashboardSupervision.tsx", "action": "created", "summary": "Tablero ejecutivo de control, telemetría y auditoría." },
+    { "path": "src/components/MecanicoSelector/MecanicoSelector.tsx", "action": "created", "summary": "Selector predictivo de mecánicos con búsqueda remota." },
+    { "path": "src/components/MecanicoSelector/MecanicoSelector.css", "action": "created", "summary": "Estilos responsivos para el selector de mecánicos." },
+    { "path": "src/components/MenuSeleccion/MenuSeleccion.tsx", "action": "modified", "summary": "Badge numérico de alertas de supervisión en tiempo real." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Centro de Alertas como Pestaña Predeterminada para la Supervisora",
+      "rationale": "La supervisora requiere atender en primer lugar las incidencias críticas (repuestos faltantes, buses desatendidos) antes de revisar métricas históricas.",
+      "consequences": "Acceso inmediato al estado operativo más urgente del taller."
+    },
+    {
+      "id": "DEC-002",
+      "title": "MecanicoSelector Desacoplado con Debounce de 150ms",
+      "rationale": "Evitar inundar el endpoint /auth/mecanicos/buscar con cada tipeo de letra en el teclado móvil.",
+      "consequences": "Respuesta fluida y bajo consumo de red y recursos en el backend."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Integrar contratos v2.0: Pauta preventiva de 19 ítems, asignación atómica, control de patio y parser de excepciones.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "feature/modulo-supervision-taller", "commit": "bcfb72c", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}
