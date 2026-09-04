@@ -21,7 +21,7 @@ export * from '../../types/mantencion';
 // ==================== ENDPOINTS ====================
 
 /**
- * 6.1 Obtener Catálogo Maestro de 19 Inspecciones Preventivas (EXCLUSIVO Mecánicos en Taller)
+ * 6.1 Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems) (EXCLUSIVO Mecánicos en Taller)
  * GET /api/v1/mantencion/pauta/items
  * Utilizado únicamente por PautaPreventivaModal.tsx para el checklist técnico previo a liberación.
  */

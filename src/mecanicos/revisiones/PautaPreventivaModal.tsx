@@ -148,7 +148,7 @@ export default function PautaPreventivaModal({
   };
 
   // Métricas en tiempo real
-  const total = items.length || 19;
+  const total = items.length || 11;
   const respondidos = Object.keys(evaluaciones).length;
   const porcentaje = Math.round((respondidos / total) * 100);
   const defectosCount = Object.values(evaluaciones).filter((e) => e.estado === 'DEFECTO').length;
@@ -172,7 +172,7 @@ export default function PautaPreventivaModal({
             </div>
             <div>
               <h2 className="text-lg font-black leading-tight">
-                Pauta Preventiva de Taller (19 Ítems)
+                Pauta Preventiva de Taller ({items.length || 11} Ítems)
               </h2>
               <p className="text-xs text-blue-100 font-medium">
                 Bus N° {nBus} • Orden #{solicitudId}

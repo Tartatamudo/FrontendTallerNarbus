@@ -38,7 +38,8 @@ export default function ModalFinalizarOrden({
   if (!solicitud) return null;
 
   const tieneAveriasPendientes = solicitud.detalles?.some((d) => !d.resuelto);
-  const pautaIncompleta = (pautaResumen?.respondidos ?? 0) < 19;
+  const totalPauta = pautaResumen?.total_items || 11;
+  const pautaIncompleta = (pautaResumen?.respondidos ?? 0) < totalPauta;
 
   return (
     <ModalBase
@@ -75,7 +76,7 @@ export default function ModalFinalizarOrden({
             <div className="flex items-center gap-1.5 font-black text-amber-900">
               <AlertTriangle size={15} className="text-amber-600" />
               <span>
-                Pauta Preventiva Incompleta ({pautaResumen?.respondidos ?? 0}/19 respondidos)
+                Pauta Preventiva Incompleta ({pautaResumen?.respondidos ?? 0}/{totalPauta} respondidos)
               </span>
             </div>
             <p className="text-amber-800 text-[11px] font-medium">
