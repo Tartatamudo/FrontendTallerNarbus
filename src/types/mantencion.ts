@@ -109,7 +109,7 @@ export interface SolicitudDTO {
   motivo_cierre_parcial?: string | null;
 }
 
-// ==================== TIPOS PAUTA PREVENTIVA (19 ÍTEMS) ====================
+// ==================== TIPOS PAUTA PREVENTIVA (11 ÍTEMS DINÁMICOS) ====================
 
 export interface PautaTallerItemDTO {
   id: number;
@@ -181,7 +181,7 @@ export interface TerminarAvanceDTO {
  */
 export interface FinalizarSolicitudDTO {
   comentario_cierre?: string | null;
-  motivo_incompleto_checklist?: string | null; // OBLIGATORIO si la pauta tiene < 19 ítems respondidos
+  motivo_incompleto_checklist?: string | null; // OBLIGATORIO si la pauta tiene ítems pendientes sin responder (incompleta)
   motivo_cierre_parcial?: string | null; // OBLIGATORIO si hay fallas pendientes o con falta de repuesto
   liberar_bus_taller?: boolean; // Default: true (conmuta en_taller = false)
 }

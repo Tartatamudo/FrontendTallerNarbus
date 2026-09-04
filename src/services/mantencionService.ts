@@ -70,7 +70,7 @@ export const finalizarSolicitud = async (
 // ==================== ENDPOINTS COMPLEMENTARIOS DE MANTENCIÓN ====================
 
 /**
- * Obtener Catálogo Maestro de 19 Inspecciones Preventivas
+ * Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems)
  * GET /api/v1/mantencion/pauta/items
  */
 export const obtenerPautaItems = async (): Promise<PautaTallerItemDTO[]> => {

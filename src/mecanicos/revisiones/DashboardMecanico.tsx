@@ -76,7 +76,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
   const [selectedDetallesIds, setSelectedDetallesIds] = useState<number[]>([]);
   const [modalAutoasignarAbierto, setModalAutoasignarAbierto] = useState(false);
 
-  // Modal Pauta Preventiva de 19 ítems
+  // Modal Pauta Preventiva (11 ítems)
   const [pautaModalData, setPautaModalData] = useState<{ id: number; nBus: string } | null>(null);
   const [pautaResumenActual, setPautaResumenActual] = useState<PautaEstadoResumenDTO | null>(null);
 
@@ -397,9 +397,10 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
     // Validar reglas de negocio condicionales en el cliente antes de enviar
     const respondidos = pautaResumenActual?.respondidos ?? 0;
-    const pautaIncompleta = respondidos < 19;
+    const totalPauta = pautaResumenActual?.total_items || 11;
+    const pautaIncompleta = respondidos < totalPauta;
     if (pautaIncompleta && !motivoIncompletoChecklist.trim()) {
-      setErrorMsg('⚠️ OBLIGATORIO: Debe ingresar la justificación por la pauta preventiva incompleta (< 19 ítems).');
+      setErrorMsg(`⚠️ OBLIGATORIO: Debe ingresar la justificación por la pauta preventiva incompleta (< ${totalPauta} ítems).`);
       return;
     }
 
@@ -682,7 +683,9 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   <ClipboardCheck size={16} />
                   <span>
                     Pauta Preventiva{' '}
-                    {pautaResumenActual ? `(${pautaResumenActual.respondidos}/19)` : ''}
+                    {pautaResumenActual
+                      ? `(${pautaResumenActual.respondidos}/${pautaResumenActual.total_items || 11})`
+                      : '(11 Ítems)'}
                   </span>
                 </button>
               </div>
@@ -1070,7 +1073,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
         onClose={() => setModalFinalizarAbierto(false)}
       />
 
-      {/* MODAL DE PAUTA PREVENTIVA DE 19 ÍTEMS */}
+      {/* MODAL DE PAUTA PREVENTIVA (11 ÍTEMS) */}
       {pautaModalData && (
         <PautaPreventivaModal
           solicitudId={pautaModalData.id}

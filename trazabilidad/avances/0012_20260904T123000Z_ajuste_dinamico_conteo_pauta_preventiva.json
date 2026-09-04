@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 12,
+  "id": "AV-0012",
+  "timestamp": "2026-09-04T12:30:00Z",
+  "phase": "operacion_taller_mecanico",
+  "milestone": {
+    "id": "FRONT-12",
+    "name": "Ajuste Dinámico de Conteo de Pauta Preventiva",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Actualización del conteo de ítems de la Pauta Preventiva para desacoplar el número estático '19' y adoptar el conteo dinámico reportado por el backend (11 ítems correspondientes). Se actualizó el botón en DashboardMecanico, el modal de evaluación PautaPreventivaModal y las validaciones de checklist incompleto en ModalFinalizarOrden.",
+  "scope": {
+    "planned": [
+      "Reemplazar texto estático '(X/19)' en el botón de pauta del DashboardMecanico por conteo dinámico '(X/{total_items || 11})'.",
+      "Actualizar título y métricas en PautaPreventivaModal para reflejar los 11 ítems que devuelve el catálogo.",
+      "Ajustar la validación condicional de pauta incompleta en ModalFinalizarOrden y DashboardMecanico utilizando total_items dinámico."
+    ],
+    "completed": [
+      "DashboardMecanico.tsx: Botón ahora muestra 'Pauta Preventiva (respondidos/total_items)' usando pautaResumenActual.total_items (11).",
+      "DashboardMecanico.tsx: Validación de motivo_incompleto_checklist comparando contra total_items dinámico.",
+      "PautaPreventivaModal.tsx: Título 'Pauta Preventiva de Taller ({items.length || 11} Ítems)' y métrica total basada en el catálogo cargado.",
+      "ModalFinalizarOrden.tsx: Detección y alerta de pauta incompleta comparando contra total_items del backend.",
+      "Actualización de comentarios en tipos y servicios de mantención."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend o catálogo de base de datos."
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Conteo dinámico en botón de pauta y validación de checklist incompleto con total_items."
+    },
+    {
+      "path": "src/mecanicos/revisiones/PautaPreventivaModal.tsx",
+      "action": "modified",
+      "summary": "Métricas y encabezado sincronizados con la cantidad real de ítems cargados (11)."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalFinalizarOrden.tsx",
+      "action": "modified",
+      "summary": "Alerta y validación de pauta incompleta basada en total_items dinámico."
+    },
+    {
+      "path": "src/types/mantencion.ts",
+      "action": "modified",
+      "summary": "Actualización de comentarios de DTOs para checklist dinámico."
+    },
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "modified",
+      "summary": "Actualización de docstring para catálogo de 11 ítems."
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Actualización de docstring para catálogo de 11 ítems."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-012",
+      "title": "Conteo Dinámico de Ítems de Pauta Preventiva",
+      "rationale": "El catálogo maestro del backend evolucionó de 19 a 11 ítems. Mantener el número 19 hardcodeado en la interfaz generaba confusión en terreno (el botón indicaba 19 pero el formulario solo mostraba 11). Al enlazar el texto al campo total_items de PautaEstadoResumenDTO y a la longitud del catálogo items.length, la interfaz se adapta automáticamente a cualquier cambio futuro del catálogo maestro.",
+      "consequences": "Consistencia visual inmediata en la botonera de taller, feedback claro sobre cuántos ítems quedan por evaluar y eliminación de advertencias erróneas en el cierre de la orden."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Typechecking sin errores."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Build de producción Vite exitoso."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Integración de rama feature/ajuste-conteo-pauta-preventiva en develop.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/ajuste-conteo-pauta-preventiva",
+    "dirty": false
+  },
+  "notes": [
+    "Sincronizado completamente con el catálogo de 11 ítems maestros de taller."
+  ]
+}
