@@ -30,13 +30,17 @@ export default function ModalAsignarFallas({
 }: ModalAsignarFallasProps) {
   const [selectedMecanicos, setSelectedMecanicos] = useState<MecanicoItem[]>([]);
   const [detallesIds, setDetallesIds] = useState<number[]>(
-    detallePreseleccionadoId ? [detallePreseleccionadoId] : detalles.map((d) => d.id)
+    detallePreseleccionadoId
+      ? [detallePreseleccionadoId]
+      : detalles.filter((d) => !d.resuelto).map((d) => d.id)
   );
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const toggleDetalle = (id: number) => {
+    const d = detalles.find((item) => item.id === id);
+    if (d?.resuelto) return; // Inmutable si ya está resuelta
     setDetallesIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
@@ -114,22 +118,40 @@ export default function ModalAsignarFallas({
           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
             {detalles.map((d) => {
               const isChecked = detallesIds.includes(d.id);
+              const isResuelta = Boolean(d.resuelto);
               return (
                 <label
                   key={d.id}
-                  className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition ${
-                    isChecked
-                      ? 'bg-indigo-50/70 border-indigo-300 font-bold text-indigo-950'
-                      : 'bg-white border-slate-200 text-slate-600'
+                  className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-xs transition select-none ${
+                    isResuelta
+                      ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                      : isChecked
+                      ? 'bg-indigo-50/70 border-indigo-300 font-bold text-indigo-950 cursor-pointer'
+                      : 'bg-white border-slate-200 text-slate-600 cursor-pointer'
                   }`}
+                  title={isResuelta ? 'Avería ya resuelta (bloqueada)' : undefined}
                 >
                   <input
                     type="checkbox"
                     checked={isChecked}
-                    onChange={() => toggleDetalle(d.id)}
-                    className="w-4 h-4 mt-0.5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    disabled={isResuelta}
+                    onChange={() => {
+                      if (!isResuelta) toggleDetalle(d.id);
+                    }}
+                    className={`w-4 h-4 mt-0.5 rounded text-indigo-600 focus:ring-indigo-500 ${
+                      isResuelta ? 'cursor-not-allowed accent-emerald-600' : 'cursor-pointer'
+                    }`}
                   />
-                  <span>{d.descripcion_personalizada}</span>
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                    <span className={isResuelta ? 'line-through text-slate-400' : ''}>
+                      {d.descripcion_personalizada}
+                    </span>
+                    {isResuelta && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
+                        Resuelta ✓
+                      </span>
+                    )}
+                  </div>
                 </label>
               );
             })}

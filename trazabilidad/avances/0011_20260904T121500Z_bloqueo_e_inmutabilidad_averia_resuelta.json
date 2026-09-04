@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 11,
+  "id": "AV-0011",
+  "timestamp": "2026-09-04T12:15:00Z",
+  "phase": "operacion_taller_mecanico",
+  "milestone": {
+    "id": "FRONT-11",
+    "name": "Bloqueo e Inmutabilidad de Fallas Resueltas",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de bloqueo preventivo e inmutabilidad de averías resueltas en la consola mecánica y supervisión: una vez que una falla es marcada como resuelta (resuelto=true), su checkbox queda deshabilitado y bloqueado (no clickeable ni desmarcable), se oculta la opción de reportar falta de repuestos sobre ítems ya resueltos, y se excluyen de la autoasignación o asignación de averías pendientes.",
+  "scope": {
+    "planned": [
+      "Bloquear el checkbox de averías resueltas en 'Mis Trabajos' para impedir desmarcado involuntario o clics.",
+      "Ocultar botón de reporte de repuestos sobre averías ya concluidas.",
+      "Deshabilitar la selección y autoasignación de averías ya resueltas en la pestaña de 'Pendientes' y en el modal de autoasignación.",
+      "Bloquear la selección de averías resueltas en el modal de asignación de supervisores."
+    ],
+    "completed": [
+      "Checkbox de resolución en DashboardMecanico con disabled={... || det.resuelto}, pointer-events-none y badge Resuelto ✓.",
+      "Protección en handleToggleCheck impidiendo ejecutar cualquier acción si actualResuelto es true.",
+      "Filtrado atómico en toggleSelectDetalle, seleccionarTodosDetalles y handleTomarTodasAverias para contemplar solo averías no resueltas.",
+      "ModalAutoasignarFallas actualizado con ítems resueltos marcados con CheckCircle2, texto tachado, badge 'Resuelta ✓' y cursor-not-allowed.",
+      "ModalAsignarFallas (supervisión) actualizado para no permitir reasignar averías ya resueltas."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend o base de datos."
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Inmutabilidad de checkbox resuelto, exclusión de fallas resueltas en autoasignación y botón de repuestos condicionado a !det.resuelto."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalAutoasignarFallas.tsx",
+      "action": "modified",
+      "summary": "Bloqueo de clics en fallas resueltas dentro de la lista de selección atómica y conteo exclusivo de averías pendientes."
+    },
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.tsx",
+      "action": "modified",
+      "summary": "Deshabilitación de checkboxes para averías resueltas en modal de asignación supervisora."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-011",
+      "title": "Inmutabilidad Estricta de Averías Técnicas Resueltas en Frontend",
+      "rationale": "Para evitar inconsistencias en terreno donde un operario pueda desmarcar por error una falla ya reparada y validada en el historial del bus, el estado resuelto=true se torna de solo lectura, con feedback visual explícito (icono de verificación, texto tachado y badge de Resuelto ✓).",
+      "consequences": "Mayor seguridad operativa en taller, eliminación de falsos desmarques accidentales y experiencia clara tanto para mecánicos como supervisores."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin errores."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Bundle de producción generado en dist/ exitosamente."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Integración de rama feature/bloqueo-falla-resuelta-inmutable en develop respetando GitFlow.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/bloqueo-falla-resuelta-inmutable",
+    "dirty": false
+  },
+  "notes": [
+    "Cumple con directrices de tamaño táctil mínimo y prevención de errores operacionales en taller."
+  ]
+}

@@ -210,15 +210,19 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
   // Abrir modal de autoasignación para una falla puntual (aun que sea una sola)
   const handleAbrirAutoasignarPuntual = (detalleId: number) => {
+    const det = solicitudSeleccionada?.detalles?.find((d) => d.id === detalleId);
+    if (det?.resuelto) return;
     setSelectedDetallesIds([detalleId]);
     setModalAutoasignarAbierto(true);
   };
 
-  // Tomar todas las averías del bus para asignación conjunta
+  // Tomar todas las averías del bus para asignación conjunta (solo pendientes)
   const handleTomarTodasAverias = () => {
     if (!solicitudSeleccionada || !solicitudSeleccionada.detalles) return;
-    const allIds = solicitudSeleccionada.detalles.map((d) => d.id);
-    setSelectedDetallesIds(allIds);
+    const fallasPendientes = solicitudSeleccionada.detalles.filter((d) => !d.resuelto);
+    const pendIds = fallasPendientes.map((d) => d.id);
+    if (pendIds.length === 0) return;
+    setSelectedDetallesIds(pendIds);
     setModalAutoasignarAbierto(true);
   };
 
@@ -268,6 +272,11 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
   // 6.16 Check / Uncheck Falla
   const handleToggleCheck = async (solicitudId: number, detalleId: number, actualResuelto: boolean) => {
+    // Si la falla ya está resuelta, es inmutable y no se puede volver a clicar ni desmarcar
+    if (actualResuelto) {
+      return;
+    }
+
     // Validación preventiva: si falta repuesto, no se puede marcar como resuelta
     const det = solicitudSeleccionada?.detalles?.find((d) => d.id === detalleId);
     if (!actualResuelto && det?.falta_repuesto) {
@@ -427,6 +436,8 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
   };
 
   const toggleSelectDetalle = (id: number) => {
+    const det = solicitudSeleccionada?.detalles?.find((d) => d.id === id);
+    if (det?.resuelto) return;
     setSelectedDetallesIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
@@ -434,11 +445,12 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
   const seleccionarTodosDetalles = () => {
     if (!solicitudSeleccionada?.detalles) return;
-    const todosIds = solicitudSeleccionada.detalles.map((d) => d.id);
-    if (selectedDetallesIds.length === todosIds.length) {
+    const fallasPendientes = solicitudSeleccionada.detalles.filter((d) => !d.resuelto);
+    const pendIds = fallasPendientes.map((d) => d.id);
+    if (selectedDetallesIds.length === pendIds.length) {
       setSelectedDetallesIds([]);
     } else {
-      setSelectedDetallesIds(todosIds);
+      setSelectedDetallesIds(pendIds);
     }
   };
 
@@ -718,11 +730,17 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                     <button
                       type="button"
                       onClick={handleTomarTodasAverias}
-                      disabled={accionLoading || (solicitudSeleccionada.detalles?.length || 0) === 0}
-                      className="px-4 py-2 bg-white hover:bg-slate-100 text-indigo-800 border border-indigo-300 font-black text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+                      disabled={
+                        accionLoading ||
+                        (solicitudSeleccionada.detalles?.filter((d) => !d.resuelto).length || 0) === 0
+                      }
+                      className="px-4 py-2 bg-white hover:bg-slate-100 text-indigo-800 border border-indigo-300 font-black text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Play size={15} />
-                      <span>Tomar Todas las Averías ({solicitudSeleccionada.detalles?.length || 0})</span>
+                      <span>
+                        Tomar Averías Pendientes (
+                        {solicitudSeleccionada.detalles?.filter((d) => !d.resuelto).length || 0})
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -764,12 +782,21 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                           <div className="flex items-start sm:items-center gap-3">
                             {/* Checkbox para autoasignación en pendientes */}
                             {tabActiva === 'pendientes' && (
-                              <input
-                                type="checkbox"
-                                checked={isAtomicSelected}
-                                onChange={() => toggleSelectDetalle(det.id)}
-                                className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5 sm:mt-0"
-                              />
+                              det.resuelto ? (
+                                <span
+                                  className="w-5 h-5 flex items-center justify-center text-emerald-600 font-black text-xs shrink-0 select-none"
+                                  title="Avería ya resuelta (bloqueada)"
+                                >
+                                  ✓
+                                </span>
+                              ) : (
+                                <input
+                                  type="checkbox"
+                                  checked={isAtomicSelected}
+                                  onChange={() => toggleSelectDetalle(det.id)}
+                                  className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5 sm:mt-0"
+                                />
+                              )
                             )}
 
                             {/* Checkbox de resolución en mis trabajos */}
@@ -777,19 +804,23 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                               <input
                                 type="checkbox"
                                 checked={det.resuelto}
-                                onChange={() =>
-                                  handleToggleCheck(solicitudSeleccionada.id, det.id, det.resuelto)
-                                }
-                                disabled={accionLoading || Boolean(det.falta_repuesto)}
+                                onChange={() => {
+                                  if (!det.resuelto) {
+                                    handleToggleCheck(solicitudSeleccionada.id, det.id, det.resuelto);
+                                  }
+                                }}
+                                disabled={accionLoading || Boolean(det.falta_repuesto) || det.resuelto}
                                 title={
-                                  det.falta_repuesto
+                                  det.resuelto
+                                    ? 'Avería resuelta (bloqueada, no se puede modificar)'
+                                    : det.falta_repuesto
                                     ? 'Avería bloqueada: no se puede marcar como resuelta mientras falte repuesto en bodega'
-                                    : det.resuelto
-                                    ? 'Marcar como pendiente'
                                     : 'Marcar como resuelta'
                                 }
                                 className={`w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 mt-0.5 sm:mt-0 transition ${
-                                  det.falta_repuesto
+                                  det.resuelto
+                                    ? 'opacity-80 cursor-not-allowed bg-emerald-100 accent-emerald-600 pointer-events-none'
+                                    : det.falta_repuesto
                                     ? 'opacity-30 cursor-not-allowed bg-slate-200 border-slate-300'
                                     : 'cursor-pointer'
                                 }`}
@@ -797,10 +828,10 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                             )}
 
                             <div>
-                              <p className={`text-xs font-extrabold ${det.resuelto ? 'line-through opacity-70' : ''}`}>
+                              <p className={`text-xs font-extrabold select-none ${det.resuelto ? 'line-through opacity-70 text-emerald-900' : ''}`}>
                                 {det.descripcion_personalizada}
                               </p>
-                              {det.falta_repuesto && (
+                              {det.falta_repuesto && !det.resuelto && (
                                 <p className="text-[11px] font-bold text-red-600 mt-0.5 flex items-center gap-1">
                                   <AlertTriangle size={12} className="shrink-0" />
                                   <span>
@@ -813,7 +844,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
                           {/* Acciones de la avería */}
                           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                            {tabActiva === 'pendientes' && (
+                            {tabActiva === 'pendientes' && !det.resuelto && (
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -830,12 +861,13 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                             )}
 
                             {det.resuelto && (
-                              <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
-                                Resuelto ✓
+                              <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1 select-none shadow-xs">
+                                <CheckCircle2 size={13} className="text-emerald-600" />
+                                <span>Resuelto ✓</span>
                               </span>
                             )}
 
-                            {tabActiva === 'misTrabajos' && (
+                            {tabActiva === 'misTrabajos' && !det.resuelto && (
                               <button
                                 type="button"
                                 onClick={() =>

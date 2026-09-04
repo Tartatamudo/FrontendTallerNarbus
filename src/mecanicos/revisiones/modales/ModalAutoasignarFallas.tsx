@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserCheck, Users, CheckSquare, Square, Wrench, Info } from 'lucide-react';
+import { UserCheck, Users, CheckSquare, Square, Wrench, Info, CheckCircle2 } from 'lucide-react';
 import ModalBase from '../../../components/ModalBase/ModalBase';
 import MecanicoSelector from '../../../components/MecanicoSelector/MecanicoSelector';
 import type { MecanicoItem } from '../../../usuarios/auth/authService';
@@ -109,29 +109,45 @@ export default function ModalAutoasignarFallas({
           <label className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-1">
               <Wrench size={13} className="text-slate-500" />
-              Averías Seleccionadas ({selectedDetallesIds.length} de {fallasDisponibles.length}):
+              Averías Pendientes ({selectedDetallesIds.length} de {fallasDisponibles.filter((d) => !d.resuelto).length}):
             </span>
           </label>
 
           <div className="max-h-36 overflow-y-auto space-y-1.5 p-1 border border-slate-200 rounded-xl bg-slate-50/50">
             {fallasDisponibles.map((det) => {
               const isSelected = selectedDetallesIds.includes(det.id);
+              const yaResuelta = Boolean(det.resuelto);
               return (
                 <div
                   key={det.id}
-                  onClick={() => onToggleDetalle(det.id)}
-                  className={`p-2.5 rounded-lg border text-xs font-medium flex items-center gap-2.5 cursor-pointer transition ${
-                    isSelected
-                      ? 'bg-indigo-50 border-indigo-300 text-indigo-950 font-bold shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-100'
+                  onClick={() => {
+                    if (yaResuelta) return;
+                    onToggleDetalle(det.id);
+                  }}
+                  className={`p-2.5 rounded-lg border text-xs font-medium flex items-center gap-2.5 transition select-none ${
+                    yaResuelta
+                      ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                      : isSelected
+                      ? 'bg-indigo-50 border-indigo-300 text-indigo-950 font-bold shadow-xs cursor-pointer'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer'
                   }`}
+                  title={yaResuelta ? 'Avería ya resuelta (bloqueada)' : undefined}
                 >
-                  {isSelected ? (
+                  {yaResuelta ? (
+                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  ) : isSelected ? (
                     <CheckSquare size={16} className="text-indigo-600 shrink-0" />
                   ) : (
                     <Square size={16} className="text-slate-400 shrink-0" />
                   )}
-                  <span className="truncate">{det.descripcion_personalizada}</span>
+                  <span className={`truncate ${yaResuelta ? 'line-through text-slate-400' : ''}`}>
+                    {det.descripcion_personalizada}
+                  </span>
+                  {yaResuelta && (
+                    <span className="ml-auto text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
+                      Resuelta ✓
+                    </span>
+                  )}
                 </div>
               );
             })}
