@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 1,
+  "id": "AV-HIST-001",
+  "timestamp": "2026-08-27T20:27:31Z",
+  "phase": "setup_base",
+  "milestone": {
+    "id": "SETUP-1",
+    "name": "Configuración Inicial del Proyecto Frontend",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Se estableció la arquitectura base del proyecto frontend para el Taller Narbus: inicialización con Vite 8, React 19, TypeScript ~6.0, Capacitor 8 para empaquetado móvil en Android, cliente Axios con interceptores Bearer y abstracción de persistencia con Capacitor Preferences.",
+  "scope": {
+    "planned": [
+      "Inicializar proyecto Vite con plantilla React y TypeScript.",
+      "Integrar dependencias centrales (Axios, Lucide React, Oxlint).",
+      "Configurar Capacitor para soporte nativo Android.",
+      "Crear utilidades de persistencia y cámara multiplataforma."
+    ],
+    "completed": [
+      "Estructura inicial del repositorio con carpetas src/api, src/components, src/utils.",
+      "Configuración de capacitor.config.ts y dependencias @capacitor/core, @capacitor/android, @capacitor/camera, @capacitor/preferences.",
+      "Configuración de cliente HTTP Axios en src/api/apiClient.ts con base URL dinámica por variables de entorno (.env).",
+      "Utilidad de almacenamiento persistente desacoplado en src/utils/storage.ts con fallback automático a localStorage.",
+      "Utilidad de captura fotográfica en src/utils/capacitorCamera.ts para uso en terreno.",
+      "Configuración de linter Oxlint en _oxlintrc.json y scripts en package.json."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Implementación de pantallas de negocio.",
+      "Generación de binario APK definitivo."
+    ]
+  },
+  "changes": [
+    { "path": "package.json", "action": "created", "summary": "Definición de dependencias React 19, TypeScript, Capacitor 8, Axios y Lucide React." },
+    { "path": "vite.config.ts", "action": "created", "summary": "Configuración de Vite con plugin oficial de React." },
+    { "path": "capacitor.config.ts", "action": "created", "summary": "Configuración de Capacitor con appId com.narbus.taller y webDir dist." },
+    { "path": "src/api/apiClient.ts", "action": "created", "summary": "Instancia centralizada de Axios con interceptor para Bearer token." },
+    { "path": "src/utils/storage.ts", "action": "created", "summary": "Mapeo de guardarDato/obtenerDato/eliminarDato usando @capacitor/preferences." },
+    { "path": "src/utils/capacitorCamera.ts", "action": "created", "summary": "Integración de @capacitor/camera con fallback para web." },
+    { "path": "index.html", "action": "created", "summary": "Entrada HTML de la SPA con viewport móvil optimizado." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Arquitectura Híbrida Web/Móvil con Capacitor 8",
+      "rationale": "El sistema debe funcionar de manera óptima tanto en computadores de escritorio en oficinas de supervisión como en tablets o smartphones en el patio del taller.",
+      "consequences": "Permite mantener un único código fuente React/TypeScript que compila a SPA web y empaqueta APK para Android."
+    },
+    {
+      "id": "DEC-002",
+      "title": "Almacenamiento Desacoplado vía Capacitor Preferences con Fallback",
+      "rationale": "Evitar incompatibilidades al ejecutar en navegadores estándar o dentro del WebView de Capacitor.",
+      "consequences": "Las funciones de sesión y tokens se invocan transparentemente sin importar la plataforma de ejecución."
+    }
+  ],
+  "verification": [
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite y TypeScript sin errores de tipos." },
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." }
+  ],
+  "blockers": [],
+  "nextStep": "Implementar módulo de autenticación de usuarios, login y perfil.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "develop", "commit": "656dcdf", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio.",
+    "Punto de partida de la arquitectura frontend del taller."
+  ]
+}

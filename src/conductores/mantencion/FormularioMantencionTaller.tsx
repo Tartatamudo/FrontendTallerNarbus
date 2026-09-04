@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, CheckCircle2, RefreshCw, Wrench, AlertCircle, X, Check, Send, Edit3, ClipboardList } from 'lucide-react';
+import {
+  Trash2,
+  CheckCircle2,
+  RefreshCw,
+  Wrench,
+  AlertCircle,
+  Check,
+  Send,
+  ClipboardList,
+  X,
+  Edit3
+} from 'lucide-react';
 import './FormularioMantencionTaller.css';
 import BusSelector, { type BusItem } from '../../components/BusSelector/BusSelector';
 import PhotoSelector from '../../components/PhotoSelector/PhotoSelector';
 import { guardarDato, obtenerDato } from '../../utils/storage';
 import { crearSolicitud, type SolicitudCreateDTO } from './mantencionService';
+import { getApiErrorMessage } from '../../utils/apiErrors';
 
 interface FallaItem {
   id: number;
   nombre: string;
+  categoriaId?: number | null;
   resuelto: string;
 }
 
@@ -20,11 +33,11 @@ interface SubmittedSuccess {
 }
 
 const TOUCH_CATEGORIES = [
-  { id: 'carroceria', label: 'Carrocería', icon: '🚌' },
-  { id: 'neumatico', label: 'Neumático', icon: '🛞' },
-  { id: 'motor', label: 'Motor', icon: '⚙️' },
-  { id: 'chasis', label: 'Chasis', icon: '🚛' },
-  { id: 'electrico', label: 'Sistema Eléctrico', icon: '⚡' }
+  { id: 'frenos', categoriaId: 1, label: 'Frenos', icon: '🛑' },
+  { id: 'luces', categoriaId: 2, label: 'Luces / Eléctrico', icon: '⚡' },
+  { id: 'motor', categoriaId: 3, label: 'Motor', icon: '⚙️' },
+  { id: 'carroceria', categoriaId: 4, label: 'Carrocería', icon: '🚌' },
+  { id: 'climatizacion', categoriaId: 5, label: 'Climatización', icon: '❄️', fullWidth: true },
 ];
 
 interface FormularioMantencionTallerProps {
@@ -58,8 +71,10 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
   useEffect(() => {
     const cargarDatosGuardados = async () => {
       const rutGuardado = await obtenerDato('usuario_rut');
-      if (rutGuardado && !conductorNombre) {
-        setConductorNombre(rutGuardado);
+      const nombreGuardado = await obtenerDato('usuario_nombre');
+      const choferFinal = nombreGuardado || rutGuardado || '';
+      if (choferFinal && !conductorNombre) {
+        setConductorNombre(choferFinal);
       }
     };
     cargarDatosGuardados();
@@ -74,12 +89,15 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
     return match ? match[0] : busSearchInput.trim();
   };
 
-  const handleToggleCategory = (label: string) => {
+  const handleToggleCategory = (cat: typeof TOUCH_CATEGORIES[0]) => {
     setErrorMsg('');
-    if (itemsList.some(item => item.nombre.toLowerCase() === label.toLowerCase())) {
-      setItemsList(prev => prev.filter(item => item.nombre.toLowerCase() !== label.toLowerCase()));
+    if (itemsList.some((item) => item.nombre.toLowerCase() === cat.label.toLowerCase())) {
+      setItemsList((prev) => prev.filter((item) => item.nombre.toLowerCase() !== cat.label.toLowerCase()));
     } else {
-      setItemsList(prev => [...prev, { id: Date.now(), nombre: label, resuelto: 'NO' }]);
+      setItemsList((prev) => [
+        ...prev,
+        { id: Date.now(), nombre: cat.label, categoriaId: cat.categoriaId, resuelto: 'NO' },
+      ]);
     }
   };
 
@@ -87,16 +105,19 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
     if (!newItemText || !newItemText.trim()) return;
     const cleanText = newItemText.trim();
     setErrorMsg('');
-    if (itemsList.some(item => item.nombre.toLowerCase() === cleanText.toLowerCase())) {
+    if (itemsList.some((item) => item.nombre.toLowerCase() === cleanText.toLowerCase())) {
       setNewItemText('');
       return;
     }
-    setItemsList(prev => [...prev, { id: Date.now(), nombre: cleanText, resuelto: 'NO' }]);
+    setItemsList((prev) => [
+      ...prev,
+      { id: Date.now(), nombre: cleanText, categoriaId: 6, resuelto: 'NO' }, // 6 = OTRO en backend
+    ]);
     setNewItemText('');
   };
 
   const handleRemoveItem = (idToRemove: number) => {
-    setItemsList(prev => prev.filter(item => item.id !== idToRemove));
+    setItemsList((prev) => prev.filter((item) => item.id !== idToRemove));
   };
 
   const handlePreSubmit = (e: React.FormEvent) => {
@@ -124,43 +145,45 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
 
     try {
       setSubmitting(true);
-      // Formatear payload según Catálogo Endpoint 2.3
       const payload: SolicitudCreateDTO = {
         n_bus: cleanBusNumber,
         descripcion_general: descripcion.trim() || `Reporte de mantención para bus ${cleanBusNumber}`,
         foto_url: fotoBase64 || null,
         detalles: itemsList.map((it) => ({
-          falla_id: typeof it.id === 'number' && it.id < 100000 ? it.id : null,
-          descripcion_personalizada: it.nombre
-        }))
+          categoria_id: it.categoriaId ?? null,
+          falla_id: null,
+          descripcion_personalizada: it.nombre,
+        })),
       };
 
-      console.log("Enviando Solicitud Taller via crearSolicitud (POST /api/v1/mantencion/solicitudes):", payload);
+      console.log('Enviando Solicitud Taller (POST /api/v1/mantencion/solicitudes):', payload);
       const resData = await crearSolicitud(payload);
       const solicitudId = resData?.id || 1;
 
       if (conductorFinal) {
         await guardarDato('usuario_rut', conductorFinal);
       }
-      await guardarDato('ultimo_reporte_mantencion', JSON.stringify({
-        id: solicitudId,
-        n_bus: cleanBusNumber,
-        conductor: conductorFinal,
-        fecha: new Date().toLocaleString(),
-        itemsCount: itemsList.length
-      }));
+      await guardarDato(
+        'ultimo_reporte_mantencion',
+        JSON.stringify({
+          id: solicitudId,
+          n_bus: cleanBusNumber,
+          conductor: conductorFinal,
+          fecha: new Date().toLocaleString(),
+          itemsCount: itemsList.length,
+        })
+      );
 
       setShowConfirmModal(false);
       setSubmittedSuccess({
         id: solicitudId,
         n_bus: cleanBusNumber,
         conductor: conductorFinal,
-        itemsCount: itemsList.length
+        itemsCount: itemsList.length,
       });
-    } catch (err: any) {
-      console.error("Error al enviar reporte:", err);
-      const detail = err?.response?.data?.detail;
-      setErrorMsg(detail || 'Ocurrió un error al enviar la solicitud. Por favor reintenta.');
+    } catch (err) {
+      console.error('Error al enviar reporte:', err);
+      setErrorMsg(getApiErrorMessage(err, 'Ocurrió un error al enviar la solicitud. Por favor reintenta.'));
       setShowConfirmModal(false);
     } finally {
       setSubmitting(false);
@@ -180,7 +203,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
     setShowConfirmModal(false);
   };
 
-  // SUCCESS CONFIRMATION VIEW
+  // VISTA DE ÉXITO
   if (submittedSuccess) {
     return (
       <div className="fmt-success-wrapper font-sans text-slate-900">
@@ -222,7 +245,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
           <button
             type="button"
             onClick={handleResetForm}
-            className="fmt-btn-submit"
+            className="fmt-btn-submit cursor-pointer"
           >
             <RefreshCw size={20} />
             <span>Ingresar Otra Solicitud</span>
@@ -232,11 +255,9 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
     );
   }
 
-  // EXECUTIVE LIGHT FORM VIEW
   return (
     <div className="fmt-wrapper font-sans text-slate-900">
       <div className="fmt-card">
-
         {/* Header Corporativo Oficial Narbus */}
         <div className="fmt-header">
           {onVolver && (
@@ -257,9 +278,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
                 <span className="fmt-badge-company">NARBUS BUSES</span>
                 <span className="fmt-badge-subtitle">FLOTA & TALLER</span>
               </div>
-              <h1 className="fmt-header-title">
-                Solicitud de Mantención
-              </h1>
+              <h1 className="fmt-header-title">Solicitud de Mantención</h1>
             </div>
           </div>
         </div>
@@ -298,16 +317,20 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
               <span className="fmt-required-badge">* Mínimo 1 falla</span>
             </div>
 
-            {/* Grid de Botones Táctiles */}
+            {/* Grid de Botones Táctiles Directos */}
             <div className="fmt-category-grid">
               {TOUCH_CATEGORIES.map((cat) => {
-                const isSelected = itemsList.some(item => item.nombre.toLowerCase() === cat.label.toLowerCase());
+                const isSelected = itemsList.some(
+                  (item) => item.nombre.toLowerCase() === cat.label.toLowerCase()
+                );
                 return (
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => handleToggleCategory(cat.label)}
-                    className={`fmt-category-btn ${isSelected ? 'fmt-category-btn-selected' : ''}`}
+                    onClick={() => handleToggleCategory(cat)}
+                    className={`fmt-category-btn ${isSelected ? 'fmt-category-btn-selected' : ''} ${
+                      cat.fullWidth ? 'fmt-category-btn-full' : ''
+                    }`}
                   >
                     <span className="text-lg shrink-0">{cat.icon}</span>
                     <span className="flex-1 line-clamp-1 select-none font-bold">{cat.label}</span>
@@ -317,12 +340,15 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
               })}
             </div>
 
-            {/* Input adicional libre */}
+            {/* Apartado de Otros / Input adicional libre */}
             <div className="pt-1">
+              <label className="block text-xs font-bold text-slate-600 mb-1">
+                Otro trabajo o falla no listada:
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Escriba otra observación o repuesto..."
+                  placeholder="Escriba otra observación, falla o repuesto..."
                   value={newItemText}
                   onChange={(e) => setNewItemText(e.target.value)}
                   onKeyDown={(e) => {
@@ -346,7 +372,9 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
             {/* Lista visual de ítems seleccionados */}
             {itemsList.length > 0 ? (
               <div className="space-y-2 pt-1">
-                <span className="text-[11px] font-black text-slate-600 block uppercase tracking-wider">Ítems Seleccionados ({itemsList.length}):</span>
+                <span className="text-[11px] font-black text-slate-600 block uppercase tracking-wider">
+                  Ítems Seleccionados ({itemsList.length}):
+                </span>
                 {itemsList.map((item) => (
                   <div key={item.id} className="fmt-selected-item">
                     <div className="flex items-center gap-2.5">
@@ -369,7 +397,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
               </div>
             ) : (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-800 text-center">
-                👉 Seleccione al menos 1 falla de la lista superior.
+                👉 Seleccione al menos 1 falla de los botones superiores o ingrese una en "Otros".
               </div>
             )}
           </div>
@@ -413,7 +441,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
           {/* BOTÓN GIGANTE ENVIAR A TALLER */}
           <button
             type="submit"
-            className="fmt-btn-submit"
+            className="fmt-btn-submit cursor-pointer"
           >
             <span>🚀 ENVIAR REPORTE A TALLER</span>
           </button>
@@ -424,7 +452,6 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
       {showConfirmModal && (
         <div className="fmt-modal-overlay">
           <div className="fmt-modal-card animate-in fade-in zoom-in-95">
-
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
@@ -502,7 +529,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
                 type="button"
                 disabled={submitting}
                 onClick={handleFinalSubmit}
-                className="fmt-btn-submit flex-1 py-3.5 text-xs rounded-xl mt-0"
+                className="fmt-btn-submit flex-1 py-3.5 text-xs rounded-xl mt-0 cursor-pointer"
               >
                 {submitting ? (
                   <>

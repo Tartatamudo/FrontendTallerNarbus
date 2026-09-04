@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 5,
+  "id": "AV-0005",
+  "timestamp": "2026-09-03T16:35:00Z",
+  "phase": "mecanicos_y_supervision_colaborativa",
+  "milestone": {
+    "id": "FRONT-5",
+    "name": "Bloqueo Preventivo de Check de Resolución ante Falta de Repuestos",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Inhabilitación visual y lógica del checkbox de resolución en 'Mis Trabajos' cuando una avería tiene falta de repuesto activa. Desmarcado automático si la avería figuraba como resuelta al momento de reportar falta de repuestos.",
+  "scope": {
+    "planned": [
+      "Deshabilitar la casilla de verificación de resolución si det.falta_repuesto es true.",
+      "Añadir estilos de cursor no permitido, opacidad reducida y tooltip explicativo.",
+      "Validación preventiva en handleToggleCheck para evitar marcar como resuelta una falla bloqueada.",
+      "Desmarcado automático en handleGuardarRepuesto si se reporta falta de repuesto en una avería marcada previamente como resuelta."
+    ],
+    "completed": [
+      "Modificación de DashboardMecanico.tsx para aplicar disabled={accionLoading || Boolean(det.falta_repuesto)} y estilos atenuados.",
+      "Añadido tooltip claro: 'Avería bloqueada: no se puede marcar como resuelta mientras falte repuesto en bodega'.",
+      "Validación preventiva en el controlador handleToggleCheck bloqueando el envío si falta_repuesto está activa.",
+      "Desmarcado automático del check si la avería estaba resuelta y se reporta falta de repuesto.",
+      "Validación de compilación limpia de TypeScript y Vite (366ms)."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Bloqueo preventivo visual y funcional del check de avería ante falta de repuestos."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-005",
+      "title": "Bloqueo estricto del check de resolución por falta de repuestos",
+      "rationale": "Por lógica operativa de taller mecánico, una avería no puede ser calificada técnicamente como resuelta ni finalizada si el repuesto necesario aún no ha llegado a bodega. Bloquear el checkbox y desmarcarlo automáticamente si estaba resuelto previene inconsistencias y falsos cierres en los informes de turno.",
+      "consequences": "Mayor rigor en los datos operacionales de mantención y prevención de cierres indebidos de órdenes de trabajo."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Compilación limpia en 366ms sin errores de tipos."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas en vivo con mecánicos reportando repuestos faltantes y verificando el estado del checkbox.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la regla 5 del proyecto: 'Validación Preventiva en terreno'."
+  ]
+}

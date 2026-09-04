@@ -1,11 +1,24 @@
 import { apiClient } from '../../api/apiClient';
 
+export interface AlertaSupervisionDTO {
+  tipo: 'REPUESTO_FALTANTE' | 'DEFECTO_PAUTA' | 'BUS_SIN_MECANICOS' | string;
+  severidad: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA' | string;
+  solicitud_id: number;
+  n_bus: string;
+  mensaje: string;
+  detalle_id?: number | null;
+  fecha_deteccion?: string;
+}
+
 export interface MetricasEstadoDTO {
   total_solicitudes: number;
   reportadas: number;
+  pendientes?: number;
   en_reparacion: number;
   pendiente_reasignacion: number;
   finalizadas: number;
+  buses_fisicamente_en_taller?: number;
+  fallas_bloqueadas_por_repuesto?: number;
 }
 
 export interface FallaPorCategoriaDTO {
@@ -22,6 +35,7 @@ export interface ResumenTallerDTO {
   total_fallas_resueltas: number;
   fallas_por_categoria: FallaPorCategoriaDTO[];
   buses_activos_taller: string[];
+  alertas?: AlertaSupervisionDTO[];
 }
 
 export interface CategoriaFallaAuditoriaDTO {
@@ -47,6 +61,8 @@ export interface DetalleFallaAuditoriaDTO {
   resuelto: boolean;
   mecanico_resolvio_id?: number | null;
   mecanico_resolvio_nombre?: string | null;
+  falta_repuesto?: boolean;
+  comentario_repuesto?: string | null;
   fecha_creacion: string;
   fecha_resolucion?: string | null;
 }
@@ -75,6 +91,7 @@ export interface ComentarioAuditoriaDTO {
 export interface AuditoriaBusTallerDTO {
   id: number;
   n_bus: string;
+  bus_id?: number | null;
   usuario_creador_id: number;
   usuario_creador_nombre: string;
   mecanico_cierre_id?: number | null;
@@ -84,6 +101,8 @@ export interface AuditoriaBusTallerDTO {
   foto_url?: string | null;
   fecha_creacion: string;
   fecha_cierre?: string | null;
+  motivo_incompleto_checklist?: string | null;
+  motivo_cierre_parcial?: string | null;
   detalles: DetalleFallaAuditoriaDTO[];
   mecanicos: MecanicoAuditoriaDTO[];
   comentarios: ComentarioAuditoriaDTO[];
@@ -96,18 +115,24 @@ export interface AuditoriaFiltros {
   mecanico_nombre?: string;
 }
 
+export interface AsignarFallasPayloadDTO {
+  mecanico_id: number;
+  detalles_ids: number[];
+  comentario?: string;
+}
+
 /**
- * GET /api/v1/supervision/resumen-taller
- * Retorna las métricas clave y KPIs del taller en tiempo real.
+ * 7.1 Centro de Alertas en vivo para la supervisora
+ * GET /api/v1/supervision/alertas
  */
-export async function obtenerResumenTaller(): Promise<ResumenTallerDTO> {
-  const response = await apiClient.get<ResumenTallerDTO>('/api/v1/supervision/resumen-taller');
+export async function obtenerAlertasSupervision(): Promise<AlertaSupervisionDTO[]> {
+  const response = await apiClient.get<AlertaSupervisionDTO[]>('/api/v1/supervision/alertas');
   return response.data;
 }
 
 /**
+ * 7.2 Tablero de auditoría y trazabilidad exhaustiva en vivo
  * GET /api/v1/supervision/auditoria/buses-taller
- * Retorna la trazabilidad inmutable de solicitudes en taller con filtros opcionales.
  */
 export async function obtenerAuditoriaBusesTaller(filtros?: AuditoriaFiltros): Promise<AuditoriaBusTallerDTO[]> {
   const params: Record<string, any> = {};
@@ -125,5 +150,26 @@ export async function obtenerAuditoriaBusesTaller(filtros?: AuditoriaFiltros): P
   }
 
   const response = await apiClient.get<AuditoriaBusTallerDTO[]>('/api/v1/supervision/auditoria/buses-taller', { params });
+  return response.data;
+}
+
+/**
+ * 7.3 Dashboard ejecutivo con métricas de taller y KPIs
+ * GET /api/v1/supervision/resumen-taller
+ */
+export async function obtenerResumenTaller(): Promise<ResumenTallerDTO> {
+  const response = await apiClient.get<ResumenTallerDTO>('/api/v1/supervision/resumen-taller');
+  return response.data;
+}
+
+/**
+ * 7.4 Asignación directa de fallas por la supervisora
+ * POST /api/v1/supervision/solicitudes/{id}/asignar
+ */
+export async function asignarDesdeSupervision(
+  solicitudId: number,
+  payload: AsignarFallasPayloadDTO
+): Promise<any> {
+  const response = await apiClient.post(`/api/v1/supervision/solicitudes/${solicitudId}/asignar`, payload);
   return response.data;
 }

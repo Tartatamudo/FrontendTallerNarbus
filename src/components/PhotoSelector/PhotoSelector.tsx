@@ -23,7 +23,7 @@ const dataURLtoFile = (dataurl: string, filename = 'evidencia.jpg'): File => {
       u8arr[n] = bstr.charCodeAt(n);
     }
     return new File([u8arr], filename, { type: mime });
-  } catch (e) {
+  } catch {
     return new File([], filename, { type: 'image/jpeg' });
   }
 };

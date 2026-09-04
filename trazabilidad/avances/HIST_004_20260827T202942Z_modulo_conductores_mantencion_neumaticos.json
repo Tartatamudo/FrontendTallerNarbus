@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 4,
+  "id": "AV-HIST-004",
+  "timestamp": "2026-08-27T20:29:42Z",
+  "phase": "conductores_reportes",
+  "milestone": {
+    "id": "COND-1",
+    "name": "Módulo de Conductores: Mantención y Neumáticos",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de los formularios de terreno para conductores: FormularioMantencionTaller para reporte de averías con lista dinámica de fallas, selector de bus y fotos; y FormularioNeumaticos con croquis visual táctil de ejes y ruedas, motivos rápidos, precio y marca de fuego.",
+  "scope": {
+    "planned": [
+      "Crear componente BusSelector para autocompletado de máquinas.",
+      "Crear componente PhotoSelector para captura y preview fotográfico.",
+      "Desarrollar FormularioMantencionTaller.tsx y servicio mantencionService.ts inicial.",
+      "Desarrollar FormularioNeumaticos.tsx con croquis interactivo de ruedas."
+    ],
+    "completed": [
+      "BusSelector.tsx con dropdown predictivo y búsqueda ágil.",
+      "PhotoSelector.tsx con modal de zoom y conversión DataURL a File.",
+      "FormularioMantencionTaller.tsx con carga de categorías, catálogo de fallas y agregar fallas dinámicas.",
+      "FormularioNeumaticos.tsx con renderizado de croquis táctil de 2 a 4 ejes, selección de ruedas y formato de moneda chilena.",
+      "Modales de confirmación previa antes del envío final de ambos formularios."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Recepción y gestión de las órdenes por mecánicos."
+    ]
+  },
+  "changes": [
+    { "path": "src/components/BusSelector/BusSelector.tsx", "action": "created", "summary": "Selector predictivo de buses con consulta al backend." },
+    { "path": "src/components/PhotoSelector/PhotoSelector.tsx", "action": "created", "summary": "Selector y visor de fotos con soporte de cámara y galería." },
+    { "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx", "action": "created", "summary": "Formulario de reporte de ingreso a taller." },
+    { "path": "src/conductores/mantencion/mantencionService.ts", "action": "created", "summary": "Servicio de mantención con llamadas a categorías, fallas y solicitudes." },
+    { "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx", "action": "created", "summary": "Formulario táctil de declaración de neumáticos dañados." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Croquis Interactivo Táctil en Reemplazo de Selectores Dropdown de Ruedas",
+      "rationale": "Para los conductores en terreno, identificar visualmente la posición física de la rueda en el bus (delantera izquierda, dual trasera interior, etc.) reduce a cero los errores de registro.",
+      "consequences": "Mayor precisión operativa y agilidad extrema para conductores usando dispositivos táctiles."
+    },
+    {
+      "id": "DEC-002",
+      "title": "Exigencia Obligatoria de al Menos un Ítem de Avería",
+      "rationale": "Evitar la creación de solicitudes vacías que saturen la cola de pendientes del taller.",
+      "consequences": "Se bloquea el botón de envío hasta que el conductor agregue explícitamente una falla de catálogo o personalizada."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Implementar dashboard de revisiones para mecánicos.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "feature/conductores-reportes", "commit": "fc73f23", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}

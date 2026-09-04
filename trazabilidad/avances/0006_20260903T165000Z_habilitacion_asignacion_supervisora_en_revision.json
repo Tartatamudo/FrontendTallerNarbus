@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 6,
+  "id": "AV-0006",
+  "timestamp": "2026-09-03T16:50:00Z",
+  "phase": "mecanicos_y_supervision_colaborativa",
+  "milestone": {
+    "id": "FRONT-6",
+    "name": "Habilitación de Asignación de Mecánicos para Supervisora en Turnos Activos",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Ampliación de permisos en la UI de Auditoría de Buses para permitir que la supervisora pueda asignar mecánicos y reforzar equipos durante todo el ciclo de vida activo del bus en taller (incluyendo EN_REVISION y EN_REPARACION).",
+  "scope": {
+    "planned": [
+      "Permitir que el botón Asignar esté disponible en AuditoriaTab.tsx mientras la orden no esté finalizada, liberada o cancelada.",
+      "Verificar integración con ModalAsignarFallas y endpoint POST /api/v1/supervision/solicitudes/{id}/asignar.",
+      "Validar compilación en TypeScript y Vite."
+    ],
+    "completed": [
+      "Actualizada la condición puedeAsignar en AuditoriaTab.tsx a (aud.estado !== 'FINALIZADA' && aud.estado !== 'LIBERADO' && aud.estado !== 'CANCELADA').",
+      "El botón '+ Asignar' ahora permanece visible y accesible en tarjetas como la del Bus 10 (EN_REVISION).",
+      "Validación de compilación limpia (380ms)."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Ampliación de visibilidad del botón Asignar para todos los estados de órdenes activas en taller."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-006",
+      "title": "Disponibilidad continua de asignación para la supervisora",
+      "rationale": "En la operación real del taller, la supervisora necesita asignar compañeros de refuerzo o redistribuir fallas pendientes incluso después de que un mecánico inicial haya tomado el bus (estado EN_REVISION). Restringir el botón solo a estados iniciales bloqueaba la gestión operativa de turnos y co-responsabilidad.",
+      "consequences": "La supervisora puede intervenir y asignar o sumar mecánicos a cualquier bus mientras esté en reparación en el taller."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 380ms sin errores."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación en pantalla de supervisión verificando la presencia del botón Asignar en buses en revisión.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "dirty": true
+  },
+  "notes": [
+    "Resuelve la consulta operativa de la supervisora en la auditoría de buses."
+  ]
+}

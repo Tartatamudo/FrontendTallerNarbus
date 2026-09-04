@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 3,
+  "id": "AV-HIST-003",
+  "timestamp": "2026-08-27T20:29:35Z",
+  "phase": "shared_components",
+  "milestone": {
+    "id": "SHARED-1",
+    "name": "Componentes Globales y Navegación por Roles",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Desarrollo de los componentes visuales compartidos de la aplicación: TopBar con soporte de navegación y logout, MenuSeleccion con visualización de tarjeta de usuario y filtrado dinámico de botones según el rol del usuario autenticado, y base de estilos globales.",
+  "scope": {
+    "planned": [
+      "Crear componente TopBar reutilizable.",
+      "Crear componente MenuSeleccion adaptado a roles.",
+      "Integrar flujo de cierre de sesión seguro.",
+      "Establecer estilos globales en App.css e index.css."
+    ],
+    "completed": [
+      "TopBar con botón de volver condicional y acción de salida segura.",
+      "MenuSeleccion con badges de rol, avatar de usuario y botones de navegación específicos.",
+      "Integración de Lucide React para iconografía consistente en toda la barra y menú.",
+      "Estilos responsivos adaptables a pantallas móviles de taller y monitores de escritorio."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Vistas operativas de conductores y mecánicos."
+    ]
+  },
+  "changes": [
+    { "path": "src/components/TopBar/TopBar.tsx", "action": "created", "summary": "Barra superior con navegación y logout." },
+    { "path": "src/components/TopBar/TopBar.css", "action": "created", "summary": "Estilos de cabecera con alto contraste." },
+    { "path": "src/components/MenuSeleccion/MenuSeleccion.tsx", "action": "created", "summary": "Menú principal dinámico por roles de usuario." },
+    { "path": "src/components/MenuSeleccion/MenuSeleccion.css", "action": "created", "summary": "Estilos de botones y tarjetas del menú principal." },
+    { "path": "src/App.tsx", "action": "modified", "summary": "Integración de navegación entre Login, Menú y Perfil." },
+    { "path": "src/App.css", "action": "modified", "summary": "Clases de utilidad y resets de diseño para la aplicación." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Navegación Basada en Estados en App.tsx en Lugar de React Router Complejo",
+      "rationale": "La aplicación es una SPA industrial enfocada con flujos lineales (Login -> Menú -> Módulo específico -> Volver) que debe correr sin problemas en WebView de Android.",
+      "consequences": "Mayor simplicidad, cero overhead de rutas en deep linking móvil y garantía de retorno confiable con onVolver."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Implementar formularios operativos para conductores (Mantención y Neumáticos).",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "develop", "commit": "2a2ed44", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 8,
+  "id": "AV-0008",
+  "timestamp": "2026-09-03T18:35:00Z",
+  "phase": "modulo_conductores_mantencion",
+  "milestone": {
+    "id": "FRONT-8",
+    "name": "Restauración de Interfaz Táctil Directa en Formulario de Mantención Chofer",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Restauración de la interfaz visual táctil directa de FormularioMantencionTaller.tsx: se eliminan las pestañas y subcategorías anidadas. Se recupera el grid táctil directo con las 4 categorías operacionales de taller (Carrocería, Luces, Motor, Frenos) y el apartado de 'Otros' con input de texto libre y botón '+ Agregar'. Se excluye 'Neumático' ya que posee su propio módulo especializado. Mantiene internamente el contrato REST POST /api/v1/mantencion/solicitudes intacto.",
+  "scope": {
+    "planned": [
+      "Eliminar el selector de pestañas y carga de subcategorías complejas en el formulario del conductor.",
+      "Restaurar los botones táctiles directos originales en grid (Carrocería, Luces, Motor, Frenos).",
+      "Excluir neumáticos del formulario de taller al pertenecer a FormularioNeumaticos.tsx.",
+      "Mantener el apartado 'Otros' para texto libre ágil.",
+      "Preservar la integración con crearSolicitud, storage.ts y getApiErrorMessage.",
+      "Verificar compilación limpia con Vite y TypeScript."
+    ],
+    "completed": [
+      "FormularioMantencionTaller.tsx restaurado a la versión de interfaz táctil limpia.",
+      "TOUCH_CATEGORIES configuradas con Carrocería, Luces, Motor y Frenos.",
+      "Eliminada la categoría Neumático del formulario de mantención taller general.",
+      "Apartado de Otros habilitado para escribir cualquier falla adicional con '+ Agregar'.",
+      "Compilación exitosa con npm run build sin advertencias ni errores."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Restauración completa de la UI táctil con 5 accesos directos y sección de otros."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-008",
+      "title": "Priorización de la velocidad y ergonomía táctil en el formulario de chofer",
+      "rationale": "Para los conductores en terreno que usan celular o tablet con prisa en el taller, una interfaz con pestañas o subcategorías ralentiza la captura. La versión directa con botones táctiles grandes de acceso inmediato más un apartado de texto libre para 'Otros' ofrece la máxima rapidez operativa sin fricción.",
+      "consequences": "Experiencia de usuario instantánea y directa en el celular, manteniendo la compatibilidad total con el endpoint POST /api/v1/mantencion/solicitudes."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 488ms sin errores."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validar feedback visual del usuario en el navegador.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-conductores-mantencion",
+    "dirty": true
+  },
+  "notes": [
+    "Diseño visual idéntico al original aprobado, con consumo interno normalizado del backend."
+  ]
+}

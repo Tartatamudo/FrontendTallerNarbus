@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 10,
+  "id": "AV-0010",
+  "timestamp": "2026-09-04T10:00:00Z",
+  "phase": "unificacion_cierres_y_averias_en_caliente",
+  "milestone": {
+    "id": "FRONT-10",
+    "name": "Unificación a 2 Formas Únicas de Cierre Cronometrado y Registro de Avería en Caliente",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de la guía técnica del Backend FastAPI en el Frontend. Se unificaron las opciones de cierre del mecánico a 2 formas únicas cronometradas ('Terminar Avance' para pausa grupal de cuadrilla pasando a PENDIENTE, y 'Finalizar y Liberar Bus' para cierre definitivo de orden liberando en_taller = false). Se retiraron de la barra de acciones los botones individuales ('Desasignarme' y 'Pasar Turno'). Se incorporó el nuevo endpoint POST /api/v1/mantencion/{id}/detalles junto al componente ModalAgregarFalla.tsx para registrar fallas técnicas detectadas en taller con selector de categoría y autoasignación en caliente. Se crearon los módulos oficiales src/types/mantencion.ts y src/services/mantencionService.ts con compatibilidad hacia atrás completa.",
+  "scope": {
+    "planned": [
+      "Crear src/types/mantencion.ts con AgregarFallaDTO, TerminarAvanceDTO, FinalizarSolicitudDTO y SolicitudMecanicoDTO.",
+      "Crear src/services/mantencionService.ts con agregarFallaSolicitud, terminarAvance y finalizarSolicitud.",
+      "Desacoplar y re-exportar tipos en src/conductores/mantencion/mantencionService.ts manteniendo retrocompatibilidad.",
+      "Crear componente interactivo ModalAgregarFalla.tsx con categorías técnicas y autoasignación.",
+      "Actualizar ModalTerminarAvance.tsx para reflejar la pausa / entrega de turno de toda la cuadrilla activa.",
+      "Simplificar barra de acciones en DashboardMecanico.tsx a 2 botones de cierre cronometrado (Terminar Avance y Finalizar/Liberar).",
+      "Agregar botón táctil '+ Agregar Avería' en la cabecera de fallas de DashboardMecanico.tsx.",
+      "Mostrar cuadrilla y minutos cronometrados trabajados por cada mecánico.",
+      "Actualizar trazabilidad y catálogos de contratos API."
+    ],
+    "completed": [
+      "src/types/mantencion.ts creado y estructurado con todos los DTOs oficiales de negocio.",
+      "src/services/mantencionService.ts creado consumiendo apiClient con prefijo /api/v1/mantencion.",
+      "src/conductores/mantencion/mantencionService.ts actualizado con exports y funciones agregadas.",
+      "ModalAgregarFalla.tsx implementado con selección de categorías (Frenos, Eléctrico, Motor, Carrocería, Climatización, Otro), textarea y switch de autoasignar.",
+      "ModalTerminarAvance.tsx actualizado explicando la sincronización de tiempos y cambio a PENDIENTE sin liberar bus.",
+      "DashboardMecanico.tsx simplificado eliminando modales de desasignación y liberación individual de la botonera principal.",
+      "Botón '+ Agregar Avería' integrado en la cabecera de la lista de detalles.",
+      "Visualización de cuadrilla técnica con telemetría de minutos cronometrados (duracion_minutos).",
+      "Trazabilidad JSON, contratos y estado del proyecto actualizados."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/types/mantencion.ts",
+      "action": "created",
+      "summary": "Definiciones oficiales de DTOs TypeScript para el módulo de mantención de taller."
+    },
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "created",
+      "summary": "Servicio API centralizado de mantención con agregarFallaSolicitud, terminarAvance y finalizarSolicitud."
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Re-exportación de tipos desde src/types/mantencion y adición de agregarFallaSolicitud y alias finalizarSolicitud."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalAgregarFalla.tsx",
+      "action": "created",
+      "summary": "Modal ergonómico para que mecánicos y supervisores reporten averías detectadas durante la reparación en taller."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalTerminarAvance.tsx",
+      "action": "modified",
+      "summary": "Actualización semántica para pausa / entrega de turno de cuadrilla completa con tiempo cronometrado."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Unificación de la botonera de cierre a 2 acciones cronometradas, adición de '+ Agregar Avería' y telemetría de cuadrilla."
+    },
+    {
+      "path": "trazabilidad/01_ESTADO_ACTUAL_PROYECTO.md",
+      "action": "modified",
+      "summary": "Actualización de módulos completados y endpoints de mantención en el documento vivo de estado."
+    },
+    {
+      "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md",
+      "action": "modified",
+      "summary": "Incorporación del contrato de POST /api/v1/mantencion/{id}/detalles y firmas actualizadas."
+    },
+    {
+      "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md",
+      "action": "modified",
+      "summary": "Documentación del endpoint 6.22 de avería en caliente en el catálogo maestro de endpoints."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-009",
+      "title": "Unificación a 2 Formas Únicas de Cierre Cronometrado en Taller",
+      "rationale": "Tener botones simultáneos de 'Desasignarme', 'Terminar Avance', 'Pasar Turno' y 'Finalizar' generaba confusión en mecánicos y dispersión de tiempos en la base de datos. Concentrar las acciones en dos únicos flujos ('Terminar Avance' para entrega/pausa de cuadrilla manteniendo bus en taller, y 'Finalizar y Liberar Bus' para cierre definitivo) estandariza la operación del taller y garantiza el cronometraje sincronizado de todos los mecánicos.",
+      "consequences": "La interfaz en 'Mis Trabajos' es mucho más limpia y directa (botones de 50% de ancho en grid de 2 columnas, fáciles de pulsar en tablets y móviles de taller), reduciendo errores operativos."
+    },
+    {
+      "id": "DEC-010",
+      "title": "Desacoplamiento de Averías en Caliente de la Bitácora de Comentarios",
+      "rationale": "Anteriormente, cuando un mecánico descubría una falla durante la reparación (ej: retén de caja roto), debía registrarla como simple texto en la bitácora, perdiendo trazabilidad de checks de resolución, control de repuestos y asignaciones. El nuevo endpoint POST /detalles crea un detalle técnico formal dentro de la solicitud.",
+      "consequences": "El modal ModalAgregarFalla.tsx permite categorizar la avería y autoasignarla de inmediato, apareciendo en la lista de ítems técnicos con su propio checkbox de resolución."
+    },
+    {
+      "id": "DEC-011",
+      "title": "Arquitectura Híbrida de Tipos y Servicios sin Rupturas",
+      "rationale": "Para cumplir con la convención de src/types/mantencion.ts y src/services/mantencionService.ts sin romper componentes existentes que importaban desde src/conductores/mantencion/mantencionService.ts, se centralizaron los tipos y servicios re-exportándolos limpiamente entre ambos módulos.",
+      "consequences": "Total interoperabilidad y retrocompatibilidad con cero errores de TypeScript en toda la aplicación."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de tipos TypeScript sin errores en todo el proyecto."
+    },
+    {
+      "command": "npm run build (tsc -b && vite build)",
+      "result": "passed",
+      "evidence": "Generación exitosa del bundle de producción de Vite sin errores de dependencias ni tipos no utilizados."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación en ambiente de staging o pruebas operativas en terreno con conductores y mecánicos.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "commit": "9db77df",
+    "dirty": false
+  },
+  "notes": [
+    "Endpoints validados contra Backend FastAPI local en http://127.0.0.1:8000.",
+    "Botones cumplen con directrices de accesibilidad táctil mínimas de 44x44px."
+  ]
+}

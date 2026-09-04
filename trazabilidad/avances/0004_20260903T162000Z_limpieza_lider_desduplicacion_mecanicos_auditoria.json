@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 4,
+  "id": "AV-0004",
+  "timestamp": "2026-09-03T16:20:00Z",
+  "phase": "mecanicos_y_supervision_colaborativa",
+  "milestone": {
+    "id": "FRONT-4",
+    "name": "Depuración de Rol Líder y Desduplicación Visual de Mecánicos en Auditoría",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Eliminación completa de la etiqueta y concepto obsoleto de 'Líder' en la interfaz de supervisión y mecánicos. Desduplicación y separación estructurada de los mecánicos activos en turno frente a los relevos de turnos anteriores en la tarjeta de auditoría.",
+  "scope": {
+    "planned": [
+      "Separar mecánicos activos de relevos anteriores en AuditoriaTab.tsx.",
+      "Desduplicar por ID de mecánico para evitar nombres repetidos por turnos pasados.",
+      "Eliminar badge morado [Líder] en AuditoriaTab.tsx.",
+      "Actualizar textos y botón 'Tomar Bus Completo (Líder)' a 'Tomar Todas las Averías' en DashboardMecanico.tsx.",
+      "Verificar compilación limpia en TypeScript y Vite."
+    ],
+    "completed": [
+      "Separación limpia en AuditoriaTab.tsx: bloque 'Mecánicos en Turno Activo' con indicador verde y bloque secundario 'Relevos de Turnos Anteriores'.",
+      "Desduplicación mediante Maps en memoria para garantizar que cada mecánico aparezca a lo sumo una vez en la tarjeta.",
+      "Eliminación de la insignia obsoleta 'Líder'.",
+      "Actualización de DashboardMecanico.tsx para unificar 'Tomar Todas las Averías' al flujo colaborativo de ModalAutoasignarFallas.",
+      "Validación con 'npm run build' (376ms sin errores)."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Separación de activos y relevos, desduplicación de mecánicos y eliminación del badge Líder."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Actualización de textos de cabecera y botón para tomar todas las averías mediante el modal colaborativo."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-004",
+      "title": "Desduplicación visual y separación de mecánicos en auditoría",
+      "rationale": "La tabla relacional taller_solicitud_mecanicos almacena un historial cronológico de altas y bajas por turno. Volcar la lista plana generaba confusión en supervisión al mostrar la misma persona repetida con estados contradictorios (activo y entregó al mismo tiempo). Separar activos de relevos y filtrar a quienes ya están en turno activo ofrece claridad inmediata del estado del taller.",
+      "consequences": "La supervisora y administradores identifican de inmediato quién está trabajando en el bus ahora mismo y quiénes intervinieron en turnos previos sin ver registros redundantes."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 376ms sin errores ni advertencias."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación visual en el navegador con los nuevos componentes cargados.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "dirty": true
+  },
+  "notes": [
+    "La tarjeta de auditoría ahora muestra claramente: 'Mecánicos en Turno Activo (N)' con pulso verde y 'Relevos de Turnos Anteriores (M)' en un bloque secundario limpio."
+  ]
+}

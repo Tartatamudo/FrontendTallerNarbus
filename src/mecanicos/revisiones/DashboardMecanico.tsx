@@ -5,69 +5,106 @@ import {
   Clock,
   RefreshCw,
   Play,
-  LogOut,
-  Share2,
   MessageSquare,
   AlertCircle,
   FileCheck,
+  ClipboardCheck,
   Bus,
-  UserPlus,
-  Users
+  PackageX,
+  PackageCheck,
+  CheckSquare,
+  Square,
+  AlertTriangle,
+  UserCheck,
+  Plus,
+  PauseCircle
 } from 'lucide-react';
 import {
   obtenerPendientes,
   obtenerMisTrabajos,
+  obtenerSolicitud,
   tomarTrabajo,
-  desasignarme,
-  liberarTurno,
+  autoasignarFallas,
+  terminarAvance,
   marcarCheckDetalle,
+  reportarRepuestoFalla,
   agregarComentario,
-  finalizarOrden,
-  agregarColaborador,
-  type SolicitudDTO
-} from '../../conductores/mantencion/mantencionService';
-import MecanicoSelector from '../../components/MecanicoSelector/MecanicoSelector';
+  finalizarSolicitud,
+  obtenerPautaResumen,
+  agregarFallaSolicitud,
+  type SolicitudDTO,
+  type PautaEstadoResumenDTO,
+  type AgregarFallaDTO
+} from '../../services/mantencionService';
 import { getStoredUser, type MecanicoItem } from '../../usuarios/auth/authService';
+import { getApiErrorMessage } from '../../utils/apiErrors';
+import PautaPreventivaModal from './PautaPreventivaModal';
+import ModalTomarTrabajo from './modales/ModalTomarTrabajo';
+import ModalAutoasignarFallas from './modales/ModalAutoasignarFallas';
+import ModalTerminarAvance from './modales/ModalTerminarAvance';
+import ModalNuevaObservacion from './modales/ModalNuevaObservacion';
+import ModalReportarRepuesto from './modales/ModalReportarRepuesto';
+import ModalFinalizarOrden from './modales/ModalFinalizarOrden';
+import ModalAgregarFalla from './modales/ModalAgregarFalla';
+import { formatearEstadoSolicitud } from '../../utils/formatters';
 
 interface DashboardMecanicoProps {
   onVolver?: () => void;
 }
-
-const formatEstado = (estado: string) => {
-  const mapa: Record<string, string> = {
-    REPORTADO: 'REPORTADO',
-    PENDIENTE_REASIGNACION: 'REASIGNACIÓN',
-    EN_REPARACION: 'EN REPARACIÓN',
-    FINALIZADO: 'FINALIZADO',
-  };
-  return mapa[estado] ?? estado;
-};
 
 export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) {
   const [tabActiva, setTabActiva] = useState<'pendientes' | 'misTrabajos'>('pendientes');
   const [pendientes, setPendientes] = useState<SolicitudDTO[]>([]);
   const [misTrabajos, setMisTrabajos] = useState<SolicitudDTO[]>([]);
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudDTO | null>(null);
-  
+
   const [loading, setLoading] = useState(false);
   const [accionLoading, setAccionLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Form states for modals/dialogs
-
+  // Estados para modales
   const [colaboradoresMecanicos, setColaboradoresMecanicos] = useState<MecanicoItem[]>([]);
-  const [colaboradorAgregar, setColaboradorAgregar] = useState<MecanicoItem[]>([]);
-  const [comentarioLiberar, setComentarioLiberar] = useState('');
   const [nuevoComentarioText, setNuevoComentarioText] = useState('');
   const [comentarioTipo, setComentarioTipo] = useState('TECNICO');
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
+  // Modal Agregar Falla en Caliente
+  const [modalAgregarFallaAbierto, setModalAgregarFallaAbierto] = useState(false);
 
-  const [modalAbierto, setModalAbierto] = useState<'tomar' | 'liberar' | 'finalizar' | 'comentario' | 'agregarColaborador' | null>(null);
+  // Selección atómica de fallas en pendientes y modal de autoasignación
+  const [selectedDetallesIds, setSelectedDetallesIds] = useState<number[]>([]);
+  const [modalAutoasignarAbierto, setModalAutoasignarAbierto] = useState(false);
+
+  // Modal Pauta Preventiva de 19 ítems
+  const [pautaModalData, setPautaModalData] = useState<{ id: number; nBus: string } | null>(null);
+  const [pautaResumenActual, setPautaResumenActual] = useState<PautaEstadoResumenDTO | null>(null);
+
+  // Modal Falta de Repuesto
+  const [modalRepuestoData, setModalRepuestoData] = useState<{
+    detalleId: number;
+    descripcion: string;
+    actualFalta: boolean;
+  } | null>(null);
+  const [comentarioRepuesto, setComentarioRepuesto] = useState('');
+
+  // Modal Terminar Avance / Pausa grupal de cuadrilla
+  const [modalTerminarAvanceAbierto, setModalTerminarAvanceAbierto] = useState(false);
+  const [comentarioTerminarAvance, setComentarioTerminarAvance] = useState('');
+
+  // Modal Finalizar Solicitud con justificaciones condicionales
+  const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState(false);
+  const [comentarioCierre, setComentarioCierre] = useState('');
+  const [motivoIncompletoChecklist, setMotivoIncompletoChecklist] = useState('');
+  const [motivoCierreParcial, setMotivoCierreParcial] = useState('');
+  const [liberarBusTaller, setLiberarBusTaller] = useState(true);
+
+  const [modalAbierto, setModalAbierto] = useState<'tomar' | 'comentario' | null>(null);
 
   useEffect(() => {
-    getStoredUser().then(u => { if (u) setCurrentUserId(u.id); });
+    getStoredUser().then((u) => {
+      if (u) setCurrentUserId(u.id);
+    });
   }, []);
 
   const cargarDatos = async () => {
@@ -81,10 +118,9 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
         const data = await obtenerMisTrabajos();
         setMisTrabajos(data);
       }
-    } catch (err: any) {
-      console.error("Error cargando dashboard mecánico:", err);
-      const detail = err.response?.data?.detail;
-      setErrorMsg(detail || 'No se pudieron cargar los datos desde el taller.');
+    } catch (err) {
+      console.error('Error cargando dashboard mecánico:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudieron cargar los datos del taller.'));
     } finally {
       setLoading(false);
     }
@@ -94,69 +130,151 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
     cargarDatos();
   }, [tabActiva]);
 
-  // 2.7 Tomar Trabajo como Líder
+  // Al seleccionar una orden, consultar pauta preventiva para badges
+  useEffect(() => {
+    if (solicitudSeleccionada) {
+      obtenerPautaResumen(solicitudSeleccionada.id)
+        .then((res) => setPautaResumenActual(res))
+        .catch(() => setPautaResumenActual(null));
+      setSelectedDetallesIds([]);
+    } else {
+      setPautaResumenActual(null);
+      setSelectedDetallesIds([]);
+    }
+  }, [solicitudSeleccionada?.id]);
+
+  // Refrescar orden seleccionada
+  const refrescarOrdenActual = async (solicitudId: number) => {
+    try {
+      const updated = await obtenerSolicitud(solicitudId);
+      setSolicitudSeleccionada(updated);
+      setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      const pauta = await obtenerPautaResumen(solicitudId).catch(() => null);
+      setPautaResumenActual(pauta);
+    } catch (e) {
+      console.warn('Error refrescando solicitud:', e);
+    }
+  };
+
+  // 6.13 Tomar Trabajo como Líder (Bus completo)
   const handleTomarTrabajo = async () => {
     if (!solicitudSeleccionada) return;
     setAccionLoading(true);
     setErrorMsg(null);
     try {
-      const colabIds = colaboradoresMecanicos.map(m => m.id);
-      
+      const colabIds = colaboradoresMecanicos.map((m) => m.id);
       const updated = await tomarTrabajo(solicitudSeleccionada.id, colabIds);
       setSuccessMsg(`¡Has tomado la orden #${updated.id} para el bus ${updated.n_bus}!`);
       setModalAbierto(null);
       setSolicitudSeleccionada(null);
       setColaboradoresMecanicos([]);
       setTabActiva('misTrabajos');
-    } catch (err: any) {
-      console.error("Error al tomar trabajo:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo tomar la orden de trabajo.');
+    } catch (err) {
+      console.error('Error al tomar trabajo:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo tomar la orden de trabajo.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.8 Desasignarme ("Salir del equipo")
-  const handleDesasignarme = async (id: number) => {
-    const comentario = window.prompt("Ingresa una razón para desasignarte (ej: Fin de turno - Opcional):") || '';
+  // 6.10 Autoasignación Atómica de Fallas Específicas (con compañeros opcionales)
+  const handleConfirmarAutoasignar = async (colaboradoresIds: number[], comentario?: string) => {
+    if (!solicitudSeleccionada) return;
+    if (selectedDetallesIds.length === 0) {
+      setErrorMsg('Debe seleccionar al menos 1 avería para autoasignarse.');
+      return;
+    }
 
     setAccionLoading(true);
     setErrorMsg(null);
     try {
-      await desasignarme(id, comentario);
-      setSuccessMsg(`Te has desasignado de la orden #${id}.`);
+      const updated = await autoasignarFallas(
+        solicitudSeleccionada.id,
+        selectedDetallesIds,
+        colaboradoresIds,
+        comentario
+      );
+      const colabMsg = colaboradoresIds.length > 0 ? ` con ${colaboradoresIds.length} compañero(s)` : '';
+      setSuccessMsg(`¡Has tomado ${selectedDetallesIds.length} avería(s) del bus ${updated.n_bus}${colabMsg}!`);
+      setSelectedDetallesIds([]);
       setSolicitudSeleccionada(null);
-      cargarDatos();
-    } catch (err: any) {
-      console.error("Error al desasignarme:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo completar la desasignación.');
+      setModalAutoasignarAbierto(false);
+      setTabActiva('misTrabajos');
+    } catch (err) {
+      console.error('Error en autoasignación atómica:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudieron autoasignar las averías seleccionadas.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.9 Liberar Turno
-  const handleLiberarTurno = async () => {
+  // Abrir modal de autoasignación para una falla puntual (aun que sea una sola)
+  const handleAbrirAutoasignarPuntual = (detalleId: number) => {
+    setSelectedDetallesIds([detalleId]);
+    setModalAutoasignarAbierto(true);
+  };
+
+  // Tomar todas las averías del bus para asignación conjunta
+  const handleTomarTodasAverias = () => {
+    if (!solicitudSeleccionada || !solicitudSeleccionada.detalles) return;
+    const allIds = solicitudSeleccionada.detalles.map((d) => d.id);
+    setSelectedDetallesIds(allIds);
+    setModalAutoasignarAbierto(true);
+  };
+
+  // 6.12b Agregar Avería en Caliente a Solicitud Existente
+  const handleConfirmarAgregarFalla = async (payload: AgregarFallaDTO) => {
     if (!solicitudSeleccionada) return;
     setAccionLoading(true);
     setErrorMsg(null);
     try {
-      await liberarTurno(solicitudSeleccionada.id, comentarioLiberar.trim());
-      setSuccessMsg(`Turno entregado para la orden #${solicitudSeleccionada.id}. Pasa a estado Pendiente de Reasignación.`);
-      setModalAbierto(null);
-      setSolicitudSeleccionada(null);
-      setComentarioLiberar('');
-      cargarDatos();
-    } catch (err: any) {
-      console.error("Error al liberar turno:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo entregar el turno.');
+      const updated = await agregarFallaSolicitud(solicitudSeleccionada.id, payload);
+      setSolicitudSeleccionada(updated);
+      setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      setPendientes((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      setSuccessMsg(`¡Avería técnica agregada exitosamente a la orden #${updated.id}!`);
+      setModalAgregarFallaAbierto(false);
+    } catch (err) {
+      console.error('Error al agregar avería en taller:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo agregar la avería en la solicitud.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.10 Check / Uncheck Falla
+  // 6.12 Término de Avance / Pausa de Cuadrilla (Cronometrado Grupal)
+  const handleTerminarAvance = async () => {
+    if (!solicitudSeleccionada) return;
+    setAccionLoading(true);
+    setErrorMsg(null);
+    try {
+      const updated = await terminarAvance(solicitudSeleccionada.id, {
+        comentario: comentarioTerminarAvance.trim() || null,
+      });
+      setSuccessMsg(
+        `¡Avance registrado en la orden #${updated.id}! La orden pasa a PENDIENTE y los tiempos cronometrados de la cuadrilla fueron calculados.`
+      );
+      setModalTerminarAvanceAbierto(false);
+      setComentarioTerminarAvance('');
+      setSolicitudSeleccionada(null);
+      cargarDatos();
+    } catch (err) {
+      console.error('Error al terminar avance:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo registrar el término de avance.'));
+    } finally {
+      setAccionLoading(false);
+    }
+  };
+
+  // 6.16 Check / Uncheck Falla
   const handleToggleCheck = async (solicitudId: number, detalleId: number, actualResuelto: boolean) => {
+    // Validación preventiva: si falta repuesto, no se puede marcar como resuelta
+    const det = solicitudSeleccionada?.detalles?.find((d) => d.id === detalleId);
+    if (!actualResuelto && det?.falta_repuesto) {
+      setErrorMsg('No puedes marcar esta avería como resuelta mientras esté bloqueada por falta de repuestos.');
+      return;
+    }
+
     setAccionLoading(true);
     setErrorMsg(null);
     try {
@@ -164,77 +282,165 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
       if (solicitudSeleccionada && solicitudSeleccionada.id === solicitudId) {
         setSolicitudSeleccionada(updated);
       }
-      setMisTrabajos(prev => prev.map(s => s.id === updated.id ? updated : s));
-    } catch (err: any) {
-      console.error("Error al marcar check:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo actualizar el estado de la falla.');
+      setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+    } catch (err) {
+      console.error('Error al marcar check:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo actualizar el estado de la falla.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.11 Agregar Comentario / Repuesto
+  // 6.17 Falta de Repuesto
+  const handleGuardarRepuesto = async () => {
+    if (!solicitudSeleccionada || !modalRepuestoData) return;
+    setAccionLoading(true);
+    setErrorMsg(null);
+    try {
+      const reportandoFalta = !modalRepuestoData.actualFalta;
+      const detActual = solicitudSeleccionada.detalles?.find((d) => d.id === modalRepuestoData.detalleId);
+
+      const updated = await reportarRepuestoFalla(
+        solicitudSeleccionada.id,
+        modalRepuestoData.detalleId,
+        reportandoFalta,
+        comentarioRepuesto.trim() || undefined
+      );
+
+      // Si se reportó falta de repuesto y la falla figuraba como resuelta, desmarcarla preventivamente
+      if (reportandoFalta && detActual?.resuelto) {
+        try {
+          const desmarcada = await marcarCheckDetalle(solicitudSeleccionada.id, modalRepuestoData.detalleId, false);
+          setSolicitudSeleccionada(desmarcada);
+          setMisTrabajos((prev) => prev.map((s) => (s.id === desmarcada.id ? desmarcada : s)));
+        } catch {
+          setSolicitudSeleccionada(updated);
+          setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        }
+      } else {
+        setSolicitudSeleccionada(updated);
+        setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      }
+
+      setSuccessMsg(
+        reportandoFalta
+          ? 'Falla bloqueada por falta de repuesto. El check de resolución ha sido inhabilitado.'
+          : 'Repuesto reportado como disponible. Falla habilitada para resolución.'
+      );
+      setModalRepuestoData(null);
+      setComentarioRepuesto('');
+    } catch (err) {
+      console.error('Error al reportar repuesto:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo actualizar el estado del repuesto.'));
+    } finally {
+      setAccionLoading(false);
+    }
+  };
+
+  // 6.19 Agregar Comentario a Bitácora
   const handleAgregarComentario = async () => {
     if (!solicitudSeleccionada) return;
+    if (!nuevoComentarioText.trim()) {
+      setErrorMsg('Debe escribir un comentario.');
+      return;
+    }
     setAccionLoading(true);
     setErrorMsg(null);
     try {
-      const updated = await agregarComentario(solicitudSeleccionada.id, nuevoComentarioText.trim(), comentarioTipo);
+      const updated = await agregarComentario(
+        solicitudSeleccionada.id,
+        nuevoComentarioText.trim(),
+        comentarioTipo
+      );
       setSolicitudSeleccionada(updated);
-      setMisTrabajos(prev => prev.map(s => s.id === updated.id ? updated : s));
+      setMisTrabajos((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       setModalAbierto(null);
       setNuevoComentarioText('');
-    } catch (err: any) {
-      console.error("Error al agregar comentario:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo registrar el comentario.');
+    } catch (err) {
+      console.error('Error al agregar comentario:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo registrar el comentario.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.12 Finalizar Orden
-  const handleFinalizarOrden = async () => {
+  // 6.20 Finalizar Orden Inteligente
+  const handleAbrirFinalizar = async () => {
     if (!solicitudSeleccionada) return;
+    setComentarioCierre('');
+    setMotivoIncompletoChecklist('');
+    setMotivoCierreParcial('');
+    setLiberarBusTaller(true);
+
+    // Obtener estado fresco de la pauta preventiva
+    try {
+      const pauta = await obtenerPautaResumen(solicitudSeleccionada.id);
+      setPautaResumenActual(pauta);
+    } catch {
+      // Ignorar si no existe pauta previa
+    }
+
+    setModalFinalizarAbierto(true);
+  };
+
+  const handleConfirmarFinalizar = async () => {
+    if (!solicitudSeleccionada) return;
+
+    // Validar reglas de negocio condicionales en el cliente antes de enviar
+    const respondidos = pautaResumenActual?.respondidos ?? 0;
+    const pautaIncompleta = respondidos < 19;
+    if (pautaIncompleta && !motivoIncompletoChecklist.trim()) {
+      setErrorMsg('⚠️ OBLIGATORIO: Debe ingresar la justificación por la pauta preventiva incompleta (< 19 ítems).');
+      return;
+    }
+
+    const fallasSinResolver = solicitudSeleccionada.detalles?.some((d) => !d.resuelto) ?? false;
+    if (fallasSinResolver && !motivoCierreParcial.trim()) {
+      setErrorMsg('⚠️ OBLIGATORIO: Hay fallas sin resolver. Debe ingresar la justificación de cierre parcial.');
+      return;
+    }
+
     setAccionLoading(true);
     setErrorMsg(null);
     try {
-      const updated = await finalizarOrden(solicitudSeleccionada.id, '');
-      setSuccessMsg(`¡Orden #${updated.id} finalizada exitosamente! Bus liberado para ruta.`);
-      setModalAbierto(null);
+      const updated = await finalizarSolicitud(solicitudSeleccionada.id, {
+        comentario_cierre: comentarioCierre.trim() || undefined,
+        motivo_incompleto_checklist: pautaIncompleta ? motivoIncompletoChecklist.trim() : null,
+        motivo_cierre_parcial: fallasSinResolver ? motivoCierreParcial.trim() : null,
+        liberar_bus_taller: liberarBusTaller,
+      });
+
+      setSuccessMsg(
+        `¡Orden #${updated.id} finalizada exitosamente! ${
+          liberarBusTaller ? 'Bus liberado del taller.' : 'Bus retenido en taller por observación.'
+        }`
+      );
+      setModalFinalizarAbierto(false);
       setSolicitudSeleccionada(null);
       cargarDatos();
-    } catch (err: any) {
-      console.error("Error al finalizar orden:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo finalizar la orden.');
+    } catch (err) {
+      console.error('Error al finalizar orden:', err);
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo finalizar la orden de trabajo.'));
     } finally {
       setAccionLoading(false);
     }
   };
 
-  // 2.13 Agregar Colaborador en Caliente
-  const handleAgregarColaborador = async () => {
-    if (!solicitudSeleccionada || colaboradorAgregar.length === 0) return;
-    setAccionLoading(true);
-    setErrorMsg(null);
-    try {
-      const colab = colaboradorAgregar[0];
-      const updated = await agregarColaborador(solicitudSeleccionada.id, colab.id, colab.nombre_completo);
-      setSolicitudSeleccionada(updated);
-      setMisTrabajos(prev => prev.map(s => s.id === updated.id ? updated : s));
-      setSuccessMsg(`Mecánico ${colab.nombre_completo} agregado exitosamente al equipo.`);
-      setModalAbierto(null);
-      setColaboradorAgregar([]);
-    } catch (err: any) {
-      console.error("Error al agregar colaborador:", err);
-      setErrorMsg(err.response?.data?.detail || 'No se pudo agregar al colaborador.');
-    } finally {
-      setAccionLoading(false);
-    }
+  const toggleSelectDetalle = (id: number) => {
+    setSelectedDetallesIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
   };
 
-  const esLiderActual = solicitudSeleccionada?.mecanicos?.some(
-    m => m.mecanico_id === currentUserId && m.is_activo && m.es_lider_responsable
-  ) ?? false;
+  const seleccionarTodosDetalles = () => {
+    if (!solicitudSeleccionada?.detalles) return;
+    const todosIds = solicitudSeleccionada.detalles.map((d) => d.id);
+    if (selectedDetallesIds.length === todosIds.length) {
+      setSelectedDetallesIds([]);
+    } else {
+      setSelectedDetallesIds(todosIds);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white rounded-3xl shadow-sm border border-slate-200 font-sans">
@@ -248,7 +454,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
               TALLER CENTRAL NARBUS
             </span>
-            <h1 className="text-2xl font-black text-slate-900">Panel de Control Mecánico</h1>
+            <h1 className="text-2xl font-black text-slate-900">Consola Técnica Mecánico</h1>
           </div>
         </div>
 
@@ -267,71 +473,80 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
       {/* Tabs de Navegación del Mecánico */}
       <div className="flex gap-3 mb-6 bg-slate-100 p-1.5 rounded-2xl">
         <button
-          onClick={() => { setTabActiva('pendientes'); setSolicitudSeleccionada(null); }}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 ${
+          onClick={() => {
+            setTabActiva('pendientes');
+            setSolicitudSeleccionada(null);
+          }}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${
             tabActiva === 'pendientes'
               ? 'bg-white text-indigo-700 shadow-md'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <Clock size={16} />
-          <span>Pestaña 1: Solicitudes Pendientes ({pendientes.length})</span>
+          <span>Bandeja 1: Solicitudes Pendientes ({pendientes.length})</span>
         </button>
 
         <button
-          onClick={() => { setTabActiva('misTrabajos'); setSolicitudSeleccionada(null); }}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 ${
+          onClick={() => {
+            setTabActiva('misTrabajos');
+            setSolicitudSeleccionada(null);
+          }}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${
             tabActiva === 'misTrabajos'
               ? 'bg-white text-indigo-700 shadow-md'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <Wrench size={16} />
-          <span>Pestaña 2: Mis Trabajos ({misTrabajos.length})</span>
+          <span>Bandeja 2: Mis Trabajos ({misTrabajos.length})</span>
         </button>
       </div>
 
-      {/* Alertas */}
+      {/* Alertas y Notificaciones */}
       {errorMsg && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-bold flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle size={18} className="shrink-0" />
+            <AlertCircle size={18} className="shrink-0 text-red-600" />
             <span>{errorMsg}</span>
           </div>
-          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-800">✕</button>
+          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-800 cursor-pointer">
+            ✕
+          </button>
         </div>
       )}
 
       {successMsg && (
         <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="shrink-0" />
+            <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-800">✕</button>
+          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-800 cursor-pointer">
+            ✕
+          </button>
         </div>
       )}
 
       {/* Contenido Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Columna Izquierda: Lista de Tarjetas (Pendientes o Mis Trabajos) */}
+        {/* Columna Izquierda: Lista de Órdenes */}
         <div className="lg:col-span-1 space-y-3">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-black text-sm text-slate-700 uppercase tracking-wider">
-              {tabActiva === 'pendientes' ? 'Órdenes por Asignar' : 'Mis Órdenes en Reparación'}
+              {tabActiva === 'pendientes' ? 'Buses en Espera' : 'Mis Órdenes Asignadas'}
             </h2>
             <button
               onClick={cargarDatos}
               disabled={loading}
-              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition"
+              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition cursor-pointer"
               title="Refrescar"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
 
-          {loading && (pendientes.length === 0 && misTrabajos.length === 0) ? (
+          {loading && pendientes.length === 0 && misTrabajos.length === 0 ? (
             <div className="py-12 text-center text-slate-400 font-bold text-xs flex flex-col items-center gap-2">
               <RefreshCw size={24} className="animate-spin text-indigo-600" />
               <span>Cargando datos del taller...</span>
@@ -340,11 +555,12 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
             <div className="p-6 text-center bg-slate-50 border border-dashed border-slate-300 rounded-2xl text-xs font-bold text-slate-500">
               {tabActiva === 'pendientes'
                 ? 'No hay solicitudes pendientes en este momento.'
-                : 'No tienes trabajos asignados activamente.'}
+                : 'No tienes órdenes de trabajo asignadas activamente.'}
             </div>
           ) : (
             (tabActiva === 'pendientes' ? pendientes : misTrabajos).map((sol) => {
               const isSelected = solicitudSeleccionada?.id === sol.id;
+              const hasRepuestoBloqueado = sol.detalles?.some((d) => d.falta_repuesto);
               return (
                 <div
                   key={sol.id}
@@ -358,10 +574,10 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Bus size={18} className="text-indigo-600" />
-                      <span className="font-black text-slate-900 text-base">{sol.n_bus}</span>
+                      <span className="font-black text-slate-900 text-base">Bus {sol.n_bus}</span>
                     </div>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
-                      {formatEstado(sol.estado)}
+                      {formatearEstadoSolicitud(sol.estado)}
                     </span>
                   </div>
 
@@ -371,96 +587,288 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
                     <span>Folio #{sol.id}</span>
-                    <span>{sol.detalles?.length || 0} detalle(s)</span>
+                    <span>{sol.detalles?.length || 0} avería(s)</span>
                   </div>
+
+                  {hasRepuestoBloqueado && (
+                    <div className="mt-2 text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <PackageX size={12} />
+                      <span>Falta Repuesto</span>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
         </div>
 
-        {/* Columna Derecha: Detalle de Solicitud Seleccionada */}
+        {/* Columna Derecha: Detalle y Operatoria de la Orden */}
         <div className="lg:col-span-2">
           {solicitudSeleccionada ? (
             <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 space-y-6">
-              
               {/* Header Detalle */}
-              <div className="flex items-start justify-between border-b border-slate-200 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
-                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2.5 py-0.5 rounded-full">
-                    Folio #{solicitudSeleccionada.id}
-                  </span>
-                  <h3 className="text-xl font-black text-slate-900 mt-1">
-                    Bus: {solicitudSeleccionada.n_bus}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2.5 py-0.5 rounded-full">
+                      Folio #{solicitudSeleccionada.id}
+                    </span>
+                    <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-black rounded-full">
+                      {formatearEstadoSolicitud(solicitudSeleccionada.estado)}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 mt-1">
+                    Bus N° {solicitudSeleccionada.n_bus}
                   </h3>
                   <p className="text-xs font-semibold text-slate-600 mt-0.5">
                     {solicitudSeleccionada.descripcion_general}
                   </p>
+
+                  {/* Cuadrilla Técnica y Tiempos Cronometrados */}
+                  {solicitudSeleccionada.mecanicos && solicitudSeleccionada.mecanicos.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">
+                        Cuadrilla:
+                      </span>
+                      {solicitudSeleccionada.mecanicos.map((m) => (
+                        <span
+                          key={m.id}
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1.5 ${
+                            m.is_activo
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              m.is_activo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                            }`}
+                          />
+                          <span>{m.mecanico_nombre || `Mecánico #${m.mecanico_id}`}</span>
+                          {m.duracion_minutos != null && (
+                            <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-1 rounded">
+                              {m.duracion_minutos} min
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <span className="px-3 py-1 bg-amber-100 text-amber-800 border border-amber-300 text-xs font-black rounded-xl">
-                  {formatEstado(solicitudSeleccionada.estado)}
-                </span>
+
+                {/* Botón Acceso Rápido a Pauta Preventiva */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPautaModalData({
+                      id: solicitudSeleccionada.id,
+                      nBus: solicitudSeleccionada.n_bus,
+                    })
+                  }
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer self-start"
+                >
+                  <ClipboardCheck size={16} />
+                  <span>
+                    Pauta Preventiva{' '}
+                    {pautaResumenActual ? `(${pautaResumenActual.respondidos}/19)` : ''}
+                  </span>
+                </button>
               </div>
 
-              {/* Botón Tomar Trabajo si está Pendiente */}
+              {/* Modo Pendientes: Asignación Atómica o Bus Completo */}
               {tabActiva === 'pendientes' && (
-                <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-between gap-3">
-                  <div>
-                    <h4 className="font-black text-sm text-indigo-900">Tomar Solicitud de Mantención</h4>
-                    <p className="text-xs font-medium text-indigo-700">Asumir rol de mecánico líder e invitar colaboradores</p>
+                <div className="p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-black text-sm text-indigo-900">Tomar Orden de Trabajo</h4>
+                      <p className="text-xs text-indigo-700">
+                        Selecciona averías específicas para autoasignarte con tu equipo o toma todas las fallas del bus.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={seleccionarTodosDetalles}
+                      className="text-xs font-black text-indigo-700 hover:text-indigo-900 flex items-center gap-1 cursor-pointer"
+                    >
+                      {selectedDetallesIds.length === (solicitudSeleccionada.detalles?.length || 0) ? (
+                        <>
+                          <CheckSquare size={14} />
+                          <span>Deseleccionar</span>
+                        </>
+                      ) : (
+                        <>
+                          <Square size={14} />
+                          <span>Marcar todas</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setModalAbierto('tomar')}
-                    className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer shrink-0"
-                  >
-                    <Play size={16} />
-                    <span>Tomar Trabajo</span>
-                  </button>
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setModalAutoasignarAbierto(true)}
+                      disabled={accionLoading || selectedDetallesIds.length === 0}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                    >
+                      <UserCheck size={16} />
+                      <span>Autoasignar ({selectedDetallesIds.length}) Averías</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleTomarTodasAverias}
+                      disabled={accionLoading || (solicitudSeleccionada.detalles?.length || 0) === 0}
+                      className="px-4 py-2 bg-white hover:bg-slate-100 text-indigo-800 border border-indigo-300 font-black text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+                    >
+                      <Play size={15} />
+                      <span>Tomar Todas las Averías ({solicitudSeleccionada.detalles?.length || 0})</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
-              {/* Checklist de Detalles de Fallas (Pestaña 2) */}
+              {/* Desglose de Fallas y Operatoria */}
               <div>
-                <h4 className="font-black text-xs text-slate-500 uppercase tracking-wider mb-3">
-                  Checklist de Fallas & Repuestos ({solicitudSeleccionada.detalles?.length || 0}):
-                </h4>
-                <div className="space-y-2">
-                  {solicitudSeleccionada.detalles && solicitudSeleccionada.detalles.length > 0 ? (
-                    solicitudSeleccionada.detalles.map((det) => (
-                      <div
-                        key={det.id}
-                        className={`p-3 rounded-2xl border transition flex items-center justify-between gap-3 ${
-                          det.resuelto
-                            ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                            : 'bg-white border-slate-200 text-slate-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {tabActiva === 'misTrabajos' ? (
-                            <input
-                              type="checkbox"
-                              checked={det.resuelto}
-                              onChange={() => handleToggleCheck(solicitudSeleccionada.id, det.id, det.resuelto)}
-                              disabled={accionLoading}
-                              className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                            />
-                          ) : (
-                            <span className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px] text-slate-600">
-                              •
-                            </span>
-                          )}
-                          <span className={`text-xs font-extrabold ${det.resuelto ? 'line-through opacity-70' : ''}`}>
-                            {det.descripcion_personalizada}
-                          </span>
-                        </div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-black text-xs text-slate-500 uppercase tracking-wider">
+                    Averías y Tareas Técnicas ({solicitudSeleccionada.detalles?.length || 0}):
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setModalAgregarFallaAbierto(true)}
+                    disabled={accionLoading}
+                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer min-h-[38px]"
+                    title="Agregar una avería detectada durante la reparación en taller"
+                  >
+                    <Plus size={15} />
+                    <span>+ Agregar Avería</span>
+                  </button>
+                </div>
 
-                        {det.resuelto && (
-                          <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
-                            Resuelto ✓
-                          </span>
-                        )}
-                      </div>
-                    ))
+                <div className="space-y-2.5">
+                  {solicitudSeleccionada.detalles && solicitudSeleccionada.detalles.length > 0 ? (
+                    solicitudSeleccionada.detalles.map((det) => {
+                      const isAtomicSelected = selectedDetallesIds.includes(det.id);
+                      return (
+                        <div
+                          key={det.id}
+                          className={`p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                            det.resuelto
+                              ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
+                              : det.falta_repuesto
+                              ? 'bg-red-50/50 border-red-300 text-red-900'
+                              : 'bg-white border-slate-200 text-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-start sm:items-center gap-3">
+                            {/* Checkbox para autoasignación en pendientes */}
+                            {tabActiva === 'pendientes' && (
+                              <input
+                                type="checkbox"
+                                checked={isAtomicSelected}
+                                onChange={() => toggleSelectDetalle(det.id)}
+                                className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5 sm:mt-0"
+                              />
+                            )}
+
+                            {/* Checkbox de resolución en mis trabajos */}
+                            {tabActiva === 'misTrabajos' && (
+                              <input
+                                type="checkbox"
+                                checked={det.resuelto}
+                                onChange={() =>
+                                  handleToggleCheck(solicitudSeleccionada.id, det.id, det.resuelto)
+                                }
+                                disabled={accionLoading || Boolean(det.falta_repuesto)}
+                                title={
+                                  det.falta_repuesto
+                                    ? 'Avería bloqueada: no se puede marcar como resuelta mientras falte repuesto en bodega'
+                                    : det.resuelto
+                                    ? 'Marcar como pendiente'
+                                    : 'Marcar como resuelta'
+                                }
+                                className={`w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 mt-0.5 sm:mt-0 transition ${
+                                  det.falta_repuesto
+                                    ? 'opacity-30 cursor-not-allowed bg-slate-200 border-slate-300'
+                                    : 'cursor-pointer'
+                                }`}
+                              />
+                            )}
+
+                            <div>
+                              <p className={`text-xs font-extrabold ${det.resuelto ? 'line-through opacity-70' : ''}`}>
+                                {det.descripcion_personalizada}
+                              </p>
+                              {det.falta_repuesto && (
+                                <p className="text-[11px] font-bold text-red-600 mt-0.5 flex items-center gap-1">
+                                  <AlertTriangle size={12} className="shrink-0" />
+                                  <span>
+                                    Bloqueado: {det.comentario_repuesto || 'Falta repuesto en bodega'} (Check deshabilitado)
+                                  </span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Acciones de la avería */}
+                          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                            {tabActiva === 'pendientes' && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAbrirAutoasignarPuntual(det.id);
+                                }}
+                                disabled={accionLoading}
+                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-black rounded-xl transition flex items-center gap-1 cursor-pointer min-h-[38px]"
+                                title="Autoasignar esta falla puntual (e invitar compañeros si deseas)"
+                              >
+                                <UserCheck size={14} />
+                                <span>Autoasignar</span>
+                              </button>
+                            )}
+
+                            {det.resuelto && (
+                              <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                                Resuelto ✓
+                              </span>
+                            )}
+
+                            {tabActiva === 'misTrabajos' && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setModalRepuestoData({
+                                    detalleId: det.id,
+                                    descripcion: det.descripcion_personalizada,
+                                    actualFalta: det.falta_repuesto ?? false,
+                                  })
+                                }
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border flex items-center gap-1 cursor-pointer transition ${
+                                  det.falta_repuesto
+                                    ? 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200'
+                                    : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+                                }`}
+                                title="Reportar repuesto faltante o marcar que ya llegó"
+                              >
+                                {det.falta_repuesto ? (
+                                  <>
+                                    <PackageCheck size={13} />
+                                    <span>Llegó Repuesto</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <PackageX size={13} />
+                                    <span>Falta Repuesto</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
                   ) : (
                     <div className="p-3 bg-white border rounded-xl text-xs text-slate-400 italic">
                       Sin ítems detallados
@@ -473,7 +881,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-black text-xs text-slate-500 uppercase tracking-wider">
-                    Bitácora & Registro de Repuestos:
+                    Bitácora de Observaciones & Taller:
                   </h4>
                   {tabActiva === 'misTrabajos' && (
                     <button
@@ -481,7 +889,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       className="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-black rounded-lg transition flex items-center gap-1 cursor-pointer"
                     >
                       <MessageSquare size={14} />
-                      <span>+ Agregar Nota / Repuesto</span>
+                      <span>+ Nueva Observación</span>
                     </button>
                   )}
                 </div>
@@ -498,215 +906,151 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-400 italic">No hay comentarios en la bitácora.</p>
+                    <p className="text-xs text-slate-400 italic">No hay notas registradas.</p>
                   )}
                 </div>
               </div>
 
-              {/* Acciones para Mis Trabajos (Pestaña 2) */}
+              {/* Acciones para Mis Trabajos (2 Formas Únicas de Cierre Cronometradas) */}
               {tabActiva === 'misTrabajos' && (
-                <div className="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
-                    onClick={() => handleDesasignarme(solicitudSeleccionada.id)}
+                    type="button"
+                    onClick={() => setModalTerminarAvanceAbierto(true)}
                     disabled={accionLoading}
-                    className="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-black text-xs rounded-2xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
+                    title="Pausar o entregar turno para toda la cuadrilla (La orden pasa a PENDIENTE y el bus sigue en taller)"
                   >
-                    <LogOut size={15} />
-                    <span>Desasignarme</span>
+                    <PauseCircle size={18} className="text-amber-600 shrink-0" />
+                    <span>⏸️ Terminar Avance (Pausa Cuadrilla)</span>
                   </button>
 
                   <button
-                    onClick={() => setModalAbierto('liberar')}
+                    type="button"
+                    onClick={handleAbrirFinalizar}
                     disabled={accionLoading}
-                    className="py-2.5 px-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
+                    title="Cierre definitivo de la orden y liberación física del bus del taller"
                   >
-                    <Share2 size={15} />
-                    <span>Entregar Turno</span>
-                  </button>
-
-                  <button
-                    onClick={() => setModalAbierto('finalizar')}
-                    disabled={accionLoading}
-                    className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <FileCheck size={15} />
-                    <span>Finalizar y Liberar Bus</span>
+                    <FileCheck size={18} className="shrink-0" />
+                    <span>✅ Finalizar y Liberar Bus</span>
                   </button>
                 </div>
               )}
-
             </div>
           ) : (
             <div className="py-20 text-center bg-slate-50 border border-dashed border-slate-300 rounded-3xl p-6">
               <Wrench size={40} className="mx-auto text-slate-300 mb-3" />
               <p className="font-bold text-slate-600 text-sm">
-                Selecciona una orden de trabajo de la lista para ver el detalle y operar.
+                Selecciona una orden de trabajo de la lista para ver el detalle e iniciar labores.
               </p>
             </div>
           )}
         </div>
-
       </div>
 
-      {/* MODAL 1: TOMAR TRABAJO */}
-      {modalAbierto === 'tomar' && solicitudSeleccionada && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
-              <Play size={20} className="text-indigo-600" />
-              <span>Tomar Orden #{solicitudSeleccionada.id} ({solicitudSeleccionada.n_bus})</span>
-            </h3>
+      {/* MODAL AUTOASIGNACIÓN DE AVERÍAS (CON COMPAÑEROS) */}
+      <ModalAutoasignarFallas
+        isOpen={modalAutoasignarAbierto}
+        solicitud={solicitudSeleccionada}
+        selectedDetallesIds={selectedDetallesIds}
+        onToggleDetalle={toggleSelectDetalle}
+        currentUserId={currentUserId}
+        accionLoading={accionLoading}
+        onConfirmar={handleConfirmarAutoasignar}
+        onClose={() => setModalAutoasignarAbierto(false)}
+      />
 
+      {/* MODAL 1: TOMAR TRABAJO COMPLETO */}
+      <ModalTomarTrabajo
+        isOpen={modalAbierto === 'tomar'}
+        solicitud={solicitudSeleccionada}
+        colaboradores={colaboradoresMecanicos}
+        currentUserId={currentUserId}
+        accionLoading={accionLoading}
+        onColaboradoresChange={setColaboradoresMecanicos}
+        onConfirmar={handleTomarTrabajo}
+        onClose={() => setModalAbierto(null)}
+      />
 
+      {/* MODAL: AGREGAR AVERÍA EN CALIENTE */}
+      <ModalAgregarFalla
+        isOpen={modalAgregarFallaAbierto}
+        solicitudId={solicitudSeleccionada?.id || null}
+        nBus={solicitudSeleccionada?.n_bus}
+        accionLoading={accionLoading}
+        onConfirmar={handleConfirmarAgregarFalla}
+        onClose={() => setModalAgregarFallaAbierto(false)}
+      />
 
-            <div>
-              <MecanicoSelector
-                selectedMecanicos={colaboradoresMecanicos}
-                onChange={(selected) => setColaboradoresMecanicos(selected)}
-                label="Invitar Colaboradores (Mecánicos)"
-                placeholder="Buscar mecánico por nombre (ej: Santiago)..."
-                excludeId={currentUserId ?? undefined}
-              />
-            </div>
+      {/* MODAL 2: TERMINAR AVANCE / PAUSA DE CUADRILLA */}
+      <ModalTerminarAvance
+        isOpen={modalTerminarAvanceAbierto}
+        solicitud={solicitudSeleccionada}
+        comentarioAvance={comentarioTerminarAvance}
+        accionLoading={accionLoading}
+        onComentarioChange={setComentarioTerminarAvance}
+        onConfirmar={handleTerminarAvance}
+        onClose={() => setModalTerminarAvanceAbierto(false)}
+      />
 
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setModalAbierto(null)}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleTomarTrabajo}
-                disabled={accionLoading}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md"
-              >
-                {accionLoading ? 'Procesando...' : 'Confirmar'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* MODAL 3: AGREGAR BITÁCORA */}
+      <ModalNuevaObservacion
+        isOpen={modalAbierto === 'comentario'}
+        solicitud={solicitudSeleccionada}
+        comentarioTipo={comentarioTipo}
+        comentarioTexto={nuevoComentarioText}
+        accionLoading={accionLoading}
+        onTipoChange={setComentarioTipo}
+        onTextoChange={setNuevoComentarioText}
+        onConfirmar={handleAgregarComentario}
+        onClose={() => setModalAbierto(null)}
+      />
+
+      {/* MODAL 4: FALTA DE REPUESTO */}
+      <ModalReportarRepuesto
+        data={modalRepuestoData}
+        comentarioRepuesto={comentarioRepuesto}
+        accionLoading={accionLoading}
+        onComentarioChange={setComentarioRepuesto}
+        onConfirmar={handleGuardarRepuesto}
+        onClose={() => {
+          setModalRepuestoData(null);
+          setComentarioRepuesto('');
+        }}
+      />
+
+      {/* MODAL 5: FINALIZAR SOLICITUD Y LIBERAR BUS */}
+      <ModalFinalizarOrden
+        isOpen={modalFinalizarAbierto}
+        solicitud={solicitudSeleccionada}
+        pautaResumen={pautaResumenActual}
+        motivoIncompletoChecklist={motivoIncompletoChecklist}
+        motivoCierreParcial={motivoCierreParcial}
+        comentarioCierre={comentarioCierre}
+        liberarBusTaller={liberarBusTaller}
+        accionLoading={accionLoading}
+        onMotivoIncompletoChange={setMotivoIncompletoChecklist}
+        onMotivoCierreParcialChange={setMotivoCierreParcial}
+        onComentarioCierreChange={setComentarioCierre}
+        onLiberarBusTallerChange={setLiberarBusTaller}
+        onConfirmar={handleConfirmarFinalizar}
+        onClose={() => setModalFinalizarAbierto(false)}
+      />
+
+      {/* MODAL DE PAUTA PREVENTIVA DE 19 ÍTEMS */}
+      {pautaModalData && (
+        <PautaPreventivaModal
+          solicitudId={pautaModalData.id}
+          nBus={pautaModalData.nBus}
+          onClose={() => setPautaModalData(null)}
+          onGuardadoExitoso={() => {
+            if (solicitudSeleccionada) {
+              refrescarOrdenActual(solicitudSeleccionada.id);
+            }
+          }}
+        />
       )}
-
-      {/* MODAL 2: LIBERAR / ENTREGAR TURNO */}
-      {modalAbierto === 'liberar' && solicitudSeleccionada && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
-              <Share2 size={20} className="text-blue-600" />
-              <span>Entregar Turno / Liberar Orden #{solicitudSeleccionada.id}</span>
-            </h3>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Comentario de Entrega de Turno (Opcional):</label>
-              <textarea
-                rows={3}
-                placeholder="Ej: Se entrega turno noche. Faltan repuestos..."
-                value={comentarioLiberar}
-                onChange={(e) => setComentarioLiberar(e.target.value)}
-                className="w-full p-2.5 border rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setModalAbierto(null)}
-                className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleLiberarTurno}
-                disabled={accionLoading}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-md"
-              >
-                {accionLoading ? 'Entregando...' : 'Entregar Turno'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: AGREGAR COMENTARIO / REPUESTO */}
-      {modalAbierto === 'comentario' && solicitudSeleccionada && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
-              <MessageSquare size={20} className="text-indigo-600" />
-              <span>Agregar Bitácora #{solicitudSeleccionada.id}</span>
-            </h3>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tipo de Registro:</label>
-              <select
-                value={comentarioTipo}
-                onChange={(e) => setComentarioTipo(e.target.value)}
-                className="w-full p-2.5 border rounded-xl text-xs font-semibold mb-3"
-              >
-                <option value="TECNICO">TÉCNICO (Diagnóstico o trabajo)</option>
-                <option value="REPUESTO">REPUESTO (Solicitud a bodega)</option>
-                <option value="GENERAL">OBSERVACIÓN GENERAL</option>
-              </select>
-
-              <label className="block text-xs font-bold text-slate-700 mb-1">Comentario / Nota (Opcional):</label>
-              <textarea
-                rows={3}
-                placeholder="Ej: Se solicitaron 2 pastillas de freno a bodega."
-                value={nuevoComentarioText}
-                onChange={(e) => setNuevoComentarioText(e.target.value)}
-                className="w-full p-2.5 border rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setModalAbierto(null)}
-                className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleAgregarComentario}
-                disabled={accionLoading}
-                className="flex-1 py-2.5 bg-indigo-600 text-white font-black text-xs rounded-xl shadow-md"
-              >
-                {accionLoading ? 'Guardando...' : 'Guardar Comentario'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 4: FINALIZAR ORDEN */}
-      {modalAbierto === 'finalizar' && solicitudSeleccionada && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
-              <FileCheck size={20} className="text-emerald-600" />
-              <span>Finalizar Orden & Liberar Bus</span>
-            </h3>
-
-
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setModalAbierto(null)}
-                className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleFinalizarOrden}
-                disabled={accionLoading}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md"
-              >
-                {accionLoading ? 'Finalizando...' : 'Finalizar y Liberar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

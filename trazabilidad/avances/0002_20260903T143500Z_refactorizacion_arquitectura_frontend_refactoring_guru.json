@@ -1,0 +1,202 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 2,
+  "id": "AV-0002",
+  "timestamp": "2026-09-03T14:35:00Z",
+  "phase": "refactorizacion_arquitectura_frontend",
+  "milestone": {
+    "id": "FRONT-REFACTOR-1",
+    "name": "Refactorización Arquitectural Frontend (Refactoring Guru)",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Aplicación exhaustiva de las técnicas de refactorización de Refactoring Guru adaptadas a Frontend: extracción de la capa de servicio neumaticosService, utilidades puras formatters y validators, componentes base ModalBase y EstadoBadge, descomposición de formularios y partición modular de God Components (DashboardSupervision y DashboardMecanico), eliminando State Bloat, llamadas API inline y el uso de window.prompt bloqueante en webviews.",
+  "scope": {
+    "planned": [
+      "Extracción de servicio tipado neumaticosService.ts",
+      "Centralización de formateadores y validadores puros en utils/",
+      "Creación de componentes base reutilizables ModalBase y EstadoBadge",
+      "Desacoplamiento de modales inline en FormularioNeumaticos y FormularioMantencionTaller",
+      "Descomposición de DashboardSupervision en pestañas especializadas (AlertasTab, KpisTab, AuditoriaTab, PatioTab)",
+      "Descomposición de DashboardMecanico en 7 subcomponentes modales y eliminación de window.prompt()"
+    ],
+    "completed": [
+      "Extracción de servicio tipado neumaticosService.ts",
+      "Centralización de formateadores y validadores puros en utils/",
+      "Creación de componentes base reutilizables ModalBase y EstadoBadge",
+      "Desacoplamiento de modales inline en FormularioNeumaticos y FormularioMantencionTaller",
+      "Descomposición de DashboardSupervision en pestañas especializadas (AlertasTab, KpisTab, AuditoriaTab, PatioTab)",
+      "Descomposición de DashboardMecanico en 7 subcomponentes modales y eliminación de window.prompt()"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend FastAPI o esquemas de base de datos"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/conductores/neumaticos/neumaticosService.ts",
+      "action": "created",
+      "summary": "Capa de servicio tipada con DTOs Request/Response y construcción limpia de FormData para /api/v1/formularioNeumatico."
+    },
+    {
+      "path": "src/utils/formatters.ts",
+      "action": "created",
+      "summary": "Funciones puras de formateo: moneda chilena ($), fechas ISO a formato local, mapeo y badges de estados de solicitudes."
+    },
+    {
+      "path": "src/utils/validators.ts",
+      "action": "created",
+      "summary": "Validaciones puras desacopladas de la UI (número de máquina, campos obligatorios)."
+    },
+    {
+      "path": "src/components/ModalBase/ModalBase.tsx",
+      "action": "created",
+      "summary": "Contenedor modal accesible con backdrop blur, soporte para tecla Escape, bloqueo de scroll y touch targets adaptados a taller."
+    },
+    {
+      "path": "src/components/EstadoBadge/EstadoBadge.tsx",
+      "action": "created",
+      "summary": "Badge visual polimórfico de estado de solicitud con estilos Tailwind automáticos y consistentes."
+    },
+    {
+      "path": "src/conductores/neumaticos/ModalResumenNeumatico.tsx",
+      "action": "created",
+      "summary": "Subcomponente extraído para confirmación pre-envío del reporte de neumáticos."
+    },
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx",
+      "action": "modified",
+      "summary": "Refactorizado para invocar neumaticosService, usar formatearMonedaChilena y delegar modal a ModalResumenNeumatico."
+    },
+    {
+      "path": "src/conductores/mantencion/ModalConfirmarMantencion.tsx",
+      "action": "created",
+      "summary": "Subcomponente extraído para confirmación pre-envío de la orden de taller."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Desacoplado modal inline de confirmación reemplazándolo por ModalConfirmarMantencion."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AlertasTab.tsx",
+      "action": "created",
+      "summary": "Pestaña modular de alertas operacionales en vivo y asignación de mecánicos."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/KpisTab.tsx",
+      "action": "created",
+      "summary": "Pestaña modular de telemetría de taller, porcentaje de resolución y desglose de averías por sistema."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "created",
+      "summary": "Pestaña modular de auditoría inmutable con filtros dinámicos, tarjetas expandibles y EstadoBadge."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/PatioTab.tsx",
+      "action": "created",
+      "summary": "Pestaña modular de control de patio y flota activa en taller vs ruta comercial."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/ModalControlPatio.tsx",
+      "action": "created",
+      "summary": "Modal accesible para cambio de estado en_taller de buses de la flota basado en ModalBase."
+    },
+    {
+      "path": "src/supervisores/supervision/DashboardSupervision.tsx",
+      "action": "modified",
+      "summary": "Reducido de 1,035 líneas a 392 líneas orquestando pestañas desacopladas mediante composición."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalTomarTrabajo.tsx",
+      "action": "created",
+      "summary": "Modal atómico para tomar orden completa con invitación de colaboradores mediante MecanicoSelector."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalLiberarTurno.tsx",
+      "action": "created",
+      "summary": "Modal atómico para entrega de turno a estado Reasignación con informe de traspaso."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalTerminarAvance.tsx",
+      "action": "created",
+      "summary": "Modal atómico para cierre individual de jornada cronometrada en minutos."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalNuevaObservacion.tsx",
+      "action": "created",
+      "summary": "Modal atómico para anexar notas y diagnósticos técnicos a la bitácora."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalReportarRepuesto.tsx",
+      "action": "created",
+      "summary": "Modal atómico para bloqueo operacional por repuesto faltante o desbloqueo por recepción."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalFinalizarOrden.tsx",
+      "action": "created",
+      "summary": "Modal atómico para finalización de orden con justificaciones condicionales para pauta incompleta o cierre parcial."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalConfirmarDesasignar.tsx",
+      "action": "created",
+      "summary": "Modal atómico y no bloqueante para desasignación voluntaria del mecánico, sustituyendo window.prompt()."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Reducido de 1,236 líneas a 990 líneas, eliminando 6 modales embebidos y erradicando bloqueos de UI."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-002",
+      "title": "Extracción de Capa de Servicios y Abstracción Multipart para Neumáticos",
+      "rationale": "FormularioNeumaticos.tsx violaba el principio de responsabilidad única (SRP) e incurría en 'Feature Envy' al construir FormData e invocar Axios inline. Al extraer neumaticosService.ts, se aísla el contrato de red y se garantiza tipado estricto.",
+      "consequences": "La vista ahora es 100% declarativa y cualquier cambio en el endpoint POST /api/v1/formularioNeumatico se gestiona en un solo archivo."
+    },
+    {
+      "id": "DEC-003",
+      "title": "Descomposición de God Components en Pestañas y Modales Atómicos",
+      "rationale": "DashboardSupervision.tsx (>1,000 líneas) y DashboardMecanico.tsx (>1,200 líneas) acumulaban State Bloat y renderizados masivos. La técnica 'Extract Subcomponent' de Refactoring Guru permite aislar cada pestaña y modal en su propio ciclo de vida.",
+      "consequences": "Se reduce la superficie de re-renderizado innecesario en dispositivos móviles, se facilita el mantenimiento y se simplifica la lectura del código."
+    },
+    {
+      "id": "DEC-004",
+      "title": "Sustitución de window.prompt() por ModalConfirmarDesasignar",
+      "rationale": "Los diálogos nativos del navegador bloquean el hilo del WebView en Android/Capacitor, no son accesibles ni personalizables y degradan la experiencia operacional en taller.",
+      "consequences": "Flujo de desasignación completamente asíncrono, con retroalimentación visual clara y cumplimiento de los estándares táctiles de Capacitor."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx oxlint",
+      "result": "passed",
+      "evidence": "Found 0 warnings and 0 errors. Finished in 13ms on 47 files with 96 rules using 8 threads."
+    },
+    {
+      "command": "npx tsc -b",
+      "result": "passed",
+      "evidence": "TypeScript build succeeded without errors (exit code 0)."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Vite v8.2.1 building client environment for production... built in 367ms. dist/assets/index-DT-r_WXG.js 418.50 kB."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Integración de tests unitarios/componentes para los servicios y hooks recién extraídos.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-supervision-taller",
+    "commit": "bcfb72ca6b6afa93d089c57184139988a24656a1",
+    "dirty": true
+  },
+  "notes": [
+    "Refactorización completada con éxito manteniendo estricta compatibilidad con los contratos de API y estándares de Capacitor."
+  ]
+}

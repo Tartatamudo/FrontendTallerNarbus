@@ -43,17 +43,17 @@ export default function BusSelector({
     try {
       const cleanNum = queryStr.replace(/\D/g, '').trim();
 
-      // Consumir Endpoint Estandarizado: GET /api/v1/buses/buscar?query=...
+      // Consumir Endpoint Estandarizado: GET /api/v1/buses/buscar?query=...&solo_flota_taller=true
       let res;
       try {
         res = await apiClient.get('/api/v1/buses/buscar', {
-          params: { query: cleanNum },
+          params: { query: cleanNum, solo_flota_taller: true },
           timeout: 5000
         });
-      } catch (errGet) {
+      } catch {
         // Fallback GET a /api/v1/buses en caso de entorno local
         res = await apiClient.get('/api/v1/buses', {
-          params: { query: cleanNum },
+          params: { query: cleanNum, solo_flota_taller: true },
           timeout: 5000
         });
       }

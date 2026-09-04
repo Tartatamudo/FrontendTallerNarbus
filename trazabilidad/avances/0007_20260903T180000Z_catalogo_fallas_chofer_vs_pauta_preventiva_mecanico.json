@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 7,
+  "id": "AV-0007",
+  "timestamp": "2026-09-03T18:00:00Z",
+  "phase": "modulo_conductores_mantencion",
+  "milestone": {
+    "id": "FRONT-7",
+    "name": "Consumo de Catálogo de Fallas y Categorías en Formulario de Conductor",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Verificación y optimización del consumo de endpoints en el Formulario de Mantención Chofer (FormularioMantencionTaller.tsx): se garantiza el consumo exclusivo de GET /api/v1/mantencion/categorias y GET /api/v1/mantencion/fallas (lista reducida de fallas simples), desacoplándolo por completo de la pauta preventiva técnica de 19 ítems (GET /api/v1/mantencion/pauta/items), la cual queda reservada exclusivamente a los mecánicos.",
+  "scope": {
+    "planned": [
+      "Auditar FormularioMantencionTaller.tsx para verificar el consumo de GET /categorias y GET /fallas.",
+      "Añadir soporte de carga ágil 'Todas las Averías' para visualizar las 9 averías simples sin requerir clic previo por pestaña.",
+      "Etiquetar visualmente cada avería con su categoría en el catálogo rápido.",
+      "Aclarar docstrings en mantencionService.ts distinguiendo fallas de chofer vs pauta técnica de mecánico.",
+      "Validar compilación en TypeScript y Vite."
+    ],
+    "completed": [
+      "Confirmación estricta de que FormularioMantencionTaller.tsx consume GET /categorias y GET /fallas y no /pauta/items.",
+      "Incorporado botón 'Todas las Averías' activo por defecto para mostrar las fallas simples de inmediato al conductor.",
+      "Añadido chip con nombre de categoría en cada píldora cuando se visualizan todas las fallas.",
+      "Docstrings de mantencionService.ts actualizados con advertencias de rol y contexto de uso.",
+      "Compilación limpia con npm run build en 379ms."
+    ],
+    "pending": [],
+    "outOfScope": []
+  },
+  "changes": [
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Optimización del selector de categorías y carga ágil de todas las averías simples para el conductor."
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Clarificación de docstrings diferenciando catálogo de fallas de chofer frente a pauta de taller."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-007",
+      "title": "Desacoplamiento estricto entre catálogo de averías de chofer y pauta preventiva de taller",
+      "rationale": "El chofer no es un mecánico y no debe enfrentarse a los 19 ítems técnicos de inspección obligatoria de taller (presión de tanques de aire, estado de bornes, etc.). Su formulario solo debe consumir GET /categorias y GET /fallas para reportar síntomas visibles de forma inmediata antes de ingresar el bus.",
+      "consequences": "Experiencia ágil y limpia para el conductor en terreno (móvil/tablet) y prevención de errores o rechazos de sesión por consumir endpoints exclusivos de mecánicos autenticados."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 379ms sin errores."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación con conductores en taller probando la selección rápida de averías.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/modulo-conductores-mantencion",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la especificación funcional y las directrices de trazabilidad."
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 5,
+  "id": "AV-HIST-005",
+  "timestamp": "2026-08-27T20:29:48Z",
+  "phase": "mecanicos_dashboard",
+  "milestone": {
+    "id": "MEC-1",
+    "name": "Dashboard de Revisiones Taller para Mecánicos",
+    "statusBefore": "not_started",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación del panel de trabajo para mecánicos (DashboardMecanico.tsx): vistas de solicitudes pendientes (/pendientes) y mis trabajos asignados (/mis-trabajos), toma de trabajo como líder, check de fallas resueltas en tiempo real, bitácora de comentarios y cierre de órdenes.",
+  "scope": {
+    "planned": [
+      "Crear vista con pestañas para solicitudes pendientes y asignadas.",
+      "Implementar acción de tomar trabajo invitando colaboradores.",
+      "Permitir check de averías resueltas.",
+      "Implementar bitácora de comentarios cronológicos.",
+      "Implementar flujo de entrega de turno y finalización de orden."
+    ],
+    "completed": [
+      "DashboardMecanico.tsx con pestañas reactivas y refresco manual/automático.",
+      "Integración de endpoints de toma de orden (POST /tomar) y desasignación (POST /desasignarme).",
+      "Checklist interactivo de averías con llamada a PATCH /detalles/{id}/check.",
+      "Sistema de bitácora con visualización de autor, fecha y tipo de nota (POST /comentarios).",
+      "Modal de confirmación para liberación y entrega de turno (POST /liberar-turno) y finalización (POST /finalizar)."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Pauta preventiva de 19 ítems (incorporada en fases posteriores).",
+      "Asignación atómica granular por avería."
+    ]
+  },
+  "changes": [
+    { "path": "src/mecanicos/revisiones/DashboardMecanico.tsx", "action": "created", "summary": "Tablero integral de trabajo para el mecánico de taller." },
+    { "path": "src/conductores/mantencion/mantencionService.ts", "action": "modified", "summary": "Ampliación de funciones para pendientes, mis trabajos, checks y bitácora." },
+    { "path": "src/App.tsx", "action": "modified", "summary": "Integración de la pantalla de mecánicos en el enrutamiento." }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Separación de Solicitudes en Dos Pestañas Claras",
+      "rationale": "El mecánico necesita distinguir de inmediato entre la bandeja de entrada general del taller y sus órdenes activas en desarrollo.",
+      "consequences": "Menor fricción y enfoque directo en los buses asignados en el turno."
+    }
+  ],
+  "verification": [
+    { "command": "npm run lint", "result": "passed", "evidence": "Oxlint finalizado con 0 errores y 0 warnings." },
+    { "command": "npm run build", "result": "passed", "evidence": "Compilación exitosa con Vite." }
+  ],
+  "blockers": [],
+  "nextStep": "Implementar módulo de gestión y administración de usuarios para supervisores.",
+  "git": { "repository": "FrontendTallerNarbus", "branch": "feature/mecanicos-dashboard", "commit": "f2941f2", "dirty": false },
+  "notes": [
+    "Registro reconstruido retrospectivamente (historial desfasado) a partir de los commits del repositorio."
+  ]
+}
