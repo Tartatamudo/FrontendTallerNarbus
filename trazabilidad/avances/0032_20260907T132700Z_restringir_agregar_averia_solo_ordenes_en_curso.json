@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 32,
+  "id": "AV-0032",
+  "timestamp": "2026-09-07T13:27:00Z",
+  "phase": "fase_2_mecanicos_y_revisiones",
+  "milestone": { "id": "MEC-003", "name": "Dashboard Mecánicos y Tareas Técnicas", "statusBefore": "in_progress", "statusAfter": "completed" },
+  "type": "completed",
+  "summary": "Restricción del botón '+ Agregar Avería' en el Dashboard de Mecánicos para que únicamente esté disponible cuando la orden de trabajo esté tomada ('Mis Órdenes en Curso').",
+  "scope": {
+    "planned": [
+      "Condicionar la visibilidad del botón '+ Agregar Avería' a que la OT esté en estado de reparación activa (tabActiva === 'misTrabajos')",
+      "Ocultar el botón en 'Buses por Atender' para evitar que se registren averías técnicas antes de que un mecánico asuma el trabajo"
+    ],
+    "completed": [
+      "Añadida condición tabActiva === 'misTrabajos' en la cabecera de Averías y Tareas Técnicas en DashboardMecanico.tsx",
+      "Mantenida consistencia con los demás controles operativos de taller (+ Nueva Observación, Cierres cronometrados)",
+      "Verificado build exitoso con npm run build"
+    ],
+    "pending": [],
+    "outOfScope": ["Modificaciones en endpoints backend"]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Condicionamiento del botón '+ Agregar Avería' para mostrarse exclusivamente en tabActiva === 'misTrabajos'"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-032",
+      "title": "Restricción de registro de fallas en caliente a órdenes tomadas",
+      "rationale": "El registro de averías por parte de un mecánico en taller corresponde funcionalmente a fallas detectadas 'en caliente' durante la inspección o intervención física del bus. Mientras la orden esté en espera en 'Buses por Atender' (pendiente), ningún mecánico ha iniciado el cronometraje ni la intervención. Por ende, ocultar el botón en pendientes homogeniza el comportamiento con '+ Nueva Observación' y previene autoasignaciones o modificaciones incongruentes en órdenes no tomadas.",
+      "consequences": "La interfaz de 'Buses por Atender' permanece enfocada en la selección y autoasignación de la orden/averías, reservando el registro de nuevas tareas técnicas para cuando el bus se encuentra efectivamente 'EN REPARACION'."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "built in 669ms sin errores de compilación TypeScript ni de Vite."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas en navegador con el flujo operativo del taller.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "local-working-tree",
+    "dirty": true
+  },
+  "notes": ["Se mantiene la regla de negocio y no se altera el contrato de la API."]
+}

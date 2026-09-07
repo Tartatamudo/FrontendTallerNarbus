@@ -22,6 +22,49 @@
   align-items: center;
 }
 
+.menu-user-banner {
+  background: #16181d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.menu-user-name {
+  color: #ffffff;
+}
+
+.menu-btn-perfil {
+  background: #1f232d;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.menu-btn-perfil:hover {
+  background: #252c3c;
+  color: #7dd3fc;
+  border-color: #38bdf8;
+}
+
+[data-theme="light"] .menu-user-banner {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .menu-user-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .menu-btn-perfil {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0284c7;
+}
+
+[data-theme="light"] .menu-btn-perfil:hover {
+  background: #e2e8f0;
+  color: #0369a1;
+}
+
 .menu-welcome-text {
   text-align: center;
   margin-bottom: 2rem;
@@ -164,4 +207,70 @@
 
 .menu-option-card:hover .menu-card-action {
   color: #0ea5e9;
+}
+
+/* =========================================================
+   ADAPTACIONES DE MENÚ PRINCIPAL EN MODO CLARO
+   ========================================================= */
+[data-theme="light"] .menu-welcome-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .menu-welcome-subtitle {
+  color: #64748b;
+}
+
+[data-theme="light"] .menu-option-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .menu-option-card:hover {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .menu-card-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .menu-card-desc {
+  color: #64748b;
+}
+
+[data-theme="light"] .menu-card-action {
+  border-top-color: #f1f5f9;
+  color: #0284c7;
+}
+
+[data-theme="light"] .menu-card-icon-mantencion {
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+[data-theme="light"] .menu-card-icon-neumaticos {
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #059669;
+}
+
+[data-theme="light"] .menu-card-icon-supervision {
+  background-color: #f3e8ff;
+  border-color: #e9d5ff;
+  color: #7e22ce;
+}
+
+[data-theme="light"] .menu-card-icon-personal {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+[data-theme="light"] .menu-card-icon-mecanico {
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
 }

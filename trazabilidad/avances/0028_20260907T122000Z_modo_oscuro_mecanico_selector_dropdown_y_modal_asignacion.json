@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 28,
+  "id": "AV-0028",
+  "timestamp": "2026-09-07T12:20:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-09",
+    "name": "Modo Oscuro en Desplegable MecanicoSelector, ModalAsignarFallas y ModalBase",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Adaptación integral al Modo Oscuro y Modo Claro del componente MecanicoSelector (lista desplegable de búsqueda de mecánicos, input con autocompletado y chips), del modal de asignación de supervisión (ModalAsignarFallas) y del contenedor maestro reutilizable (ModalBase), garantizando coherencia visual en todo el flujo de despacho.",
+  "scope": {
+    "planned": [
+      "Adaptar la lista flotante desplegable (.mecanico-selector-dropdown) de MecanicoSelector a modo oscuro",
+      "Actualizar los items (.mecanico-selector-dropdown-item) con colores legibles, hover índigo suave y checkmarks luminosos",
+      "Ajustar el input de texto de búsqueda, placeholder y spinner de búsqueda en modo oscuro",
+      "Adaptar ModalAsignarFallas con tarjeta oscura (#16181d), checklist de averías temático y botones de alto contraste",
+      "Actualizar ModalBase para soportar modo oscuro y modo claro nativo en todos los modales derivados del taller",
+      "Verificar compilación limpia con npm run build"
+    ],
+    "completed": [
+      "src/components/MecanicoSelector/MecanicoSelector.css: Rediseñado el dropdown flotante con fondo oscuro (#16181d), bordes transparentes sutiles (rgba(255,255,255,0.15)), sombras profundas y items con texto claro (#f1f5f9) y hover índigo; selectores [data-theme='light'] preservan el modo claro original",
+      "src/components/MecanicoSelector/MecanicoSelector.tsx: Retirado el color hardcodeado text-slate-800 en el nombre del mecánico sustituyéndolo por text-inherit y estilizado el icono Check con contraste temático",
+      "src/supervisores/supervision/ModalAsignarFallas.tsx: Adaptado a la paleta corporativa oscura con tarjeta #16181d, checklist de averías a encargar con soporte de checked índigo/neutro y textarea de instrucciones",
+      "src/components/ModalBase/ModalBase.tsx: Actualizado el contenedor maestro para proveer fondo oscuro (#16181d) y bordes sutiles por defecto con fallback a blanco en [data-theme='light']",
+      "npm run build: Compilación exitosa en 583ms con 1933 módulos transformados y cero errores de tipado o empaquetado (exit code 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend o alteración del endpoint de búsqueda de mecánicos"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/components/MecanicoSelector/MecanicoSelector.css",
+      "action": "modified",
+      "summary": "Estilos de modo oscuro y claro para el dropdown de sugerencias, input, spinner y chips."
+    },
+    {
+      "path": "src/components/MecanicoSelector/MecanicoSelector.tsx",
+      "action": "modified",
+      "summary": "Herencia de color tipográfico en los nombres de mecánicos y ajuste de contraste en el check de selección."
+    },
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.tsx",
+      "action": "modified",
+      "summary": "Adaptación completa del modal de asignación de fallas con clases temáticas oscuras y claras."
+    },
+    {
+      "path": "src/components/ModalBase/ModalBase.tsx",
+      "action": "modified",
+      "summary": "Integración de soporte temático dual en el componente base de modales del sistema."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0028",
+      "title": "Unificación de Tokens de Modo Oscuro en Selectores Desplegables y Modales Base",
+      "rationale": "El desplegable de búsqueda de mecánicos y los modales utilizaban fondos blancos absolutos que generaban destellos cegadores en dispositivos de taller configurados en modo oscuro. La unificación con #16181d y bordes semi-transparentes proporciona confort visual inmediato y consistencia de diseño.",
+      "consequences": "Tanto el modal de asignación de supervisión como las búsquedas de mecánicos en caliente de taller fluyen con la estética oscura corporativa sin perder compatibilidad con el modo claro."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "vite v8.2.1 building client environment for production... ✓ 1933 modules transformed. ✓ built in 583ms with exit code 0"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validar en la interfaz de supervisión la apertura del modal y la búsqueda interactiva de mecánicos.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la norma de ergonomía táctil y contraste para talleres automotrices de .agents/AGENTS.md."
+  ]
+}

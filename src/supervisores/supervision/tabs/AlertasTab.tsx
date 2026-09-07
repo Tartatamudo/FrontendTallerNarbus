@@ -83,10 +83,10 @@ export default function AlertasTab({
               : 'border-blue-200 bg-blue-50/40 hover:border-blue-300';
 
             const badgeColor = isCritica
-              ? 'bg-red-600 text-white shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+              ? 'bg-red-500/25 text-red-200 border border-red-400/70 shadow-[0_0_12px_rgba(239,68,68,0.5)] [data-theme=light]_&:bg-red-600 [data-theme=light]_&:text-white [data-theme=light]_&:shadow-none'
               : isAlta
-              ? 'bg-amber-600 text-white shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-              : 'bg-blue-600 text-white shadow-[0_0_8px_rgba(37,99,235,0.4)]';
+              ? 'bg-amber-500/25 text-amber-200 border border-amber-400/70 shadow-[0_0_12px_rgba(245,158,11,0.5)] [data-theme=light]_&:bg-amber-600 [data-theme=light]_&:text-white [data-theme=light]_&:shadow-none'
+              : 'bg-blue-500/25 text-blue-200 border border-blue-400/70 shadow-[0_0_12px_rgba(59,130,246,0.5)] [data-theme=light]_&:bg-blue-600 [data-theme=light]_&:text-white [data-theme=light]_&:shadow-none';
 
             return (
               <div

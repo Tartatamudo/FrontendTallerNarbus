@@ -545,7 +545,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
       {/* Contenido Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna Izquierda: Lista de Órdenes */}
-        <div className="lg:col-span-1 space-y-3">
+        <div className="lg:col-span-1 space-y-3 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-black text-sm text-slate-700 uppercase tracking-wider">
               {tabActiva === 'pendientes' ? 'Buses por Atender' : 'Mis Órdenes en Curso'}
@@ -576,7 +576,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                 <div
                   key={sol.id}
                   onClick={() => setSolicitudSeleccionada(sol)}
-                  className={`p-4 rounded-2xl border-2 transition cursor-pointer ${
+                  className={`p-4 rounded-2xl border-2 transition cursor-pointer min-w-0 ${
                     isSelected
                       ? 'border-indigo-600 bg-indigo-50/50 shadow-md'
                       : 'border-slate-200 bg-white hover:border-slate-300'
@@ -584,13 +584,13 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Bus size={18} className="text-indigo-600" />
+                      <Bus size={18} className="text-indigo-600 shrink-0" />
                       <span className="font-black text-slate-900 text-base">Bus {sol.n_bus}</span>
                     </div>
                     <EstadoBadge estado={sol.estado} size="xs" />
                   </div>
 
-                  <p className="text-xs font-bold text-slate-600 line-clamp-2 mb-3">
+                  <p className="text-xs font-bold text-slate-600 line-clamp-2 mb-3 break-words [overflow-wrap:anywhere]">
                     {sol.descripcion_general || 'Sin descripción general'}
                   </p>
 
@@ -612,12 +612,12 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
         </div>
 
         {/* Columna Derecha: Detalle y Operatoria de la Orden */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           {solicitudSeleccionada ? (
-            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 space-y-6">
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 space-y-6 min-w-0">
               {/* Header Detalle */}
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-200 pb-4">
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest bg-indigo-100/80 border border-indigo-200 px-2.5 py-0.5 rounded-full">
                       OT #{solicitudSeleccionada.id}
@@ -627,7 +627,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   <h3 className="text-2xl font-black text-slate-900 mt-1">
                     Bus N° {solicitudSeleccionada.n_bus}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-600 mt-0.5">
+                  <p className="text-xs font-semibold text-slate-600 mt-0.5 break-words [overflow-wrap:anywhere]">
                     {solicitudSeleccionada.descripcion_general}
                   </p>
 
@@ -749,16 +749,18 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   <h4 className="font-black text-xs text-slate-500 uppercase tracking-wider">
                     Averías y Tareas Técnicas ({solicitudSeleccionada.detalles?.length || 0}):
                   </h4>
-                  <button
-                    type="button"
-                    onClick={() => setModalAgregarFallaAbierto(true)}
-                    disabled={accionLoading}
-                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer min-h-[38px]"
-                    title="Agregar una avería detectada durante la reparación en taller"
-                  >
-                    <Plus size={15} />
-                    <span>+ Agregar Avería</span>
-                  </button>
+                  {tabActiva === 'misTrabajos' && (
+                    <button
+                      type="button"
+                      onClick={() => setModalAgregarFallaAbierto(true)}
+                      disabled={accionLoading}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer min-h-[38px]"
+                      title="Agregar una avería detectada durante la reparación en taller"
+                    >
+                      <Plus size={15} />
+                      <span>+ Agregar Avería</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-2.5">
@@ -768,7 +770,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       return (
                         <div
                           key={det.id}
-                          className={`p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          className={`p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 ${
                             det.resuelto
                               ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
                               : det.falta_repuesto
@@ -776,7 +778,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                               : 'bg-white border-slate-200 text-slate-800'
                           }`}
                         >
-                          <div className="flex items-start sm:items-center gap-3">
+                          <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                             {/* Checkbox para autoasignación en pendientes */}
                             {tabActiva === 'pendientes' && (
                               det.resuelto ? (
@@ -791,7 +793,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                                   type="checkbox"
                                   checked={isAtomicSelected}
                                   onChange={() => toggleSelectDetalle(det.id)}
-                                  className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5 sm:mt-0"
+                                  className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5 sm:mt-0 shrink-0"
                                 />
                               )
                             )}
@@ -814,7 +816,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                                     ? 'Avería bloqueada: no se puede marcar como resuelta mientras falte repuesto en bodega'
                                     : 'Marcar como resuelta'
                                 }
-                                className={`w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 mt-0.5 sm:mt-0 transition ${
+                                className={`w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 mt-0.5 sm:mt-0 shrink-0 transition ${
                                   det.resuelto
                                     ? 'opacity-80 cursor-not-allowed bg-emerald-100 accent-emerald-600 pointer-events-none'
                                     : det.falta_repuesto
@@ -824,14 +826,14 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                               />
                             )}
 
-                            <div>
-                              <p className={`text-xs font-extrabold select-none ${det.resuelto ? 'line-through opacity-70 text-emerald-900' : ''}`}>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-xs font-extrabold select-none break-words [overflow-wrap:anywhere] ${det.resuelto ? 'line-through opacity-70 text-emerald-900' : ''}`}>
                                 {det.descripcion_personalizada}
                               </p>
                               {det.falta_repuesto && !det.resuelto && (
-                                <p className="text-[11px] font-bold text-red-600 mt-0.5 flex items-center gap-1">
+                                <p className="text-[11px] font-bold text-red-600 mt-0.5 flex items-center gap-1 min-w-0">
                                   <AlertTriangle size={12} className="shrink-0" />
-                                  <span>
+                                  <span className="break-words [overflow-wrap:anywhere]">
                                     Bloqueado: {det.comentario_repuesto || 'Falta repuesto en bodega'} (Check deshabilitado)
                                   </span>
                                 </p>
@@ -926,12 +928,12 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {solicitudSeleccionada.comentarios && solicitudSeleccionada.comentarios.length > 0 ? (
                     solicitudSeleccionada.comentarios.map((c, idx) => (
-                      <div key={idx} className="p-2.5 bg-white border border-slate-200 rounded-xl text-xs space-y-1">
-                        <div className="flex justify-between font-bold text-slate-500 text-[10px]">
-                          <span className="uppercase text-indigo-600">[{c.tipo || 'GENERAL'}]</span>
-                          <span>{c.fecha_registro || ''}</span>
+                      <div key={idx} className="p-2.5 bg-white border border-slate-200 rounded-xl text-xs space-y-1 min-w-0">
+                        <div className="flex justify-between font-bold text-slate-500 text-[10px] gap-2 min-w-0">
+                          <span className="uppercase text-indigo-600 shrink-0">[{c.tipo || 'GENERAL'}]</span>
+                          <span className="truncate">{c.fecha_registro || ''}</span>
                         </div>
-                        <p className="font-semibold text-slate-800">{c.comentario}</p>
+                        <p className="font-semibold text-slate-800 break-words [overflow-wrap:anywhere]">{c.comentario}</p>
                       </div>
                     ))
                   ) : (

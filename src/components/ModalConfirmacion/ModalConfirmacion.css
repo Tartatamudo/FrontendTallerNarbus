@@ -1,0 +1,277 @@
+/* =========================================================
+   MODAL DE CONFIRMACIÓN OPERACIONAL - MODO OSCURO & CLARO
+   Narbus Flota & Mantenimiento Taller
+   ========================================================= */
+
+.mc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(10, 11, 14, 0.75);
+  backdrop-filter: blur(4px);
+  animation: mcFadeIn 0.15s ease-out;
+}
+
+@keyframes mcFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mcScaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.mc-card {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 1.25rem;
+  background-color: #16181d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  animation: mcScaleUp 0.15s ease-out;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.mc-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mc-icon-box {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mc-icon-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.mc-icon-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+.mc-icon-primary {
+  background-color: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.mc-title {
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.35;
+}
+
+.mc-subtitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-top: 0.125rem;
+}
+
+.mc-btn-close {
+  color: #94a3b8;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mc-btn-close:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mc-body {
+  padding: 0.5rem 1.5rem 1rem 1.5rem;
+}
+
+.mc-message {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.mc-footer {
+  padding: 1rem 1.5rem 1.25rem 1.5rem;
+  background-color: #12141a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.mc-btn-cancel {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #1c1f26;
+  color: #d1d5db;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mc-btn-cancel:hover {
+  background-color: #262b36;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mc-btn-confirm-danger {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: none;
+  background-color: #dc2626;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mc-btn-confirm-danger:hover {
+  background-color: #b91c1c;
+}
+
+.mc-btn-confirm-warning {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: none;
+  background-color: #d97706;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mc-btn-confirm-warning:hover {
+  background-color: #b45309;
+}
+
+.mc-btn-confirm-primary {
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border: none;
+  background-color: #0284c7;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mc-btn-confirm-primary:hover {
+  background-color: #0369a1;
+}
+
+/* =========================================================
+   MODO CLARO CORPORATIVO (data-theme="light")
+   ========================================================= */
+[data-theme="light"] .mc-overlay {
+  background-color: rgba(15, 23, 42, 0.45);
+}
+
+[data-theme="light"] .mc-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .mc-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .mc-subtitle {
+  color: #64748b;
+}
+
+[data-theme="light"] .mc-btn-close {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .mc-btn-close:hover {
+  color: #334155;
+  background-color: #f1f5f9;
+}
+
+[data-theme="light"] .mc-body .mc-message {
+  color: #475569;
+}
+
+[data-theme="light"] .mc-footer {
+  background-color: #f8fafc;
+  border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .mc-btn-cancel {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="light"] .mc-btn-cancel:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="light"] .mc-icon-danger {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+[data-theme="light"] .mc-icon-warning {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+[data-theme="light"] .mc-icon-primary {
+  background-color: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
+}

@@ -340,6 +340,17 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
           loading={loading}
           onFiltrar={(filtros) => cargarAuditoria(filtros)}
           onAsignarClick={(aud) => {
+            const estadoNorm = (aud.estado || '').toUpperCase();
+            if (
+              estadoNorm === 'FINALIZADO' ||
+              estadoNorm === 'FINALIZADA' ||
+              estadoNorm === 'LIBERADO' ||
+              estadoNorm === 'LIBERADA' ||
+              estadoNorm === 'CANCELADO' ||
+              estadoNorm === 'CANCELADA'
+            ) {
+              return;
+            }
             setAsignacionModalData({
               solicitudId: aud.id,
               nBus: aud.n_bus,

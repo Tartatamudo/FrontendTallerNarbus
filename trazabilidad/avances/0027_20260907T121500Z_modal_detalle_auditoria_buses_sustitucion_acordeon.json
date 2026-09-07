@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 27,
+  "id": "AV-0027",
+  "timestamp": "2026-09-07T12:15:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-AUDIT-01",
+    "name": "Modal Flotante de Ficha de Auditoría de Buses en Sustitución de Acordeón Deslizante",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de una ventana modal flotante de alta ergonomía (Ficha Completa de Auditoría de OT) en la pestaña Auditoría de Buses del módulo de Supervisión (/supervision?tab=auditoria). Reemplaza el patrón previo de acordeón deslizante inline que causaba deformación de la lista y pérdida de contexto, ofreciendo una experiencia centrada sin desorientación en tablets y móviles de taller.",
+  "scope": {
+    "planned": [
+      "Investigar y comparar alternativas arquitectónicas de UX para la visualización del detalle de auditoría (redirección a ruta separada vs ventana modal flotante)",
+      "Crear componente ModalDetalleAuditoria con soporte temático dual (Modo Oscuro y Claro)",
+      "Refactorizar AuditoriaTab eliminando el estado expandedCards y el bloque acordeón inline",
+      "Incorporar en la ficha modal la evidencia fotográfica (foto_url) y comentarios operativos del reporte",
+      "Mantener el 100% del estado de filtros aplicados y posición de scroll del supervisor",
+      "Verificar compilación limpia con npm run build"
+    ],
+    "completed": [
+      "src/supervisores/supervision/tabs/ModalDetalleAuditoria.css: Creado sistema completo de estilos con fondo oscuro (#16181d), bordes sutiles (rgba(255,255,255,0.1)), animación fade/scale de entrada, scroll interno independiente y variables para tema claro [data-theme='light']",
+      "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx: Creado componente modal táctil con soporte de tecla Escape, bloqueo de scroll en el body, renderizado de metadatos de OT, fechas formateadas, mecánicos activos vs relevos con badges pulsantes, catálogo de fallas con etiquetas de 'Falta Repuesto', evidencia fotográfica con lightbox amigable, comentarios y justificaciones operacionales",
+      "src/supervisores/supervision/tabs/AuditoriaTab.tsx: Refactorizado para eliminar el acordeón invasivo, reduciendo la altura de tarjetas de ~600px a ~90px, integrando el botón 'Ver Ficha' de alto contraste para invocar el modal flotante sin perder filtros ni scroll",
+      "npm run build: Compilación exitosa en 578ms con 1933 módulos transformados y cero errores de tipado o empaquetado (exit code 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de lógica de backend o creación de nuevos endpoints en FastAPI"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/tabs/ModalDetalleAuditoria.css",
+      "action": "created",
+      "summary": "Hoja de estilos responsiva con soporte dual para el modal de auditoría, rejilla de metadatos, chips de estado, evidencias y acciones fijas al pie."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx",
+      "action": "created",
+      "summary": "Componente modal flotante de detalle de OT con desglose exhaustivo de ciclo de vida, fallas, mecánicos, fotos y justificaciones."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Sustitución del acordeón desplegable por botón 'Ver Ficha' que abre ModalDetalleAuditoria, compactando la lista y preservando filtros."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0027",
+      "title": "Adopción de Modal Flotante (Overlay) en vez de Redirección o Acordeón Inline",
+      "rationale": "El acordeón previo generaba un desplazamiento vertical extremo (>600px) que empujaba hacia abajo las demás OTs y desorientaba al supervisor en tablets de taller. La redirección a otra URL causaba fatiga de navegación y pérdida del estado de filtros aplicados. El modal flotante resuelve ambos problemas: mantiene intactos los filtros de búsqueda y la posición de scroll, permitiendo una auditoría rápida y ágil de múltiples órdenes.",
+      "consequences": "Experiencia de usuario significativamente más rápida, limpia y profesional, con acceso inmediato a evidencias fotográficas y desglose de tiempos sin abandonar la pantalla de auditoría."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "vite v8.2.1 building client environment for production... ✓ 1933 modules transformed. ✓ built in 578ms with exit code 0"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Presentar los resultados al usuario y validar la experiencia visual en el taller.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple estrictamente con las directrices de UI para taller de .agents/AGENTS.md: botones táctiles >= 44px, alto contraste y compatibilidad total con Modo Oscuro y Modo Claro."
+  ]
+}

@@ -140,7 +140,7 @@ export default function ModalAutoasignarFallas({
                   ) : (
                     <Square size={16} className="text-slate-400 shrink-0" />
                   )}
-                  <span className={`truncate ${yaResuelta ? 'line-through text-slate-400' : ''}`}>
+                  <span className={`min-w-0 flex-1 truncate ${yaResuelta ? 'line-through text-slate-400' : ''}`}>
                     {det.descripcion_personalizada}
                   </span>
                   {yaResuelta && (

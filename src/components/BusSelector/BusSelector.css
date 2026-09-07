@@ -218,3 +218,53 @@
   background-color: #2563eb;
   display: inline-block;
 }
+
+/* =========================================================
+   ADAPTACIONES DE MODO OSCURO (PREDETERMINADO)
+   ========================================================= */
+html:not([data-theme="light"]) .bus-selector-step-label {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .bus-selector-input {
+  background-color: #12141a;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .bus-selector-input:focus {
+  background-color: #1a1d24;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+html:not([data-theme="light"]) .bus-selector-dropdown {
+  background-color: #1a1e27;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+}
+
+html:not([data-theme="light"]) .bus-selector-dropdown-item {
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html:not([data-theme="light"]) .bus-selector-dropdown-item:hover {
+  background-color: #262b37;
+}
+
+html:not([data-theme="light"]) .bus-selector-dropdown-item-selected {
+  background-color: #1b2638;
+  color: #38bdf8;
+}
+
+html:not([data-theme="light"]) .bus-selector-clear-btn {
+  background-color: #252a35;
+  color: #9ca3af;
+}
+
+html:not([data-theme="light"]) .bus-selector-clear-btn:hover {
+  background-color: #323846;
+  color: #ffffff;
+}
+

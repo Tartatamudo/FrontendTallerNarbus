@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import './ModalBase.css';
 
 export interface ModalBaseProps {
   isOpen: boolean;
@@ -52,25 +53,25 @@ export default function ModalBase({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-3xl w-full ${MAX_WIDTH_MAP[maxWidth]} p-5 sm:p-6 shadow-2xl space-y-4 my-auto relative border border-slate-100 animate-in fade-in zoom-in-95 duration-150`}
+        className={`modal-base-card rounded-3xl w-full ${MAX_WIDTH_MAP[maxWidth]} p-5 sm:p-6 shadow-2xl space-y-4 my-auto relative animate-in fade-in zoom-in-95 duration-150`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Encabezado */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-2.5 font-black text-slate-900 text-base sm:text-lg">
+        <div className="flex items-center justify-between pb-3 modal-base-header">
+          <div className="flex items-center gap-2.5 font-black text-base sm:text-lg modal-base-title">
             {icon && <span className="shrink-0">{icon}</span>}
             <div className="leading-tight">{title}</div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+            className="p-1.5 rounded-xl modal-base-close-btn"
             aria-label="Cerrar modal"
           >
             <X size={20} />
@@ -78,10 +79,10 @@ export default function ModalBase({
         </div>
 
         {/* Cuerpo */}
-        <div className="text-slate-700 text-sm">{children}</div>
+        <div className="modal-base-body text-sm">{children}</div>
 
         {/* Pie opcional */}
-        {footer && <div className="pt-3 border-t border-slate-100">{footer}</div>}
+        {footer && <div className="pt-3 modal-base-footer">{footer}</div>}
       </div>
     </div>
   );

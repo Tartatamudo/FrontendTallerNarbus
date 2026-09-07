@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 24,
+  "id": "AV-0024",
+  "timestamp": "2026-09-07T10:45:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-06",
+    "name": "Adaptación Integral a Modo Oscuro de Tarjetas Internas y Diagrama de Chasis (Punto 2 Neumáticos)",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Adaptación completa a Modo Oscuro de las tarjetas, sub-tarjetas y componentes interactivos dentro de todas las pantallas, con especial resolución del Punto 2 del Formulario de Neumáticos (diagrama interactivo de chasis del bus, 8 ruedas, selector táctil de chasis y badges de ejes), eliminando fondos blancos residuales y garantizando coherencia visual grafito mate (#16181d / #181b22 / #12141a) sin afectar el funcionamiento del Modo Claro.",
+  "scope": {
+    "planned": [
+      "Adaptar a Modo Oscuro el Punto 2 (Diagrama de Chasis y Ruedas) en el Formulario de Neumáticos",
+      "Garantizar que las tarjetas y contenedores de formularios no permanezcan en fondo blanco en modo oscuro",
+      "Adaptar sub-tarjetas con tintes suaves de color (KPIs, Patio, Alertas) a contrastes de modo oscuro",
+      "Mantener paridad y reversión limpia cuando se active el Modo Claro Corporativo",
+      "Verificar compilación limpia con npm run build"
+    ],
+    "completed": [
+      "src/conductores/neumaticos/FormularioNeumaticos.css: Agregadas reglas completas de Modo Oscuro para .fn-bus-section (#12141a), .fn-bus-body (#181b22, borde oscuro #374151), .fn-wheel (#252a35, borde sutil #ffffff14), .fn-wheel-selected (#0284c7, halo luminoso #38bdf8), etiquetas laterales/delantera/trasera (#94a3b8) y badges de instrucciones",
+      "src/conductores/neumaticos/FormularioNeumaticos.tsx: Incorporadas clases semánticas fn-wheel-summary-label y fn-wheel-instruction para soporte de contraste y legibilidad en Punto 2",
+      "src/conductores/mantencion/FormularioMantencionTaller.css: Agregada adaptación a modo oscuro para .fmt-modal-summary-box (#12141a), .fmt-success-wrapper y reglas explícitas de modo claro",
+      "src/index.css: Añadidas reglas globales para sub-tarjetas y contenedores con acento suave ([class*='bg-indigo-50'], [class*='bg-blue-50'], [class*='bg-amber-50'], etc.) y bordes tintados en modo oscuro",
+      "npm run build: Compilación exitosa sin errores de TypeScript ni Vite (exit code 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.css",
+      "action": "modified",
+      "summary": "Implementación de estilos oscuros para el Punto 2 (chasis de bus, ruedas 1-8, estados hover y selección) y eliminación de estilos duplicados obsoletos de botones de motivo."
+    },
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx",
+      "action": "modified",
+      "summary": "Asignación de clases semánticas para etiquetas de resumen e instrucciones de selección de ruedas en el chasis."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.css",
+      "action": "modified",
+      "summary": "Añadido soporte oscuro para el resumen del modal de confirmación y pantalla de éxito."
+    },
+    {
+      "path": "src/index.css",
+      "action": "modified",
+      "summary": "Ampliación de selectores globales para tintes suaves de acento en tarjetas de KPIs, Patio y Alertas en modo oscuro."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-039",
+      "title": "Diagrama de Chasis Industrial en Modo Oscuro con Ruedas de Alto Contraste",
+      "rationale": "El Punto 2 del Formulario de Neumáticos requería una lectura inmediata en condiciones de taller o terreno nocturno. El chasis se estilizó en grafito técnico (#181b22 con borde #374151) y las ruedas en botones táctiles (#252a35) que resaltan con acento azul (#0284c7) al seleccionarse, asegurando área táctil y máxima legibilidad.",
+      "consequences": "La interacción táctil de selección de ruedas en el chasis se integra armónicamente al modo oscuro general sin deslumbramientos blancos."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Exit code 0. TypeScript compilado sin errores con tsc -b y bundle de producción generado en 7.14s."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Confirmación del usuario sobre el comportamiento y aspecto del Punto 2 y las tarjetas en pantalla.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Tanto el Punto 2 de Neumáticos como las tarjetas de todas las pantallas conmutan fluidamente entre Modo Oscuro y Modo Claro mediante el switch de la TopBar."
+  ]
+}

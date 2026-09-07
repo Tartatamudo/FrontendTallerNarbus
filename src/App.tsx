@@ -12,6 +12,7 @@ import TopBar from './components/TopBar/TopBar';
 import { logout, getStoredUser } from './usuarios/auth/authService';
 import { obtenerDato } from './utils/storage';
 import type { User } from './usuarios/auth/authTypes';
+import { ThemeProvider } from './context/ThemeContext';
 
 interface RutaProtegidaProps {
   children: ReactNode;
@@ -84,9 +85,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans">
       {!esLogin && sesionActiva && (
-        <TopBar
-          onVolver={location.pathname !== '/home' && location.pathname !== '/' ? () => navigate('/home') : undefined}
-        />
+        <TopBar />
       )}
 
       <main className="flex-1 flex flex-col">
@@ -217,8 +216,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

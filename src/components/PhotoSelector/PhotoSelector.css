@@ -230,3 +230,37 @@
   object-fit: contain;
   border-radius: 1rem;
 }
+
+/* =========================================================
+   ADAPTACIONES DE MODO OSCURO (PREDETERMINADO)
+   ========================================================= */
+html:not([data-theme="light"]) .photo-selector-btn {
+  background: #1c1f26;
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+html:not([data-theme="light"]) .photo-selector-btn:hover {
+  background: #242934;
+  border-color: #38bdf8;
+}
+
+html:not([data-theme="light"]) .photo-selector-icon-badge {
+  background-color: #12141a;
+  color: #38bdf8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+html:not([data-theme="light"]) .photo-selector-btn-title {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .photo-selector-preview-title {
+  color: #9ca3af;
+}
+
+html:not([data-theme="light"]) .photo-selector-image-card {
+  border-color: rgba(56, 189, 248, 0.4);
+  background-color: #12141a;
+}
+

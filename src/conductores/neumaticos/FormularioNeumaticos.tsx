@@ -234,7 +234,7 @@ export default function FormularioNeumaticos({
     return (
       <button
         type="button"
-        className={`fn-wheel ${className} ${seleccionada ? "fn-wheel-selected" : ""}`}
+        className={`wheel fn-wheel ${className} ${seleccionada ? "selected wheel-selected fn-wheel-selected" : ""}`}
         onClick={() => seleccionarRueda(numero)}
         title={`Rueda N° ${numero}`}
       >
@@ -353,43 +353,133 @@ export default function FormularioNeumaticos({
             />
           </div>
 
-          {/* PASO 2: RUEDA A CAMBIAR */}
-          <div className="space-y-3 pt-3 border-t border-slate-200">
-            <div className="fn-step-header">
-              <div className="fn-step-title-group">
-                <span className="fn-step-badge">2</span>
-                <label className="fn-step-label">Rueda Afectada:</label>
+          {/* =================================================
+              2. RUEDAS
+          ================================================= */}
+          <section className="card">
+            <div className="section-title">
+              <span className="step">
+                2
+              </span>
+              <div>
+                <h2>
+                  Selecciona la rueda a cambiar
+                </h2>
+                <p>
+                  Toca el neumático con el problema.
+                </p>
               </div>
-              <span className="fn-required-badge">* Selecciona en el bus</span>
             </div>
 
-            <div className="fn-bus-section">
-              <div className="fn-bus-diagram">
-                <div className="fn-bus-body">
-                  <span className="fn-side-label fn-side-copiloto">
-                    LADO COPILOTO
-                  </span>
-                  <span className="fn-side-label fn-side-chofer">
-                    LADO CHOFER
-                  </span>
-                  <span className="fn-front-label">DELANTERA</span>
-                  <span className="fn-rear-label">TRASERA</span>
+            {/* =================================================
+                DIAGRAMA DE BUS
+                Un solo diagrama (8 ruedas) sirve para buses
+                de 6 y de 8 ruedas.
+            ================================================= */}
+            <div className="bus-section">
+              <div
+                className="direction-row"
+                aria-label="Orientación longitudinal del bus"
+              >
+                <span>← DELANTERA</span>
+                <span>TRASERA →</span>
+              </div>
 
-                  <Rueda numero={2} className="fn-wheel-2" />
-                  <Rueda numero={1} className="fn-wheel-1" />
-                  <Rueda numero={6} className="fn-wheel-6" />
-                  <Rueda numero={5} className="fn-wheel-5" />
-                  <Rueda numero={4} className="fn-wheel-4" />
-                  <Rueda numero={3} className="fn-wheel-3" />
-                  <Rueda numero={8} className="fn-wheel-8" />
-                  <Rueda numero={7} className="fn-wheel-7" />
-                </div>
+              <div className="orientation-label orientation-top">
+                ↑ LADO COPILOTO
+              </div>
+
+              <div className="bus-diagram">
+                <span
+                  className="layout-line"
+                  aria-hidden="true"
+                />
+
+                <span
+                  className="axle axle-1"
+                  aria-hidden="true"
+                >
+                  1
+                </span>
+
+                <span
+                  className="axle axle-2"
+                  aria-hidden="true"
+                >
+                  2
+                </span>
+
+                <span
+                  className="axle axle-3"
+                  aria-hidden="true"
+                >
+                  3
+                </span>
+
+                {/* =================================================
+                    PRIMER EJE
+                ================================================= */}
+                <Rueda
+                  numero={2}
+                  className="wheel-2"
+                />
+
+                <Rueda
+                  numero={1}
+                  className="wheel-1"
+                />
+
+                {/* =================================================
+                    EJE DE TRACCIÓN
+                    6
+                    5
+                    4
+                    3
+                ================================================= */}
+                <Rueda
+                  numero={6}
+                  className="wheel-6"
+                />
+
+                <Rueda
+                  numero={5}
+                  className="wheel-5"
+                />
+
+                <Rueda
+                  numero={4}
+                  className="wheel-4"
+                />
+
+                <Rueda
+                  numero={3}
+                  className="wheel-3"
+                />
+
+                {/* =================================================
+                    ÚLTIMO EJE
+                    8 arriba
+                    7 abajo
+                ================================================= */}
+                <Rueda
+                  numero={8}
+                  className="wheel-8"
+                />
+
+                <Rueda
+                  numero={7}
+                  className="wheel-7"
+                />
+              </div>
+
+              <div className="orientation-label orientation-bottom">
+                ↓ LADO CHOFER
               </div>
 
               {/* Resumen de ruedas elegidas */}
               {ruedasSeleccionadas.length > 0 ? (
-                <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
-                  <span className="text-xs font-black text-slate-600">
+                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 flex-wrap">
+                  <span className="fn-wheel-summary-label">
                     Ruedas Seleccionadas:
                   </span>
                   {ruedasSeleccionadas.sort((a, b) => Number(a) - Number(b)).map((num) => (
@@ -401,7 +491,8 @@ export default function FormularioNeumaticos({
                       <button
                         type="button"
                         onClick={() => seleccionarRueda(Number(num))}
-                        className="hover:text-red-200 transition"
+                        className="hover:text-red-200 transition cursor-pointer"
+                        title={`Quitar rueda ${num}`}
                       >
                         <X size={14} />
                       </button>
@@ -409,12 +500,12 @@ export default function FormularioNeumaticos({
                   ))}
                 </div>
               ) : (
-                <div className="mt-2 text-center text-xs font-bold text-slate-500 italic">
+                <div className="fn-wheel-instruction">
                   👉 Toca la(s) rueda(s) afectadas en el diagrama del chasis (Ejes Delantero / Trasero).
                 </div>
               )}
             </div>
-          </div>
+          </section>
 
           {/* PASO 3: MOTIVO DEL REPORTE */}
           <div className="space-y-3 pt-3 border-t border-slate-200">

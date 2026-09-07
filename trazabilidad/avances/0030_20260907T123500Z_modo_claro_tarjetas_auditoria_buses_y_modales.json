@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 30,
+  "id": "AV-0030",
+  "timestamp": "2026-09-07T12:35:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-10",
+    "name": "Corrección de Modo Claro en Tarjetas de Auditoría de Buses y Modales",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Resolución del problema visual en el que las tarjetas y filtros de la pestaña Auditoría de Buses permanecían permanentemente oscuras (#16181d) en Modo Claro. Se reemplazaron las variantes arbitrarias no reconocidas por Tailwind v4 ([data-theme=light]_&:) por hojas de estilo CSS dedicadas (AuditoriaTab.css, ModalAsignarFallas.css, ModalBase.css) con selectores [data-theme='light'] estándar, logrando tarjetas blancas (#ffffff), bordes claros (#e2e8f0) y textos de alto contraste (#0f172a).",
+  "scope": {
+    "planned": [
+      "Diagnosticar por qué las tarjetas de AuditoriaTab se mantenían negras en modo claro",
+      "Crear AuditoriaTab.css con selectores robustos para [data-theme='light'] y modo oscuro",
+      "Crear ModalAsignarFallas.css con selectores robustos para modales de asignación",
+      "Crear ModalBase.css para estandarizar el soporte temático en todos los modales base",
+      "Verificar compilación limpia con npm run build y validar presencia en el CSS compilado"
+    ],
+    "completed": [
+      "src/supervisores/supervision/tabs/AuditoriaTab.css: Creada hoja de estilo dedicada definiendo .aud-card, .aud-filter-form, .aud-input, .aud-select, .aud-ot-badge, .aud-btn-ver, con soporte automático en [data-theme='light'] cambiando fondos a blanco (#ffffff) y bordes a #e2e8f0",
+      "src/supervisores/supervision/tabs/AuditoriaTab.tsx: Vinculado AuditoriaTab.css y reemplazadas las clases inline defectuosas",
+      "src/supervisores/supervision/ModalAsignarFallas.css: Creada hoja de estilos para el modal de asignación con clases maf-* adaptativas",
+      "src/supervisores/supervision/ModalAsignarFallas.tsx: Vinculado ModalAsignarFallas.css para tarjetas, cabecera, checkboxes de averías y pie de acciones",
+      "src/components/ModalBase/ModalBase.css: Creada hoja de estilos base para modales de taller",
+      "src/components/ModalBase/ModalBase.tsx: Vinculado ModalBase.css con clases modal-base-*",
+      "npm run build: Compilación exitosa en 599ms con 1936 módulos empaquetados y confirmación de selectores [data-theme=light] en dist/assets/index-DDF1Z1os.css"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend o lógica de endpoints"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.css",
+      "action": "created",
+      "summary": "Estilos duales (modo oscuro por defecto y modo claro con [data-theme='light']) para tarjetas, formularios e inputs de auditoría."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Importación y uso de clases semánticas aud-*."
+    },
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.css",
+      "action": "created",
+      "summary": "Estilos temáticos para el modal de asignación de fallas."
+    },
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.tsx",
+      "action": "modified",
+      "summary": "Importación y uso de clases maf-*."
+    },
+    {
+      "path": "src/components/ModalBase/ModalBase.css",
+      "action": "created",
+      "summary": "Estilos temáticos para el modal base general."
+    },
+    {
+      "path": "src/components/ModalBase/ModalBase.tsx",
+      "action": "modified",
+      "summary": "Importación y uso de clases modal-base-*."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0030",
+      "title": "Abandono de Pseudo-Variantes Arbitrarias de Tailwind v4 en Favor de Vanilla CSS",
+      "rationale": "El compilador de Tailwind v4 (@tailwindcss/vite) descarta o no reconoce variantes arbitrarias del tipo '[data-theme=light]_&:', lo que dejaba activas únicamente las clases de fondo oscuro (#16181d). Al utilizar archivos Vanilla CSS dedicados con la regla estándar '[data-theme=\"light\"] .clase', la especificidad es del 100% y se garantiza que el cambio de tema funcione inmediatamente en todos los navegadores.",
+      "consequences": "En Modo Claro, las tarjetas de auditoría se vuelven blancas con bordes sutiles y textos oscuros legibles, igual que el resto de las pestañas del tablero."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "vite v8.2.1 building client environment for production... ✓ 1936 modules transformed. ✓ built in 599ms with exit code 0"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Notificar al usuario y validar la alternancia de temas en vivo.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Alineado con las reglas de estilo de .agents/AGENTS.md y web_application_development sobre el uso de Vanilla CSS para control preciso."
+  ]
+}

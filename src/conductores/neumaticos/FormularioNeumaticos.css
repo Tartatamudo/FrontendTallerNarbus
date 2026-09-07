@@ -267,6 +267,62 @@
    DIAGRAMA INTERACTIVO DEL BUS Y RUEDAS
 ========================================================= */
 
+/* Tarjeta de Sección */
+.card {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* Título de Sección y Paso */
+.section-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.step {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  border-radius: 9999px;
+  background-color: #0284c7;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.section-title h2 {
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.section-title p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+  font-weight: 500;
+}
+
+.bus-section,
 .fn-bus-section {
   width: 100%;
   background-color: #f8fafc;
@@ -274,11 +330,55 @@
   border-radius: 1.25rem;
   padding: 1.25rem 0.75rem;
   margin-top: 0.5rem;
+  position: relative;
 }
 
-.fn-bus-diagram {
+.direction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
-  padding: 1.75rem 0;
+  max-width: 580px;
+  margin: 0 auto 0.5rem auto;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.orientation-label {
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.orientation-top {
+  margin-bottom: 0.5rem;
+}
+
+.orientation-bottom {
+  margin-top: 0.5rem;
+}
+
+.bus-diagram,
+.fn-bus-diagram {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: clamp(270px, 35vw, 310px);
+  min-height: 270px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border: 3.5px solid #94a3b8;
+  border-radius: 2rem;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
   overflow: visible;
 }
 
@@ -293,6 +393,60 @@
   border: 3.5px solid #94a3b8;
   border-radius: 2rem;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Línea de Chasis Longitudinal */
+.layout-line {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  right: 2%;
+  height: 0;
+  border-top: 2px dashed #cbd5e1;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+/* Ejes Transversales */
+.axle {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background-color: #cbd5e1;
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  color: #475569;
+  user-select: none;
+}
+
+.axle::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  z-index: -1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.axle-1 {
+  left: calc(5% + clamp(26px, 3.5vw, 31px));
+}
+
+.axle-2 {
+  right: calc(28% + clamp(26px, 3.5vw, 31px));
+}
+
+.axle-3 {
+  right: calc(5% + clamp(26px, 3.5vw, 31px));
 }
 
 .fn-side-label {
@@ -334,15 +488,16 @@
 }
 
 /* Ruedas */
+.wheel,
 .fn-wheel {
   position: absolute;
-  width: clamp(54px, 7.2vw, 64px);
-  height: clamp(54px, 7.2vw, 64px);
+  width: clamp(52px, 7vw, 62px);
+  height: clamp(52px, 7vw, 62px);
   border: none;
   border-radius: 1.125rem;
   background-color: #334155;
   color: #ffffff;
-  font-size: clamp(18px, 2.8vw, 22px);
+  font-size: clamp(17px, 2.6vw, 21px);
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -350,17 +505,21 @@
   box-shadow: 0 4px 8px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
   transition: all 0.15s ease-in-out;
   cursor: pointer;
+  z-index: 2;
 }
 
+.wheel:hover,
 .fn-wheel:hover {
   transform: scale(1.08);
   background-color: #1e293b;
 }
 
+.wheel:active,
 .fn-wheel:active {
   transform: scale(0.95);
 }
 
+.wheel-selected,
 .fn-wheel-selected {
   background-color: #2563eb !important;
   color: #ffffff !important;
@@ -369,14 +528,67 @@
 }
 
 /* Posiciones de 8 ruedas */
-.fn-wheel-2 { left: 4%; top: 9%; }
-.fn-wheel-1 { left: 4%; bottom: 9%; }
-.fn-wheel-6 { right: 28%; top: 2%; }
-.fn-wheel-5 { right: 28%; top: 25.5%; }
-.fn-wheel-4 { right: 28%; top: 49%; }
-.fn-wheel-3 { right: 28%; top: 72.5%; }
-.fn-wheel-8 { right: 4%; top: 9%; }
-.fn-wheel-7 { right: 4%; bottom: 9%; }
+.wheel-2, .fn-wheel-2 { left: 5%; top: 6%; }
+.wheel-1, .fn-wheel-1 { left: 5%; bottom: 6%; }
+.wheel-6, .fn-wheel-6 { right: 28%; top: 3%; }
+.wheel-5, .fn-wheel-5 { right: 28%; top: 26.5%; }
+.wheel-4, .fn-wheel-4 { right: 28%; bottom: 26.5%; }
+.wheel-3, .fn-wheel-3 { right: 28%; bottom: 3%; }
+.wheel-8, .fn-wheel-8 { right: 5%; top: 6%; }
+.wheel-7, .fn-wheel-7 { right: 5%; bottom: 6%; }
+
+.fn-wheel-summary-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #475569;
+}
+
+.fn-wheel-instruction {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .bus-diagram,
+  .fn-bus-diagram {
+    height: 260px;
+    min-height: 260px;
+    border-radius: 1.5rem;
+  }
+
+  .wheel,
+  .fn-wheel {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+    border-radius: 0.875rem;
+  }
+
+  .axle-1 {
+    left: calc(4% + 22px);
+  }
+
+  .axle-2 {
+    right: calc(27% + 22px);
+  }
+
+  .axle-3 {
+    right: calc(4% + 22px);
+  }
+
+  .wheel-2, .fn-wheel-2 { left: 4%; top: 4%; }
+  .wheel-1, .fn-wheel-1 { left: 4%; bottom: 4%; }
+  .wheel-6, .fn-wheel-6 { right: 27%; top: 2%; }
+  .wheel-5, .fn-wheel-5 { right: 27%; top: 25.5%; }
+  .wheel-4, .fn-wheel-4 { right: 27%; bottom: 25.5%; }
+  .wheel-3, .fn-wheel-3 { right: 27%; bottom: 2%; }
+  .wheel-8, .fn-wheel-8 { right: 4%; top: 4%; }
+  .wheel-7, .fn-wheel-7 { right: 4%; bottom: 4%; }
+}
 
 /* Grid de Botones de Motivo */
 .fn-reason-grid {
@@ -521,53 +733,6 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* =========================================================
-   SELECTOR TÁCTIL DE MOTIVOS DE NEUMÁTICOS
-========================================================= */
-
-.fn-reason-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.625rem;
-}
-
-.fn-reason-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.875rem 0.5rem;
-  min-height: 72px;
-  background-color: #ffffff;
-  border: 2px solid #e2e8f0;
-  border-radius: var(--radius-lg);
-  font-size: 0.8125rem;
-  font-weight: 800;
-  color: #1e293b;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-  user-select: none;
-}
-
-.fn-reason-btn:hover {
-  border-color: #94a3b8;
-  background-color: #f8fafc;
-  transform: translateY(-1px);
-}
-
-.fn-reason-btn:active {
-  transform: scale(0.97);
-}
-
-.fn-reason-btn-selected {
-  background-color: #f0fdf4;
-  border-color: #16a34a;
-  color: #15803d;
-  box-shadow: 0 0 14px rgba(22, 163, 74, 0.25);
-}
-
 /* Pantalla de Éxito */
 .fn-success-wrapper {
   background-color: #f1f5f9;
@@ -589,3 +754,378 @@
   text-align: center;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
+
+/* =========================================================
+   ADAPTACIONES DE MODO OSCURO (PREDETERMINADO)
+   ========================================================= */
+html:not([data-theme="light"]) .fn-card {
+  background-color: #16181d;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+html:not([data-theme="light"]) .fn-header {
+  background-color: #1a1e27;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html:not([data-theme="light"]) .fn-form-body {
+  background-color: #16181d;
+}
+
+html:not([data-theme="light"]) .fn-step-label {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .fn-step-badge {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .fn-optional-badge {
+  background-color: #1c1f26;
+  color: #9ca3af;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html:not([data-theme="light"]) .fn-input {
+  background-color: #12141a;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+/* --- PUNTO 2: DIAGRAMA INTERACTIVO DE CHASIS DE BUS Y RUEDAS --- */
+html:not([data-theme="light"]) .card {
+  background-color: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+html:not([data-theme="light"]) .section-title h2 {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .section-title p {
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .step {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .bus-section,
+html:not([data-theme="light"]) .fn-bus-section {
+  background-color: #12141a;
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+html:not([data-theme="light"]) .direction-row {
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .orientation-label {
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .bus-diagram,
+html:not([data-theme="light"]) .fn-bus-diagram,
+html:not([data-theme="light"]) .fn-bus-body {
+  background-color: #181b22;
+  border-color: #374151;
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.65);
+}
+
+html:not([data-theme="light"]) .layout-line {
+  border-color: #374151;
+}
+
+html:not([data-theme="light"]) .axle {
+  background-color: #374151;
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .axle::after {
+  background-color: #1e293b;
+  border-color: #4b5563;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+html:not([data-theme="light"]) .fn-side-label,
+html:not([data-theme="light"]) .fn-front-label,
+html:not([data-theme="light"]) .fn-rear-label {
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .wheel,
+html:not([data-theme="light"]) .fn-wheel {
+  background-color: #252a35;
+  color: #f8fafc;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+html:not([data-theme="light"]) .wheel:hover,
+html:not([data-theme="light"]) .fn-wheel:hover {
+  background-color: #2e3544;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+html:not([data-theme="light"]) .wheel-selected,
+html:not([data-theme="light"]) .fn-wheel-selected {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4), 0 8px 18px rgba(2, 132, 199, 0.45) !important;
+}
+
+html:not([data-theme="light"]) .fn-wheel-summary-label {
+  color: #94a3b8;
+}
+
+html:not([data-theme="light"]) .fn-wheel-instruction {
+  color: #9ca3af;
+}
+
+/* --- PUNTO 3: MOTIVOS DE FALLA --- */
+html:not([data-theme="light"]) .fn-reason-btn {
+  background-color: #1c1f26;
+  border-color: rgba(255, 255, 255, 0.09);
+  color: #f3f4f6;
+}
+
+html:not([data-theme="light"]) .fn-reason-btn:hover {
+  background-color: #242934;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .fn-reason-btn-selected {
+  background-color: #15281e !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* --- PUNTOS 5 Y 6: PRECIO Y MARCA DE FUEGO --- */
+html:not([data-theme="light"]) .fn-price-container {
+  background-color: #12141a;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+html:not([data-theme="light"]) .fn-price-container:focus-within {
+  background-color: #151820;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+html:not([data-theme="light"]) .fn-price-prefix {
+  background-color: #1c1f26;
+  border-right-color: rgba(255, 255, 255, 0.12);
+  color: #9ca3af;
+}
+
+html:not([data-theme="light"]) .fn-price-input {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .fn-price-input::placeholder {
+  color: #64748b;
+}
+
+/* --- MODALES Y CONFIRMACIONES --- */
+html:not([data-theme="light"]) .fn-modal-card {
+  background-color: #16181d;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .fn-modal-summary-box {
+  background-color: #12141a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html:not([data-theme="light"]) .fn-modal-item-row {
+  background-color: #1c1f26;
+  border-color: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+
+/* --- PANTALLA DE ÉXITO --- */
+html:not([data-theme="light"]) .fn-success-wrapper {
+  background-color: transparent;
+}
+
+html:not([data-theme="light"]) .fn-success-card {
+  background-color: #16181d;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* =========================================================
+   ADAPTACIONES DE MODO CLARO CORPORATIVO (data-theme="light")
+   ========================================================= */
+[data-theme="light"] .fn-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .fn-header {
+  background-color: #005ea4;
+  border-bottom-color: #1e3a8a;
+}
+
+[data-theme="light"] .fn-form-body {
+  background-color: #ffffff;
+}
+
+[data-theme="light"] .fn-step-label {
+  color: #0f172a;
+}
+
+[data-theme="light"] .card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .section-title h2 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .section-title p {
+  color: #64748b;
+}
+
+[data-theme="light"] .step {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+[data-theme="light"] .bus-section,
+[data-theme="light"] .fn-bus-section {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .direction-row {
+  color: #64748b;
+}
+
+[data-theme="light"] .orientation-label {
+  color: #64748b;
+}
+
+[data-theme="light"] .bus-diagram,
+[data-theme="light"] .fn-bus-diagram,
+[data-theme="light"] .fn-bus-body {
+  background-color: #ffffff;
+  border-color: #94a3b8;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .layout-line {
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .axle {
+  background-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .axle::after {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .fn-side-label,
+[data-theme="light"] .fn-front-label,
+[data-theme="light"] .fn-rear-label {
+  color: #64748b;
+}
+
+[data-theme="light"] .wheel,
+[data-theme="light"] .fn-wheel {
+  background-color: #334155;
+  color: #ffffff;
+  border: none;
+}
+
+[data-theme="light"] .wheel:hover,
+[data-theme="light"] .fn-wheel:hover {
+  background-color: #1e293b;
+}
+
+[data-theme="light"] .wheel-selected,
+[data-theme="light"] .fn-wheel-selected {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 4px #bfdbfe, 0 10px 15px -3px rgba(37, 99, 235, 0.4) !important;
+}
+
+[data-theme="light"] .fn-wheel-summary-label {
+  color: #475569;
+}
+
+[data-theme="light"] .fn-wheel-instruction {
+  color: #64748b;
+}
+
+[data-theme="light"] .fn-reason-btn {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .fn-reason-btn-selected {
+  background-color: #005ea4 !important;
+  border-color: #005ea4 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .fn-price-container {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .fn-price-prefix {
+  background-color: #e2e8f0;
+  border-right-color: #cbd5e1;
+  color: #1e293b;
+}
+
+[data-theme="light"] .fn-price-input {
+  color: #0f172a;
+}
+
+[data-theme="light"] .fn-modal-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .fn-modal-summary-box {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .fn-modal-item-row {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .fn-success-wrapper {
+  background-color: #f1f5f9;
+}
+
+[data-theme="light"] .fn-success-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+

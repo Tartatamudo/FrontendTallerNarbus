@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 29,
+  "id": "AV-0029",
+  "timestamp": "2026-09-07T12:25:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-REG-03",
+    "name": "Ocultamiento Estricto de Acciones de Asignación en Órdenes de Trabajo Finalizadas",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Corrección y blindaje de las condiciones de visibilidad para los botones de asignación de mecánicos ('Asignar' en tarjetas de auditoría y 'Asignar Cuadrilla' en el modal de ficha). Se normalizó la verificación del estado de la OT para cubrir exhaustivamente 'FINALIZADO', 'FINALIZADA', 'LIBERADO', 'LIBERADA', 'CANCELADO' y 'CANCELADA', evitando que órdenes cerradas muestren opciones de despacho o asignación.",
+  "scope": {
+    "planned": [
+      "Identificar discrepancia en la validación de estado ('FINALIZADA' vs 'FINALIZADO')",
+      "Ocultar botón 'Asignar' en tarjetas de AuditoriaTab cuando la OT esté finalizada o liberada",
+      "Ocultar botón 'Asignar Cuadrilla' en el pie de ModalDetalleAuditoria para OTs finalizadas o liberadas",
+      "Agregar guarda defensiva en el manejador onAsignarClick de DashboardSupervision",
+      "Verificar compilación limpia con npm run build"
+    ],
+    "completed": [
+      "src/supervisores/supervision/tabs/AuditoriaTab.tsx: Normalización de estado (toUpperCase) y comprobación exhaustiva de estados terminales (FINALIZADO, FINALIZADA, LIBERADO, LIBERADA, CANCELADO, CANCELADA); el botón Asignar no se renderiza si la orden está finalizada",
+      "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx: Aplicada la misma normalización y bloqueo estricto en la Ficha de Auditoría, mostrando únicamente el botón 'Cerrar Ficha' para órdenes concluidas",
+      "src/supervisores/supervision/DashboardSupervision.tsx: Añadida guarda defensiva que rechaza abrir el modal de asignación si la OT suministrada corresponde a un estado terminal",
+      "npm run build: Compilación exitosa en 570ms sin errores de TypeScript ni Vite (exit code 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de lógica o endpoints de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Ocultamiento del botón 'Asignar' en tarjetas con estado FINALIZADO / LIBERADO / CANCELADO."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx",
+      "action": "modified",
+      "summary": "Ocultamiento del botón 'Asignar Cuadrilla' en el modal para órdenes finalizadas."
+    },
+    {
+      "path": "src/supervisores/supervision/DashboardSupervision.tsx",
+      "action": "modified",
+      "summary": "Guarda defensiva en onAsignarClick para prevenir apertura del modal de asignación con OTs cerradas."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0029",
+      "title": "Normalización de Género Gramatical en Estados de Órdenes (FINALIZADO vs FINALIZADA)",
+      "rationale": "El backend entrega el estado 'FINALIZADO' (masculino), mientras que una condición previa evaluaba estrictamente '!== FINALIZADA' (femenino), lo que provocaba que la condición de bloqueo no se cumpliera y el botón permaneciera visible. Al evaluar ambas variantes en mayúsculas (FINALIZADO/FINALIZADA, LIBERADO/LIBERADA, CANCELADO/CANCELADA), se garantiza total robustez frente a cualquier payload recibido.",
+      "consequences": "Las OTs terminadas quedan completamente blindadas e inmutables frente a reasignaciones accidentales en la interfaz de supervisión."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "vite v8.2.1 building client environment for production... ✓ 1933 modules transformed. ✓ built in 570ms with exit code 0"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Confirmar con el usuario y continuar con las validaciones operativas.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Resuelve la regla de negocio de inmutabilidad de órdenes de trabajo cerradas establecida en los contratos de trazabilidad."
+  ]
+}

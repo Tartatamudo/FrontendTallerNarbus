@@ -236,3 +236,33 @@
 .auth-footer p {
   margin: 0;
 }
+
+/* =========================================================
+   ADAPTACIONES DE MODO OSCURO (PREDETERMINADO)
+   ========================================================= */
+html:not([data-theme="light"]) .auth-card {
+  background: rgba(22, 24, 29, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
+}
+
+html:not([data-theme="light"]) .auth-title {
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .auth-input {
+  background: #12141a;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+html:not([data-theme="light"]) .auth-input:focus {
+  background: #16181d;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+html:not([data-theme="light"]) .auth-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+

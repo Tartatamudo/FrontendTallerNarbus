@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { AlertTriangle, AlertCircle, HelpCircle, X, RefreshCw } from 'lucide-react';
+import './ModalConfirmacion.css';
 
 export type ModalVariant = 'danger' | 'warning' | 'primary';
 
@@ -43,25 +44,22 @@ export default function ModalConfirmacion({
     switch (variante) {
       case 'danger':
         return {
-          iconBox: 'bg-red-50 text-red-600 border border-red-200',
-          btnConfirmar:
-            'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm shadow-red-200',
-          icon: <AlertCircle size={28} className="text-red-600" />,
+          iconBoxClass: 'mc-icon-danger',
+          btnConfirmarClass: 'mc-btn-confirm-danger',
+          icon: <AlertCircle size={28} />,
         };
       case 'warning':
         return {
-          iconBox: 'bg-amber-50 text-amber-600 border border-amber-200',
-          btnConfirmar:
-            'bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white shadow-sm shadow-amber-200',
-          icon: <AlertTriangle size={28} className="text-amber-600" />,
+          iconBoxClass: 'mc-icon-warning',
+          btnConfirmarClass: 'mc-btn-confirm-warning',
+          icon: <AlertTriangle size={28} />,
         };
       case 'primary':
       default:
         return {
-          iconBox: 'bg-blue-50 text-blue-600 border border-blue-200',
-          btnConfirmar:
-            'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm shadow-blue-200',
-          icon: <HelpCircle size={28} className="text-blue-600" />,
+          iconBoxClass: 'mc-icon-primary',
+          btnConfirmarClass: 'mc-btn-confirm-primary',
+          icon: <HelpCircle size={28} />,
         };
     }
   };
@@ -70,28 +68,23 @@ export default function ModalConfirmacion({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
+      className="mc-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-confirm-title"
     >
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all animate-scaleUp">
+      <div className="mc-card">
         {/* Cabecera */}
-        <div className="p-6 pb-4 flex items-start justify-between gap-4">
+        <div className="mc-header">
           <div className="flex items-center gap-3.5">
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${currentStyles.iconBox}`}
-            >
+            <div className={`mc-icon-box ${currentStyles.iconBoxClass}`}>
               {currentStyles.icon}
             </div>
             <div>
-              <h3
-                id="modal-confirm-title"
-                className="text-lg font-black text-slate-900 leading-snug"
-              >
+              <h3 id="modal-confirm-title" className="mc-title">
                 {titulo}
               </h3>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">
+              <p className="mc-subtitle">
                 Confirmación Operacional
               </p>
             </div>
@@ -101,7 +94,7 @@ export default function ModalConfirmacion({
             type="button"
             onClick={onCancelar}
             disabled={cargando}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition disabled:opacity-40"
+            className="mc-btn-close"
             aria-label="Cerrar modal"
           >
             <X size={20} />
@@ -109,19 +102,19 @@ export default function ModalConfirmacion({
         </div>
 
         {/* Mensaje descriptivo */}
-        <div className="px-6 py-2">
-          <p className="text-sm font-medium text-slate-600 leading-relaxed">
+        <div className="mc-body">
+          <p className="mc-message">
             {mensaje}
           </p>
         </div>
 
         {/* Botones de Acción (mínimo 44px de altura táctil) */}
-        <div className="p-6 pt-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+        <div className="mc-footer">
           <button
             type="button"
             onClick={onCancelar}
             disabled={cargando}
-            className="min-h-[44px] px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-100 active:bg-slate-200 transition disabled:opacity-50 cursor-pointer"
+            className="mc-btn-cancel"
           >
             {textoCancelar}
           </button>
@@ -130,7 +123,7 @@ export default function ModalConfirmacion({
             type="button"
             onClick={onConfirmar}
             disabled={cargando}
-            className={`min-h-[44px] px-5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer ${currentStyles.btnConfirmar}`}
+            className={currentStyles.btnConfirmarClass}
           >
             {cargando ? (
               <>

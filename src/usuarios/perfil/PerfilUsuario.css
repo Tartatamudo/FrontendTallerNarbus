@@ -1,21 +1,21 @@
 /* =========================================================
-   PERFIL DE USUARIO - SISTEMA DE DISEÑO OFICIAL NARBUS
-   Paleta Neutra: Negro / Gris Grafito / Acentos Saturados
+   PERFIL DE USUARIO - CREDENCIAL DIGITAL DE OPERADOR
+   Narbus Flota & Mantenimiento Taller
+   Soporte Bi-modo: Dark (Predeterminado) & Light Mode
    ========================================================= */
 
 .perfil-container {
   width: 100%;
-  max-width: 1240px;
+  max-width: 860px;
   margin: 0 auto;
-  padding-bottom: 40px;
-  color: #ffffff;
+  padding: 1.5rem 1rem 2.5rem 1rem;
   animation: perfilFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes perfilFadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -24,417 +24,270 @@
 }
 
 /* =========================================================
-   1. BARRA SUPERIOR DE ESTADO / METADATOS (PILLS)
+   1. HERO CARD: CREDENCIAL OFICIAL DE OPERADOR
    ========================================================= */
-.perfil-status-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.perfil-status-left {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.perfil-status-right {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Pills de Estado con fondo gris oscuro neutro */
-.perfil-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-
-.perfil-pill-blue {
-  background: #18202d;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-}
-
-.perfil-pill-green {
-  background: #16241c;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-}
-
-.perfil-pill-amber {
-  background: #252016;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
-}
-
-.perfil-pill-purple {
-  background: #23192c;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #c084fc;
-}
-
-.perfil-dot-green {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.perfil-date-text {
-  font-size: 12px;
-  color: #9ca3af;
-  font-weight: 500;
-  margin-left: 2px;
-}
-
-/* Botones de Filtro Rápidos (Lado Derecho) */
-.perfil-filter-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: #1a1d24;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #d1d5db;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.perfil-filter-pill:hover {
-  background: #232731;
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-}
-
-.perfil-filter-active {
-  background: #20242e;
-  border-color: rgba(56, 189, 248, 0.35);
-  color: #ffffff;
-}
-
-/* =========================================================
-   2. ENCABEZADO DE BIENVENIDA HERO
-   ========================================================= */
-.perfil-welcome-block {
-  margin-bottom: 28px;
-}
-
-.perfil-welcome-title {
-  font-size: 28px;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-@media (min-width: 640px) {
-  .perfil-welcome-title {
-    font-size: 34px;
-  }
-}
-
-.perfil-welcome-name {
-  color: #38bdf8;
-  text-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
-}
-
-.perfil-welcome-subtitle {
-  font-size: 14px;
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-/* =========================================================
-   3. GRILLA DE 4 TARJETAS KPI (METRIC CARDS EN GRIS NEUTRO)
-   ========================================================= */
-.perfil-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-@media (min-width: 640px) {
-  .perfil-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .perfil-kpi-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-.perfil-kpi-card {
+.perfil-hero-card {
   position: relative;
   background: #16181d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 160px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+  border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+  transition: all 0.25s ease;
 }
 
-.perfil-kpi-card::before {
+/* Banner de Cabecera */
+.perfil-cover-banner {
+  height: 110px;
+  background: linear-gradient(135deg, #111317 0%, #1a1e27 60%, #202633 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.perfil-cover-banner::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: transparent;
-  transition: background 0.25s ease;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.perfil-kpi-card:hover {
-  transform: translateY(-2px);
-  background: #1b1e25;
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.65);
+/* Contenido Principal de la Credencial */
+.perfil-hero-body {
+  padding: 0 24px 24px 24px;
+  position: relative;
 }
 
-.perfil-kpi-blue:hover::before {
-  background: linear-gradient(90deg, #0284c7, #38bdf8);
-}
-.perfil-kpi-green:hover::before {
-  background: linear-gradient(90deg, #059669, #10b981);
-}
-.perfil-kpi-amber:hover::before {
-  background: linear-gradient(90deg, #d97706, #f59e0b);
-}
-.perfil-kpi-purple:hover::before {
-  background: linear-gradient(90deg, #7c3aed, #a855f7);
-}
-
-.perfil-kpi-header {
+/* Avatar Flotante con Halo Temático por Rol */
+.perfil-avatar-container {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  align-items: flex-end;
+  margin-top: -50px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.perfil-kpi-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+.perfil-avatar-circle {
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  background: #16181d;
+  padding: 4px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #20242e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.12);
 }
 
-.perfil-kpi-tag {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 9999px;
+.perfil-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
 }
 
-.perfil-tag-blue {
-  background: #182230;
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-}
-.perfil-tag-green {
-  background: #17271e;
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-.perfil-tag-amber {
-  background: #262118;
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
-.perfil-tag-purple {
-  background: #241a2c;
-  color: #c084fc;
-  border: 1px solid rgba(168, 85, 247, 0.25);
+.perfil-avatar-circle:hover .perfil-avatar-inner {
+  transform: scale(1.04);
 }
 
-.perfil-kpi-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: #9ca3af;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+/* Temas Cromáticos por Rol para el Avatar */
+.perfil-avatar-conductor .perfil-avatar-inner {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
 }
 
-.perfil-kpi-value {
-  font-size: 28px;
+.perfil-avatar-mecanico .perfil-avatar-inner {
+  background: linear-gradient(135deg, #4f46e5, #818cf8);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+}
+
+.perfil-avatar-supervisor .perfil-avatar-inner {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+}
+
+.perfil-avatar-admin .perfil-avatar-inner {
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+}
+
+/* Nombre de Usuario */
+.perfil-user-name {
+  font-size: 1.625rem;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 12px;
-}
-
-.perfil-kpi-footer {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #9ca3af;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.perfil-kpi-card:hover .perfil-kpi-footer {
-  color: #e5e7eb;
-}
-
-/* =========================================================
-   4. SECCIÓN PRINCIPAL A 2 COLUMNAS (ACCESOS + INSPIRACIÓN)
-   ========================================================= */
-.perfil-main-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-@media (min-width: 1024px) {
-  .perfil-main-grid {
-    grid-template-columns: 1.6fr 1fr;
-    align-items: start;
-  }
-}
-
-/* Columna Izquierda: Panel de Accesos Rápidos */
-.perfil-accesos-card {
-  background: #16181d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
-}
-
-.perfil-accesos-header {
-  margin-bottom: 20px;
-}
-
-.perfil-accesos-title-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 4px;
-}
-
-.perfil-sparkle-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: #20242e;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.perfil-accesos-title {
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  color: #ffffff;
-  text-transform: uppercase;
-}
-
-.perfil-accesos-subtitle {
-  font-size: 13px;
-  color: #9ca3af;
-}
-
-/* Grilla Interna de Módulos (2 Columnas) */
-.perfil-modulos-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  line-height: 1.25;
 }
 
 @media (min-width: 640px) {
-  .perfil-modulos-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .perfil-user-name {
+    font-size: 1.875rem;
   }
 }
 
-.perfil-modulo-item {
-  background: #1c1f26;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 14px 16px;
+/* Badges y Chips de Estado */
+.perfil-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.perfil-role-conductor {
+  background: rgba(56, 189, 248, 0.18);
+  color: #e0f2fe;
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.perfil-role-mecanico {
+  background: rgba(99, 102, 241, 0.22);
+  color: #e0e7ff;
+  border: 1px solid rgba(129, 140, 248, 0.65);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
+}
+
+.perfil-role-supervisor {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fef08a;
+  border: 1px solid rgba(251, 191, 36, 0.65);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+
+.perfil-role-admin {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fee2e2;
+  border: 1px solid rgba(248, 113, 113, 0.65);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+}
+
+.perfil-rut-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f1f5f9;
+  background: #1e2430;
+  padding: 4px 11px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================
+   2. TARJETA PRINCIPAL: TAREAS Y MÓDULOS HABILITADOS
+   ========================================================= */
+.perfil-section-card {
+  background: #16181d;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+  transition: all 0.25s ease;
+}
+
+.perfil-section-header {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  text-align: left;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.perfil-modulo-item:hover {
-  background: #222630;
-  border-color: rgba(255, 255, 255, 0.18);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.5);
-}
-
-.perfil-modulo-item:active {
-  transform: translateY(0);
-}
-
-.perfil-modulo-left {
+.perfil-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
+  gap: 10px;
 }
 
-/* Cajas de Iconos Oscuras (No claras ni blancas) */
-.perfil-modulo-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+/* Lista de Módulos Operacionales Explicativos */
+.perfil-modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.perfil-module-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #1c1f26;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perfil-module-card:hover {
+  background: #222630;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.perfil-module-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Cajas de Iconos con Contraste Oscuro */
+.perfil-icon-blue {
+  background: #1b2330;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.perfil-icon-emerald {
+  background: #17271e;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.perfil-icon-indigo {
+  background: #1e2030;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
 }
 
 .perfil-icon-amber {
@@ -442,252 +295,112 @@
   border: 1px solid rgba(245, 158, 11, 0.3);
   color: #fbbf24;
 }
-.perfil-icon-blue {
-  background: #1b2330;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-}
+
 .perfil-icon-rose {
-  background: #271a1f;
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  color: #fb7185;
-}
-.perfil-icon-emerald {
-  background: #18281f;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-}
-.perfil-icon-purple {
-  background: #251a2d;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #c084fc;
-}
-.perfil-icon-indigo {
-  background: #1e2030;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #818cf8;
+  background: #271a1d;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
-.perfil-modulo-content {
-  min-width: 0;
+.perfil-module-info {
   flex: 1;
 }
 
-.perfil-modulo-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-  flex-wrap: wrap;
-}
-
-.perfil-modulo-title {
-  font-size: 13.5px;
+.perfil-module-title {
+  font-size: 14.5px;
   font-weight: 800;
   color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 4px;
 }
 
-.perfil-modulo-category-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 9999px;
-  background: #262a34;
-  color: #9ca3af;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.perfil-modulo-desc {
-  font-size: 11.5px;
-  color: #9ca3af;
-  line-height: 1.35;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.perfil-modulo-arrow {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: #262a34;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  color: #9ca3af;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.perfil-modulo-item:hover .perfil-modulo-arrow {
-  background: #38bdf8;
-  border-color: #38bdf8;
-  color: #0f172a;
-  transform: translate(2px, -2px);
-}
-
-/* Columna Derecha: Tarjeta de Inspiración & Comunidad */
-.perfil-inspiration-card {
-  background: #16181d;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.perfil-inspiration-hero {
-  position: relative;
-  min-height: 220px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: 
-    linear-gradient(180deg, rgba(17, 19, 23, 0.5) 0%, rgba(17, 19, 23, 0.98) 100%),
-    radial-gradient(circle at 80% 30%, rgba(16, 185, 129, 0.18) 0%, transparent 60%),
-    #16181d;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.perfil-inspiration-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.perfil-brand-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.perfil-module-desc {
   font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  color: #ffffff;
-}
-
-.perfil-brand-star {
-  color: #10b981;
-}
-
-.perfil-inspiration-badge {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  background: #17271e;
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-}
-
-.perfil-refresh-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #242832;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #d1d5db;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.perfil-refresh-btn:hover {
-  background: #2e3340;
-  color: #ffffff;
-  transform: rotate(45deg);
-}
-
-.perfil-quote-box {
-  margin-top: 24px;
-  margin-bottom: 8px;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-
-.perfil-quote-icon-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: #17271e;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
-}
-
-.perfil-quote-text {
-  font-size: 13.5px;
   font-weight: 500;
-  color: #f3f4f6;
-  line-height: 1.55;
-  font-style: italic;
-}
-
-.perfil-inspiration-footer {
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #16181d;
-}
-
-.perfil-comunidad-tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fbbf24;
-}
-
-.perfil-num-pill {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  background: #20242e;
   color: #9ca3af;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.5;
 }
 
 /* =========================================================
-   5. BOTONES DE ACCIÓN AL PIE (VOLVER Y CERRAR SESIÓN)
+   3. BOTONES DE ACCIÓN Y ERGONOMÍA
+   ========================================================= */
+.perfil-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .perfil-actions-group {
+    flex-direction: row;
+  }
+}
+
+.perfil-action-btn {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  padding: 0 18px;
+  touch-action: manipulation;
+}
+
+.perfil-btn-primary {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.perfil-btn-primary:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+}
+
+.perfil-btn-menu {
+  background: #20242e;
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.perfil-btn-menu:hover {
+  background: #272d3b;
+  color: #7dd3fc;
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   4. BOTONES INFERIORES (VOLVER Y CERRAR SESIÓN)
    ========================================================= */
 .perfil-footer-actions {
-  padding-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 @media (min-width: 640px) {
   .perfil-footer-actions {
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 }
 
 .perfil-btn-volver-menu {
-  min-height: 50px;
-  padding: 0 24px;
+  min-height: 48px;
+  padding: 0 22px;
   background: #1c1f26;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -699,7 +412,7 @@
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
@@ -707,8 +420,8 @@
   background: #242832;
   border-color: rgba(255, 255, 255, 0.25);
   color: #38bdf8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .perfil-btn-volver-menu:active {
@@ -716,8 +429,8 @@
 }
 
 .perfil-btn-logout {
-  min-height: 50px;
-  padding: 0 24px;
+  min-height: 48px;
+  padding: 0 22px;
   border-radius: 14px;
   background: #1c1f26;
   color: #f87171;
@@ -727,9 +440,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
@@ -737,10 +450,160 @@
   background: #261b1e;
   border-color: #ef4444;
   color: #fca5a5;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
 }
 
 .perfil-btn-logout:active {
   transform: translateY(0);
+}
+
+/* =========================================================
+   ADAPTACIONES DE PERFIL EN MODO CLARO ([data-theme="light"])
+   ========================================================= */
+[data-theme="light"] .perfil-hero-card,
+[data-theme="light"] .perfil-section-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .perfil-cover-banner {
+  background: linear-gradient(135deg, #0b1727 0%, #004579 50%, #005ea4 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="light"] .perfil-avatar-circle {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .perfil-user-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .perfil-rut-badge {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .perfil-role-conductor {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+[data-theme="light"] .perfil-role-mecanico {
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+[data-theme="light"] .perfil-role-supervisor {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+[data-theme="light"] .perfil-role-admin {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+[data-theme="light"] .perfil-section-header {
+  border-bottom-color: #f1f5f9;
+}
+
+[data-theme="light"] .perfil-section-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .perfil-module-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .perfil-module-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .perfil-icon-blue {
+  background: #eff6ff;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+
+[data-theme="light"] .perfil-icon-emerald {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+[data-theme="light"] .perfil-icon-indigo {
+  background: #eef2ff;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+}
+
+[data-theme="light"] .perfil-icon-amber {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fde68a;
+}
+
+[data-theme="light"] .perfil-icon-rose {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+[data-theme="light"] .perfil-module-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .perfil-module-desc {
+  color: #475569;
+}
+
+[data-theme="light"] .perfil-btn-menu {
+  background: #f1f5f9;
+  color: #0284c7;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .perfil-btn-menu:hover {
+  background: #e2e8f0;
+  color: #0369a1;
+}
+
+[data-theme="light"] .perfil-footer-actions {
+  border-top-color: #f1f5f9;
+}
+
+[data-theme="light"] .perfil-btn-volver-menu {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+[data-theme="light"] .perfil-btn-volver-menu:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+[data-theme="light"] .perfil-btn-logout {
+  background: #ffffff;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);
+}
+
+[data-theme="light"] .perfil-btn-logout:hover {
+  background: #fef2f2;
+  border-color: #f87171;
 }

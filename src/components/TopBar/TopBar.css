@@ -89,11 +89,110 @@
 }
 
 .topbar-btn-volver {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .topbar-btn-volver:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Switch de Modo Oscuro / Claro */
+.topbar-theme-toggle {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  touch-action: manipulation;
+}
+
+.topbar-theme-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #1c1f26;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 3px 10px 3px 4px;
+  border-radius: 9999px;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.topbar-theme-toggle:hover .topbar-theme-pill {
+  background: #252a34;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.topbar-theme-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #12141a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.thumb-light {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.topbar-theme-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #d1d5db;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* =========================================================
+   ADAPTACIONES DE TOPBAR EN MODO CLARO
+   ========================================================= */
+[data-theme="light"] .topbar-bar {
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .topbar-brand h2 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .topbar-brand-icon {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+[data-theme="light"] .topbar-btn-volver {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .topbar-btn-volver:hover {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .topbar-theme-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .topbar-theme-toggle:hover .topbar-theme-pill {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+[data-theme="light"] .topbar-theme-label {
+  color: #334155;
 }
 

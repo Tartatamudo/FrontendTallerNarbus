@@ -1,0 +1,71 @@
+/* =========================================================
+   ESTILOS COMPONENTE BASE - MODAL BASE (NARBUS)
+   Soporte completo para Modo Oscuro y Modo Claro
+   ========================================================= */
+
+.modal-base-card {
+  background-color: #16181d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="light"] .modal-base-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.modal-base-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .modal-base-header {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.modal-base-title {
+  color: #ffffff;
+}
+
+[data-theme="light"] .modal-base-title {
+  color: #0f172a !important;
+}
+
+.modal-base-close-btn {
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-base-close-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .modal-base-close-btn {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .modal-base-close-btn:hover {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+
+.modal-base-body {
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .modal-base-body {
+  color: #334155 !important;
+}
+
+.modal-base-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .modal-base-footer {
+  border-top-color: #e2e8f0 !important;
+}

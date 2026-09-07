@@ -4,6 +4,7 @@ import MecanicoSelector from '../../components/MecanicoSelector/MecanicoSelector
 import { type MecanicoItem } from '../../usuarios/auth/authService';
 import { asignarDesdeSupervision } from './supervisionService';
 import { getApiErrorMessage } from '../../utils/apiErrors';
+import './ModalAsignarFallas.css';
 
 interface DetalleItem {
   id: number;
@@ -77,24 +78,25 @@ export default function ModalAsignarFallas({
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b pb-3">
-          <div className="flex items-center gap-2 text-indigo-700">
-            <UserCheck size={22} />
-            <h3 className="font-black text-base text-slate-900">
+      <div className="maf-card">
+        <div className="maf-header">
+          <div className="flex items-center gap-2">
+            <UserCheck size={22} className="maf-icon" />
+            <h3 className="maf-title">
               Asignar Averías • Bus {nBus} (#{solicitudId})
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition cursor-pointer"
+            className="maf-close-btn"
+            title="Cerrar modal"
           >
             <X size={18} />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-2">
+          <div className="p-3 bg-red-950/40 border border-red-500/30 text-red-300 text-xs font-bold rounded-xl flex items-center gap-2 [data-theme=light]_&:bg-red-50 [data-theme=light]_&:border-red-200 [data-theme=light]_&:text-red-700">
             <AlertCircle size={16} className="shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -112,23 +114,23 @@ export default function ModalAsignarFallas({
 
         {/* Lista de Averías */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1.5">
+          <label className="maf-label">
             Averías a Encargar ({detallesIds.length} seleccionadas):
           </label>
           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
             {detalles.map((d) => {
               const isChecked = detallesIds.includes(d.id);
               const isResuelta = Boolean(d.resuelto);
+              const statusClass = isResuelta
+                ? 'maf-averia-resuelta'
+                : isChecked
+                ? 'maf-averia-checked'
+                : '';
+
               return (
                 <label
                   key={d.id}
-                  className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-xs transition select-none ${
-                    isResuelta
-                      ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      : isChecked
-                      ? 'bg-indigo-50/70 border-indigo-300 font-bold text-indigo-950 cursor-pointer'
-                      : 'bg-white border-slate-200 text-slate-600 cursor-pointer'
-                  }`}
+                  className={`maf-averia-item ${statusClass}`}
                   title={isResuelta ? 'Avería ya resuelta (bloqueada)' : undefined}
                 >
                   <input
@@ -143,11 +145,11 @@ export default function ModalAsignarFallas({
                     }`}
                   />
                   <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                    <span className={isResuelta ? 'line-through text-slate-400' : ''}>
+                    <span className={isResuelta ? 'line-through opacity-70' : ''}>
                       {d.descripcion_personalizada}
                     </span>
                     {isResuelta && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded shrink-0 [data-theme=light]_&:text-emerald-700 [data-theme=light]_&:bg-emerald-100 [data-theme=light]_&:border-transparent">
                         Resuelta ✓
                       </span>
                     )}
@@ -160,7 +162,7 @@ export default function ModalAsignarFallas({
 
         {/* Comentario / Instrucción */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="maf-label">
             Instrucción u Observación de Supervisión:
           </label>
           <textarea
@@ -168,16 +170,16 @@ export default function ModalAsignarFallas({
             placeholder="Ej: Despacho prioritario turno mañana..."
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
-            className="w-full p-2.5 border rounded-xl text-xs font-semibold"
+            className="maf-textarea"
           />
         </div>
 
-        <div className="flex gap-2 pt-2 border-t">
+        <div className="maf-footer">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
+            className="maf-btn-cancelar"
           >
             Cancelar
           </button>
@@ -185,7 +187,7 @@ export default function ModalAsignarFallas({
             type="button"
             onClick={handleConfirmar}
             disabled={loading}
-            className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+            className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
             {loading ? <RefreshCw size={14} className="animate-spin" /> : <UserCheck size={14} />}
             <span>{loading ? 'Asignando...' : 'Confirmar Asignación'}</span>

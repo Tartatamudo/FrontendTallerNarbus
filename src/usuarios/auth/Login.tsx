@@ -128,7 +128,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         </form>
 
         <div className="auth-footer">
-          <p>Módulo de Usuarios & Autenticación • Narbus Flotas v2.0</p>
+          <p>Sistema de Acceso & Autenticación • Narbus Flotas v2.0</p>
         </div>
       </div>
     </div>

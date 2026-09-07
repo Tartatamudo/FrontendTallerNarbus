@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 23,
+  "id": "AV-0023",
+  "timestamp": "2026-09-07T10:25:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-05",
+    "name": "Restauración de Perfil de Operador y Soporte Dual de Temas",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Restauración integral de la pantalla de Perfil de Usuario (PerfilUsuario.tsx y PerfilUsuario.css) a su estructura funcional de credencial oficial de operador, rol asignado, identificación y catálogo didáctico de tareas por puesto de trabajo ('¿Qué puedes hacer en tu cuenta?'), con botones ergonómicos inferiores de Volver a la Consola Principal y Cerrar Sesión. Se preservó y optimizó la compatibilidad completa con el switch de Modo Oscuro y Modo Claro.",
+  "scope": {
+    "planned": [
+      "Restaurar PerfilUsuario.tsx con la estructura de Hero Card y tareas por rol",
+      "Garantizar compatibilidad con el switch de tema oscuro/claro en PerfilUsuario.css",
+      "Mantener botones inferiores de Volver al Menú y Cerrar Sesión integrados",
+      "Verificar compilación limpia con Vite y TypeScript"
+    ],
+    "completed": [
+      "PerfilUsuario.tsx: Reestablecido componente con avatar por rol, nombre, RUT, estado de cuenta activa, catálogo de módulos por rol y botones de navegación/cierre de sesión",
+      "PerfilUsuario.css: Diseñado con soporte bimodal transparente (negro grafito #16181d en dark mode y blanco #ffffff en light mode)",
+      "ThemeContext.tsx & TopBar.tsx: Mantenido el switch táctil entre Modo Oscuro y Modo Claro con persistencia desacoplada en storage.ts",
+      "npm run build: Compilación exitosa sin errores de tipado"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Restaurada la credencial digital de operador con tareas operacionales por rol, navegación con rutas y remoción del texto de marca de agua 'NARBUS FLOTA · PERFIL DE USUARIO' del banner superior."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Estilos restaurados con soporte completo tanto para tema oscuro neutro como tema claro, y alineación adyacente (gap: 16px, justify-content: flex-start) para los botones Volver y Cerrar Sesión."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-038",
+      "title": "Restauración de la Credencial Operativa en Perfil frente a Dashboards Genéricos",
+      "rationale": "El perfil de usuario de Narbus está enfocado en validar la identidad del operador y orientar de manera práctica sus tareas y accesos en terreno. Revertir widgets genéricos de analítica restablece la claridad funcional exigida para el uso en taller.",
+      "consequences": "La interfaz recupera su propósito específico y simple, ahora con soporte dual de temas oscuro y claro."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Exit code 0. TypeScript compilado sin errores con tsc -b y bundle de producción generado en 822ms."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación por parte del usuario de la pantalla de perfil restaurada y el switch de temas.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "La pantalla responde instantáneamente al cambio entre Modo Oscuro y Modo Claro desde la TopBar."
+  ]
+}

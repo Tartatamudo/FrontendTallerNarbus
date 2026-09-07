@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 26,
+  "id": "AV-0026",
+  "timestamp": "2026-09-07T12:00:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-08",
+    "name": "Modo Oscuro en Gestión y Creación de Usuarios, Retiro de Casilla ID y Depuración de Etiquetas 'Módulo [Rol]: [Detalle]'",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación integral del soporte de Modo Oscuro y Modo Claro para el módulo de Gestión y Creación de Usuarios (/crear_usuario), estilización temática adaptativa del modal de confirmación táctil, retiro de la casilla de ID Conductor en el formulario de creación de usuario y depuración global de etiquetas redundantes con formato 'Módulo [Rol]: [Detalle]' a lo largo de las pantallas del sistema.",
+  "scope": {
+    "planned": [
+      "Diseñar e implementar soporte completo de Modo Oscuro y Modo Claro en CrearUsuario y ListaUsuarios",
+      "Adaptar ModalConfirmacion con estilos temáticos adaptativos sin fondos blancos cegadores en modo oscuro",
+      "Quitar la casilla de entrada de ID Conductor en CrearUsuario.tsx",
+      "Eliminar textos y badges redundantes que indicaban 'Módulo [Rol]: [Detalle]' en CrearUsuario, ListaUsuarios, MenuSeleccion y Login",
+      "Aumentar luminosidad y brillo con efecto neón/glow de todos los chips y badges en modo oscuro",
+      "Verificar compilación limpia con npm run build"
+    ],
+    "completed": [
+      "src/supervisores/gestion_usuarios/CrearUsuario.css: Estilizado con paleta oscura corporativa (#16181d, bordes rgba(255,255,255,0.08)) y selectores de modo claro [data-theme='light'] para inputs, selects, botones y alertas",
+      "src/supervisores/gestion_usuarios/CrearUsuario.tsx: Eliminada casilla y estado conductorId; eliminado prefijo 'Módulo Supervisor:' del título, dejándolo como 'Registrar Nuevo Usuario'",
+      "src/supervisores/gestion_usuarios/ListaUsuarios.css: Sistema de estilos dual completo para pestañas, buscador, botón de refresco, tarjetas de usuarios, badges de rol y estado con alta luminosidad, bordes vibrantes y resplandor neón (box-shadow)",
+      "src/supervisores/gestion_usuarios/ListaUsuarios.tsx: Aplicación de clases semánticas temáticas lu-* y retiro de la etiqueta de cabecera 'MÓDULO SUPERVISOR / ADMIN'",
+      "src/components/ModalConfirmacion/ModalConfirmacion.css: Creado sistema de estilos con variables y modo oscuro/claro nativo para el modal de confirmación",
+      "src/components/ModalConfirmacion/ModalConfirmacion.tsx: Integración de clases semánticas mc-* asegurando fondo oscuro (#16181d), texto legible y botones de alto contraste",
+      "src/components/MenuSeleccion/MenuSeleccion.tsx: Removidos los badges superfluos 'MÓDULO CONDUCTOR', 'MÓDULO SUPERVISOR' y 'MÓDULO MECÁNICO' en las tarjetas de acceso operacional",
+      "src/usuarios/auth/Login.tsx: Actualizado texto del pie a 'Sistema de Acceso & Autenticación'",
+      "src/index.css: Badges de estado generales (.badge-status, .badge-ok, .badge-defecto, .badge-pending, .badge-neutral) actualizados con colores pasteles luminosos y glow en modo oscuro",
+      "src/utils/formatters.ts: Estados de orden (FINALIZADO, EN_REPARACION, PENDIENTE, REPORTADO) iluminados con textos claros y resplandor suave para visión nocturna y luz de taller",
+      "src/components/MecanicoSelector/MecanicoSelector.css: Chips de mecánicos seleccionados con fondo índigo brillante, borde iluminado y texto de alta legibilidad en modo oscuro",
+      "src/usuarios/perfil/PerfilUsuario.css: Badges de rol y RUT iluminados con resplandor en modo oscuro",
+      "src/supervisores/supervision/tabs/AlertasTab.tsx: Badges de severidad crítica/alta iluminados con glow en modo oscuro",
+      "npm run build: Compilación exitosa en 568ms sin errores de TypeScript ni Vite (exit code 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de lógica o endpoints de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/gestion_usuarios/CrearUsuario.tsx",
+      "action": "modified",
+      "summary": "Retiro del campo ID Conductor y simplificación del título de la tarjeta a 'Registrar Nuevo Usuario'."
+    },
+    {
+      "path": "src/supervisores/gestion_usuarios/CrearUsuario.css",
+      "action": "modified",
+      "summary": "Estilos duales (oscuro y claro) para formularios, inputs, select, botones y alertas."
+    },
+    {
+      "path": "src/supervisores/gestion_usuarios/ListaUsuarios.tsx",
+      "action": "modified",
+      "summary": "Integración de clases lu-* y eliminación del badge de cabecera 'MÓDULO SUPERVISOR / ADMIN'."
+    },
+    {
+      "path": "src/supervisores/gestion_usuarios/ListaUsuarios.css",
+      "action": "modified",
+      "summary": "Definición de estilos para pestañas, buscador, tarjetas de usuarios, badges de rol/estado y botones de acción."
+    },
+    {
+      "path": "src/components/ModalConfirmacion/ModalConfirmacion.css",
+      "action": "created",
+      "summary": "Estilos temáticos adaptativos para el modal de confirmación táctil con soporte dual."
+    },
+    {
+      "path": "src/components/ModalConfirmacion/ModalConfirmacion.tsx",
+      "action": "modified",
+      "summary": "Adopción de clases mc-* para visualización óptima en modo oscuro y claro."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.tsx",
+      "action": "modified",
+      "summary": "Retiro de badges redundantes de módulos por rol en las tarjetas de navegación."
+    },
+    {
+      "path": "src/usuarios/auth/Login.tsx",
+      "action": "modified",
+      "summary": "Actualización de texto en el pie de página del formulario de login."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-0026",
+      "title": "Eliminación de Campo ID Conductor y Limpieza de Prefijos Burocráticos",
+      "rationale": "El ID Conductor manual era redundante y confuso durante el registro de usuarios, y las etiquetas repetitivas del tipo 'Módulo [Rol]: [Detalle]' sobrecargaban visualmente la interfaz de usuario en menús y cabeceras.",
+      "consequences": "Flujo de creación de usuarios más ágil y directo, con una interfaz más limpia, moderna y visualmente consistente tanto en Modo Oscuro como en Modo Claro."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "vite v8.2.1 building client environment for production... ✓ 1931 modules transformed. ✓ built in 541ms with exit code 0"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación operativa con el usuario y supervisión de los flujos de control de flota.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "pending",
+    "dirty": true
+  },
+  "notes": [
+    "Todos los componentes y modales respetan estándares de accesibilidad en taller (mínimo 44px de altura táctil)."
+  ]
+}

@@ -1,0 +1,264 @@
+/* =========================================================
+   ESTILOS PESTAÑA AUDITORIA DE BUSES (NARBUS)
+   Soporte completo para Modo Oscuro y Modo Claro
+   ========================================================= */
+
+.aud-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Formulario de Filtros */
+.aud-filter-form {
+  background-color: #16181d;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="light"] .aud-filter-form {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.aud-filter-field {
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+
+.aud-input,
+.aud-select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: #12141a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.aud-input:focus,
+.aud-select:focus {
+  border-color: #6366f1;
+}
+
+[data-theme="light"] .aud-input,
+[data-theme="light"] .aud-select {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .aud-input:focus,
+[data-theme="light"] .aud-select:focus {
+  border-color: #4f46e5 !important;
+  background-color: #ffffff !important;
+}
+
+/* Botones de Filtro */
+.aud-btn-filter {
+  padding: 0.625rem 1rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: background-color 0.15s ease;
+}
+
+.aud-btn-filter:hover {
+  background-color: #4338ca;
+}
+
+.aud-btn-clear {
+  padding: 0.625rem 0.875rem;
+  background-color: #1c1f26;
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.aud-btn-clear:hover {
+  background-color: #262b36;
+}
+
+[data-theme="light"] .aud-btn-clear {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .aud-btn-clear:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Estado Vacío */
+.aud-empty {
+  padding: 2.5rem;
+  text-align: center;
+  background-color: #16181d;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+[data-theme="light"] .aud-empty {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Tarjeta Principal de Auditoría (OT) */
+.aud-card {
+  background-color: #16181d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aud-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="light"] .aud-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .aud-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Insignia OT # */
+.aud-ot-badge {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+}
+
+[data-theme="light"] .aud-ot-badge {
+  background-color: #eef2ff !important;
+  color: #3730a3 !important;
+  border-color: #c7d2fe !important;
+}
+
+/* Fecha y Hora */
+.aud-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+[data-theme="light"] .aud-date {
+  color: #64748b !important;
+}
+
+/* Título de Bus */
+.aud-bus-title {
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 0.25rem;
+}
+
+[data-theme="light"] .aud-bus-title {
+  color: #0f172a !important;
+}
+
+/* Descripción de Falla */
+.aud-bus-desc {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  font-weight: 500;
+  margin-top: 0.125rem;
+}
+
+[data-theme="light"] .aud-bus-desc {
+  color: #475569 !important;
+}
+
+/* Botón Ver Ficha */
+.aud-btn-ver {
+  padding: 0.5rem 0.875rem;
+  background-color: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  font-size: 0.75rem;
+  font-weight: 900;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.aud-btn-ver:hover {
+  background-color: rgba(14, 165, 233, 0.25);
+  color: #7dd3fc;
+}
+
+[data-theme="light"] .aud-btn-ver {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .aud-btn-ver:hover {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+/* Botón Asignar */
+.aud-btn-asignar {
+  padding: 0.5rem 0.875rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  border-radius: 0.75rem;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.aud-btn-asignar:hover {
+  background-color: #4338ca;
+}

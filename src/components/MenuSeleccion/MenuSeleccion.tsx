@@ -55,7 +55,7 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
     <div className="menu-wrapper">
       <main className="menu-main-content">
         {/* Banner de datos del usuario logueado */}
-        <div className="w-full bg-[#111622] border border-white/10 rounded-2xl p-4 mb-6 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div className="menu-user-banner w-full rounded-2xl p-4 mb-6 shadow-md flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-sky-500 text-slate-950 flex items-center justify-center font-black text-lg shrink-0 shadow-md">
               {currentUser?.username ? currentUser.username.charAt(0).toUpperCase() : <UserIcon size={22} />}
@@ -67,7 +67,7 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                   <Shield size={11} className="text-sky-400" /> Rol: {rol || 'CARGANDO...'}
                 </span>
               </div>
-              <p className="text-lg font-black text-white leading-tight">
+              <p className="menu-user-name text-lg font-black leading-tight">
                 {currentUser?.username || 'Usuario Narbus'}
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
 
           <button
             onClick={() => handleSelectOption('perfil')}
-            className="px-4 py-2 bg-[#182234] hover:bg-[#202d44] text-sky-400 hover:text-sky-300 border border-sky-400/30 font-bold rounded-xl text-xs flex items-center gap-2 transition cursor-pointer"
+            className="menu-btn-perfil px-4 py-2 font-bold rounded-xl text-xs flex items-center gap-2 transition cursor-pointer"
           >
             <UserIcon size={14} />
             <span>Mi Perfil</span>
@@ -83,14 +83,14 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
         </div>
 
         <div className="menu-welcome-text">
-          <h1 className="menu-welcome-title">Consola Principal de Flota</h1>
+          <h1 className="menu-welcome-title">Módulos Operacionales</h1>
           <p className="menu-welcome-subtitle">
-            Seleccione el módulo operacional correspondiente a su rol ({rol || 'cargando...'}) para ingresar o supervisar registros.
+            Selecciona una opción para continuar.
           </p>
         </div>
 
         <div className="menu-options-grid">
-          {/* Módulo Conductor: Ingreso a Taller y Auxilio de Neumáticos */}
+          {/* Ingreso a Taller y Auxilio de Neumáticos */}
           {isConductorOrAdmin && (
             <>
               <div
@@ -100,9 +100,6 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                 <div>
                   <div className="menu-card-icon-box menu-card-icon-mantencion">
                     <Wrench size={30} />
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black bg-[#1b2330] text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full">MÓDULO CONDUCTOR</span>
                   </div>
                   <h3 className="menu-card-title">Ingreso de Bus a Taller</h3>
                   <p className="menu-card-desc">
@@ -124,9 +121,6 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                   <div className="menu-card-icon-box menu-card-icon-neumaticos">
                     <Disc size={30} />
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black bg-[#1a2820] text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">MÓDULO CONDUCTOR</span>
-                  </div>
                   <h3 className="menu-card-title">Emergencia de Neumáticos en Ruta</h3>
                   <p className="menu-card-desc">
                     Declaración de auxilio carretero por pinchazos o reventones, vulcanización y marca de fuego.
@@ -141,7 +135,7 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
             </>
           )}
 
-          {/* Módulo Supervisor: Telemetría / Auditoría y Gestión de Personal */}
+          {/* Telemetría / Auditoría y Gestión de Personal */}
           {isSupervisorOrAdmin && (
             <>
               <div
@@ -152,14 +146,13 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                   <div className="menu-card-icon-box menu-card-icon-supervision">
                     <BarChart3 size={30} />
                   </div>
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-[10px] font-black bg-[#261c33] text-purple-400 border border-purple-500/30 px-2.5 py-0.5 rounded-full">MÓDULO SUPERVISOR</span>
-                    {alertasCount > 0 && (
+                  {alertasCount > 0 && (
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-[10px] font-black bg-red-950 text-red-300 border border-red-500/40 px-2.5 py-0.5 rounded-full animate-pulse">
                         {alertasCount} alerta(s) activa(s)
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <h3 className="menu-card-title">Supervisión y Telemetría de Flota</h3>
                   <p className="menu-card-desc">
                     Tablero de KPIs en vivo, centro de alertas críticas y bitácora histórica inmutable de buses.
@@ -180,9 +173,6 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
                   <div className="menu-card-icon-box menu-card-icon-personal">
                     <UserPlus size={30} />
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black bg-[#2b2416] text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full">MÓDULO SUPERVISOR</span>
-                  </div>
                   <h3 className="menu-card-title">Control de Acceso y Personal</h3>
                   <p className="menu-card-desc">
                     Administración de cuentas, credenciales y permisos para choferes, supervisores y mecánicos.
@@ -197,7 +187,7 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
             </>
           )}
 
-          {/* Módulo Mecánico: Consola Operacional de Taller */}
+          {/* Consola Operacional de Taller */}
           {isMecanico && (
             <div
               onClick={() => handleSelectOption('mecanico')}
@@ -206,9 +196,6 @@ export default function MenuSeleccion({ onSelectOption, user }: MenuSeleccionPro
               <div>
                 <div className="menu-card-icon-box menu-card-icon-mecanico">
                   <ClipboardCheck size={30} />
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-black bg-[#1b2330] text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full">MÓDULO MECÁNICO</span>
                 </div>
                 <h3 className="menu-card-title">Consola de Mecánicos: Órdenes en Curso</h3>
                 <p className="menu-card-desc">

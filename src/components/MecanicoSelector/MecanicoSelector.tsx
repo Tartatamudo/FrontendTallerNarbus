@@ -151,8 +151,8 @@ export default function MecanicoSelector({
                   onClick={() => handleSelect(m)}
                   className={`mecanico-selector-dropdown-item ${isSelected ? 'mecanico-selector-dropdown-item-selected' : ''}`}
                 >
-                  <span className="font-extrabold text-slate-800">{m.nombre_completo}</span>
-                  {isSelected && <Check size={16} className="text-indigo-600 shrink-0" />}
+                  <span className="font-extrabold text-inherit">{m.nombre_completo}</span>
+                  {isSelected && <Check size={16} className="text-indigo-400 [data-theme=light]_&:text-indigo-600 shrink-0" />}
                 </button>
               );
             })

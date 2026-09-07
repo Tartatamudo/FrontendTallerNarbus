@@ -85,9 +85,6 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                 <Shield size={26} />
               </div>
               <div>
-                <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest bg-amber-900/40 px-2 py-0.5 rounded border border-amber-500/30">
-                  MÓDULO SUPERVISOR / ADMIN
-                </span>
                 <h1 className="text-xl font-black text-white">Gestión de Usuarios</h1>
               </div>
             </div>
@@ -103,25 +100,17 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
           </div>
 
           {/* Navegación por Pestañas */}
-          <div className="flex gap-2 mt-4 pt-3 border-t border-white/10">
+          <div className="lu-tabs-container">
             <button
               onClick={() => setTabActiva('lista')}
-              className={`flex-1 py-2 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 ${
-                tabActiva === 'lista'
-                  ? 'bg-white text-slate-900 shadow-md'
-                  : 'bg-white/10 text-white/80 hover:bg-white/20'
-              }`}
+              className={`lu-tab-btn ${tabActiva === 'lista' ? 'lu-tab-btn-active' : ''}`}
             >
               <Users size={16} />
               <span>Lista de Usuarios ({usuarios.length})</span>
             </button>
             <button
               onClick={() => setTabActiva('crear')}
-              className={`flex-1 py-2 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 ${
-                tabActiva === 'crear'
-                  ? 'bg-white text-slate-900 shadow-md'
-                  : 'bg-white/10 text-white/80 hover:bg-white/20'
-              }`}
+              className={`lu-tab-btn ${tabActiva === 'crear' ? 'lu-tab-btn-active' : ''}`}
             >
               <UserPlus size={16} />
               <span>Crear Nuevo Usuario</span>
@@ -132,13 +121,13 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
         {/* Notificaciones de Alertas */}
         <div className="p-4 space-y-3">
           {errorMsg && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-bold flex items-center gap-2">
+            <div className="lu-alert-error">
               <AlertCircle size={18} className="shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
           {successMsg && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-2">
+            <div className="lu-alert-success">
               <CheckCircle2 size={18} className="shrink-0" />
               <span>{successMsg}</span>
             </div>
@@ -162,13 +151,13 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                     placeholder="Buscar por usuario o rol..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-amber-500"
+                    className="lu-search-input"
                   />
                 </div>
                 <button
                   onClick={cargarUsuarios}
                   disabled={loading}
-                  className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition cursor-pointer"
+                  className="lu-btn-refresh"
                   title="Refrescar Lista"
                 >
                   <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -181,7 +170,7 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                   <SkeletonLoader variant="row" count={4} />
                 </div>
               ) : usuariosFiltrados.length === 0 ? (
-                <div className="py-10 text-center text-slate-500 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-200">
+                <div className="lu-empty-box">
                   No se encontraron usuarios en el sistema.
                 </div>
               ) : (
@@ -189,22 +178,18 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                   {usuariosFiltrados.map((user) => (
                     <div
                       key={user.id}
-                      className={`p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
-                        user.is_active
-                          ? 'bg-white border-slate-200 shadow-sm'
-                          : 'bg-slate-50 border-slate-200 opacity-60'
-                      }`}
+                      className={`lu-user-item ${!user.is_active ? 'lu-user-item-disabled' : ''}`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
                             user.rol === 'ADMIN'
-                              ? 'bg-purple-100 text-purple-700 border border-purple-300'
+                              ? 'lu-role-admin'
                               : user.rol === 'SUPERVISOR'
-                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              ? 'lu-role-supervisor'
                               : user.rol === 'MECANICO'
-                              ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                              : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              ? 'lu-role-mecanico'
+                              : 'lu-role-conductor'
                           }`}
                         >
                           {user.rol.substring(0, 3)}
@@ -212,18 +197,16 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-slate-900 text-sm">{user.username}</span>
+                            <span className="lu-user-name">{user.username}</span>
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                                user.is_active
-                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                  : 'bg-red-100 text-red-700 border border-red-300'
+                                user.is_active ? 'lu-status-active' : 'lu-status-inactive'
                               }`}
                             >
                               {user.is_active ? 'Activo' : 'Inactivo'}
                             </span>
                           </div>
-                          <div className="text-[11px] font-bold text-slate-500 flex items-center gap-2 mt-0.5">
+                          <div className="lu-user-meta">
                             <span>Rol: {user.rol}</span>
                             {user.conductor_id && <span>• Conductor ID: #{user.conductor_id}</span>}
                           </div>
@@ -235,14 +218,14 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                         <button
                           onClick={() => handleSolicitarDeshabilitar(user)}
                           disabled={deshabilitandoId === user.id}
-                          className="min-h-[40px] px-3.5 py-2 bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-700 border border-red-200 rounded-xl text-xs font-black transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          className="lu-btn-deshabilitar"
                           title="Deshabilitar Usuario (Soft Delete)"
                         >
                           <UserX size={15} />
                           <span>{deshabilitandoId === user.id ? 'Deshabilitando...' : 'Deshabilitar'}</span>
                         </button>
                       ) : (
-                        <span className="text-[11px] font-bold text-slate-400 italic">Deshabilitado</span>
+                        <span className="text-[11px] font-bold text-slate-500 italic">Deshabilitado</span>
                       )}
                     </div>
                   ))}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 31,
+  "id": "AV-0031",
+  "timestamp": "2026-09-07T12:40:00Z",
+  "phase": "fase_2_mecanicos_y_revisiones",
+  "milestone": { "id": "MEC-003", "name": "Dashboard Mecánicos y Tareas Técnicas", "statusBefore": "in_progress", "statusAfter": "completed" },
+  "type": "completed",
+  "summary": "Corrección de desbordamiento horizontal (overflow blowout) provocado por textos continuos sin espacios en las descripciones de averías y notas de bitácora en el Dashboard de Mecánicos.",
+  "scope": {
+    "planned": [
+      "Evitar que cadenas continuas largas rompan el ancho de las tarjetas y desplacen los botones fuera del viewport o contenedor",
+      "Garantizar compatibilidad con responsive y wrap de texto agresivo (overflow-wrap: anywhere) en flexbox"
+    ],
+    "completed": [
+      "Añadido min-w-0 flex-1 y break-words [overflow-wrap:anywhere] en cada fila de avería en DashboardMecanico.tsx",
+      "Añadido shrink-0 a checkboxes y botones de acción para que mantengan su tamaño y posición en pantalla",
+      "Añadido min-w-0 y break-words [overflow-wrap:anywhere] en comentarios de bitácora de taller",
+      "Añadido min-w-0 flex-1 en selector atómico de averías en ModalAutoasignarFallas.tsx",
+      "Verificada compilación exitosa con npm run build"
+    ],
+    "pending": [],
+    "outOfScope": ["Modificaciones en el backend"]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Aplicación de min-w-0, shrink-0 y break-words [overflow-wrap:anywhere] en filas de averías, tarjetas de órdenes y bitácora de taller"
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalAutoasignarFallas.tsx",
+      "action": "modified",
+      "summary": "Inclusión de min-w-0 flex-1 en el span de la falla para truncado y envoltura segura dentro del modal"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-031",
+      "title": "Control de flexbox min-width auto y envoltura con overflow-wrap anywhere",
+      "rationale": "Por especificación de CSS Flexbox, los hijos directos tienen min-width: auto por defecto, lo que les impide contraerse ante cadenas continuas largas (como palabras de prueba o códigos largos sin espacios), expandiendo la fila más allá del grid y sacando del layout a los botones de acción. Al colocar min-w-0 y break-words con [overflow-wrap:anywhere], el navegador fuerza el quiebre de línea sin alterar el diseño ni desplazar los botones.",
+      "consequences": "Las descripciones largas se envuelven armónicamente dentro del contenedor asignado y los botones como 'Falta Repuesto' o 'Resuelto' permanecen siempre dentro de la tarjeta tanto en pantallas táctiles como de escritorio."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "built in 567ms sin errores de TypeScript ni de compilación de Vite."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación visual del usuario en el navegador.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/switch-modo-oscuro-claro",
+    "commit": "local-working-tree",
+    "dirty": true
+  },
+  "notes": ["Se aseguró accesibilidad táctil manteniendo touch targets >= 44px."]
+}
