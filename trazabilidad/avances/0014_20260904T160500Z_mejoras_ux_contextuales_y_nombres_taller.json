@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 14,
+  "id": "AV-0014",
+  "timestamp": "2026-09-04T16:05:00Z",
+  "phase": "auditoria_ux_y_contextualizacion_taller",
+  "milestone": {
+    "id": "FRONT-UX-02",
+    "name": "Nomenclatura Operacional de Taller y Semántica Universal de Estados",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación completa de nomenclatura operacional de taller Narbus y semántica visual universal de estados de órdenes de trabajo en componentes de mecánicos, conductores y supervisión.",
+  "scope": {
+    "planned": [
+      "Reemplazar nomenclatura genérica por vocabulario de taller en DashboardMecanico (OT en vez de Folio, Buses por Atender en vez de Bandeja 1, Mis Órdenes en Curso en vez de Bandeja 2, Iniciar Atención de Averías)",
+      "Actualizar botón de Pauta Preventiva a 'Checklist de Seguridad (11 Ítems)'",
+      "Actualizar FormularioMantencionTaller a 'Ingreso de Bus a Taller Central' y comprobante formal de recepción de flota",
+      "Actualizar FormularioNeumaticos a 'Emergencia de Neumáticos en Ruta', costo de auxilio y marca de fuego",
+      "Actualizar AuditoriaTab y PatioTab con identificadores OT y encabezados de control físico de flota",
+      "Integrar punto de pulsación y colores canónicos en EstadoBadge y formatters"
+    ],
+    "completed": [
+      "DashboardMecanico: Actualización de pestañas a 'Buses por Atender en Taller' y 'Mis Órdenes en Curso', 'OT #{id}', 'Checklist de Seguridad (11 Ítems)', e 'Iniciar Atención de Averías'",
+      "EstadoBadge & formatters: Adición de 'dotClass' con pulso visual y glow para REPORTADO (azul cielo) y EN_REPARACION (ámbar con sombra difusa), y colores sólidos para FINALIZADO y PENDIENTE",
+      "FormularioMantencionTaller: Título 'Ingreso de Bus a Taller Central' y pantalla de éxito convertida en 'Comprobante de Recepción en Taller' con OT y estado inicial",
+      "FormularioNeumaticos: Título 'Emergencia de Neumáticos en Ruta', instrucciones del diagrama de ejes y campos 'Costo Auxilio en Ruta ($)' y 'Marca de Fuego (N° Neumático)'",
+      "AuditoriaTab: Actualizado badge a 'OT #{id}' en todas las fichas de auditoría",
+      "PatioTab: Titular formal 'Control Físico de Patio y Flota Narbus' y descripción contextual de telemetría de patio"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Alteraciones a endpoints REST del backend o modelos SQLAlchemy en BackendTallerNarbus"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/utils/formatters.ts",
+      "action": "modified",
+      "summary": "Se expandió obtenerEstilosBadgeEstado para retornar dotClass con animaciones de pulso y colores HSL/Tailwind coherentes para REPORTADO, EN_REPARACION, PENDIENTE y FINALIZADO."
+    },
+    {
+      "path": "src/components/EstadoBadge/EstadoBadge.tsx",
+      "action": "modified",
+      "summary": "Se integró un indicador circular con dotClass y tamaños dinámicos (xs, sm, md) para máxima visibilidad en pantallas de taller."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Se reemplazó 'Bandeja 1 / 2' por 'Buses por Atender en Taller' y 'Mis Órdenes en Curso', 'Folio' por 'OT', 'Tomar Orden de Trabajo' por 'Iniciar Atención de Averías', 'Pauta Preventiva' por 'Checklist de Seguridad (11 Ítems)' y se integró EstadoBadge en tarjetas y detalle."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Se actualizó el encabezado a 'Ingreso de Bus a Taller Central' y se rediseñó el resumen post-envío como 'Comprobante de Recepción en Taller' con número de OT y estado REPORTADO."
+    },
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx",
+      "action": "modified",
+      "summary": "Se renombró a 'Emergencia de Neumáticos en Ruta', se aclararon instrucciones táctiles del diagrama de chasis y se contextualizaron los campos de costo de auxilio y marca de fuego."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Se homogeneizó la referencia de Folio a 'OT #{aud.id}' manteniendo consistencia con el módulo mecánico."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/PatioTab.tsx",
+      "action": "modified",
+      "summary": "Se agregó encabezado descriptivo 'Control Físico de Patio y Flota Narbus' con icono Compass."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-020",
+      "title": "Adopción del término OT (Orden de Trabajo) en reemplazo de Folio",
+      "rationale": "En la jerga operacional de las maestranzas de transporte de pasajeros en Chile, los mecánicos y supervisores se refieren a las intervenciones técnicas como 'Órdenes de Trabajo' (OT) y no como folios de oficina.",
+      "consequences": "Mayor familiaridad para el personal operativo, reduciendo la curva de aprendizaje en terreno."
+    },
+    {
+      "id": "DEC-021",
+      "title": "Indicadores pulsantes en EstadoBadge con diferenciación cromática semántica",
+      "rationale": "Los estados activos que requieren atención o que están en curso (REPORTADO en azul cielo, EN_REPARACION en ámbar con pulso) deben resaltar inmediatamente sobre fondos blancos o grises bajo luz solar o condiciones de poca visibilidad en foso.",
+      "consequences": "Comprensión visual instantánea del estado de una máquina sin necesidad de leer detenidamente el texto pequeño del badge."
+    },
+    {
+      "id": "DEC-022",
+      "title": "Conversión de pantalla de éxito en Comprobante de Recepción en Taller",
+      "rationale": "Cuando un conductor entrega un bus en taller, necesita certeza de que su entrega física fue formalmente recibida y registrada con una OT trazable.",
+      "consequences": "Sensación de cierre formal y profesionalismo en la entrega de la máquina a maestranza."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin errores de tipado (código de salida 0)."
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "Oxlint completado en 24ms con 0 warnings y 0 errores en 53 archivos."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Build de producción Vite 8.2.1 generado exitosamente en dist/ (439 kB JS, 90 kB CSS)."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas de navegación en vivo en entorno de desarrollo e integración en paquete Android de Capacitor cuando se requiera.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "fca9f9d",
+    "dirty": true
+  },
+  "notes": [
+    "Los 43 contratos de API se mantuvieron intactos.",
+    "El servidor de desarrollo Vite sigue ejecutándose en segundo plano."
+  ]
+}

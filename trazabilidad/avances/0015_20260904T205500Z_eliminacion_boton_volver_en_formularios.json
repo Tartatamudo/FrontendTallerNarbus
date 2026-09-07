@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 15,
+  "id": "AV-0015",
+  "timestamp": "2026-09-04T20:55:00Z",
+  "phase": "pulido_ui_ux_formularios",
+  "milestone": {
+    "id": "FRONT-UX-03",
+    "name": "Desduplicación y Limpieza de Navegación en Formularios Operativos",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Eliminación del botón redundante 'Volver al Menú Principal' dentro de los encabezados de los formularios de Mantención Taller y Neumáticos, centralizando la navegación de retorno en la barra superior unificada (TopBar).",
+  "scope": {
+    "planned": [
+      "Remover el botón '← Volver al Menú Principal' del header en FormularioNeumaticos.tsx",
+      "Remover el botón '← Volver al Menú Principal' del header en FormularioMantencionTaller.tsx",
+      "Garantizar que TopBar gestione limpiamente el retorno al menú principal sin duplicidad visual"
+    ],
+    "completed": [
+      "FormularioNeumaticos.tsx: Eliminado el botón interno de regreso en el encabezado del formulario",
+      "FormularioMantencionTaller.tsx: Eliminado el botón interno de regreso en el encabezado del formulario",
+      "Verificación de compilación limpia de TypeScript sin errores ni advertencias"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend o cambios estructurales en la barra de navegación global TopBar"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx",
+      "action": "modified",
+      "summary": "Se eliminó el botón '← Volver al Menú Principal' del encabezado del formulario, descongestionando el diseño y dejando la navegación a cargo de la TopBar."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Se eliminó el botón '← Volver al Menú Principal' del encabezado del formulario, evitando la duplicidad con el botón de navegación existente en la barra superior."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-028",
+      "title": "Centralización de Navegación de Retorno en TopBar Global",
+      "rationale": "La aplicación cuenta con una TopBar fija que ya incluye el botón 'Menú' (Volver al Menú Principal) cuando el usuario se encuentra fuera de la pantalla de menú. Mantener un segundo botón de retorno dentro del contenedor o tarjeta del formulario generaba ruido visual, duplicidad de acciones y desalineaba la consistencia con el resto de los módulos.",
+      "consequences": "Los formularios lucen más limpios y enfocados en su labor operativa; la navegación se mantiene 100% predecible y consistente a través de la barra superior del sistema."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Exit code 0, sin errores de tipado o interfaces."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Continuar con pruebas de flujo o requerimientos operacionales adicionales del taller.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Los componentes mantienen su compatibilidad de interfaz con la prop opcional onVolver para no alterar llamadas heredadas."
+  ]
+}

@@ -44,7 +44,7 @@ interface FormularioMantencionTallerProps {
   onVolver?: () => void;
 }
 
-export default function FormularioMantencionTaller({ onVolver }: FormularioMantencionTallerProps = {}) {
+export default function FormularioMantencionTaller({ onVolver: _onVolver }: FormularioMantencionTallerProps = {}) {
   // Bus Selection State
   const [busSearchInput, setBusSearchInput] = useState('');
   const [selectedBusObj, setSelectedBusObj] = useState<BusItem | null>(null);
@@ -203,7 +203,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
     setShowConfirmModal(false);
   };
 
-  // VISTA DE ÉXITO
+  // VISTA DE ÉXITO (COMPROBANTE DE RECEPCIÓN EN TALLER)
   if (submittedSuccess) {
     return (
       <div className="fmt-success-wrapper font-sans text-slate-900">
@@ -213,16 +213,16 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
           </div>
 
           <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">
-            ¡Solicitud Registrada con Éxito!
+            Comprobante de Recepción en Taller
           </h2>
           <p className="text-sm font-bold text-emerald-600 mb-5">
-            La orden de trabajo fue transmitida al taller central.
+            Orden de Trabajo generada y notificada a la maestranza central.
           </p>
 
-          <div className="fmt-modal-summary-box text-left mb-6">
+          <div className="fmt-modal-summary-box text-left mb-6 space-y-2.5">
             <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-              <span className="font-bold text-slate-600 uppercase text-xs">N° de Folio:</span>
-              <span className="font-black text-blue-600 text-base">#{submittedSuccess.id}</span>
+              <span className="font-bold text-slate-600 uppercase text-xs">Orden de Trabajo (OT):</span>
+              <span className="font-black text-indigo-700 text-base">OT #{submittedSuccess.id}</span>
             </div>
             <div className="flex justify-between items-center border-b border-slate-200 pb-2">
               <span className="font-bold text-slate-600 uppercase text-xs">Unidad / Bus:</span>
@@ -230,13 +230,19 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
             </div>
             {submittedSuccess.conductor && (
               <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                <span className="font-bold text-slate-600 uppercase text-xs">Informante:</span>
+                <span className="font-bold text-slate-600 uppercase text-xs">Conductor Informante:</span>
                 <span className="font-bold text-slate-800">{submittedSuccess.conductor}</span>
               </div>
             )}
+            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+              <span className="font-bold text-slate-600 uppercase text-xs">Estado Inicial:</span>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase bg-sky-50 text-sky-800 border border-sky-300">
+                REPORTADO
+              </span>
+            </div>
             <div className="flex justify-between items-center pt-1">
-              <span className="font-bold text-slate-600 uppercase text-xs">Fallas Registradas:</span>
-              <span className="font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-lg border border-amber-300">
+              <span className="font-bold text-slate-600 uppercase text-xs">Averías Declaradas:</span>
+              <span className="font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-lg border border-amber-300 text-xs">
                 {submittedSuccess.itemsCount} ítem(s)
               </span>
             </div>
@@ -248,7 +254,7 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
             className="fmt-btn-submit cursor-pointer"
           >
             <RefreshCw size={20} />
-            <span>Ingresar Otra Solicitud</span>
+            <span>Ingresar Otra Recepción de Bus</span>
           </button>
         </div>
       </div>
@@ -260,15 +266,6 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
       <div className="fmt-card">
         {/* Header Corporativo Oficial Narbus */}
         <div className="fmt-header">
-          {onVolver && (
-            <button
-              type="button"
-              onClick={onVolver}
-              className="mb-3 inline-flex items-center gap-1.5 text-xs font-black text-white bg-white/20 hover:bg-white/30 border border-white/30 px-3 py-1.5 rounded-xl transition cursor-pointer"
-            >
-              <span>← Volver al Menú Principal</span>
-            </button>
-          )}
           <div className="fmt-header-inner">
             <div className="fmt-header-icon-box">
               <Wrench size={26} />
@@ -276,9 +273,9 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
             <div>
               <div className="flex items-center gap-2">
                 <span className="fmt-badge-company">NARBUS BUSES</span>
-                <span className="fmt-badge-subtitle">FLOTA & TALLER</span>
+                <span className="fmt-badge-subtitle">RECEPCIÓN DE FLOTA & TALLER</span>
               </div>
-              <h1 className="fmt-header-title">Solicitud de Mantención</h1>
+              <h1 className="fmt-header-title">Ingreso de Bus a Taller Central</h1>
             </div>
           </div>
         </div>
@@ -328,9 +325,8 @@ export default function FormularioMantencionTaller({ onVolver }: FormularioMante
                     key={cat.id}
                     type="button"
                     onClick={() => handleToggleCategory(cat)}
-                    className={`fmt-category-btn ${isSelected ? 'fmt-category-btn-selected' : ''} ${
-                      cat.fullWidth ? 'fmt-category-btn-full' : ''
-                    }`}
+                    className={`fmt-category-btn ${isSelected ? 'fmt-category-btn-selected' : ''} ${cat.fullWidth ? 'fmt-category-btn-full' : ''
+                      }`}
                   >
                     <span className="text-lg shrink-0">{cat.icon}</span>
                     <span className="flex-1 line-clamp-1 select-none font-bold">{cat.label}</span>

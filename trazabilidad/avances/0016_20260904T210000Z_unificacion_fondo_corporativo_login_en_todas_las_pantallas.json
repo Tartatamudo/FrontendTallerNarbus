@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 16,
+  "id": "AV-0016",
+  "timestamp": "2026-09-04T21:00:00Z",
+  "phase": "diseno_global_e_identidad_visual",
+  "milestone": {
+    "id": "FRONT-UX-04",
+    "name": "Unificación de Fondo Corporativo Global Login en Todas las Pantallas",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Aplicación del fondo corporativo oficial de Login (gradiente deep slate/navy #0b1727 -> #112239 -> #1e3a5f con acentos radiales bioluminiscentes fijos en esquinas) a nivel global en toda la aplicación, adaptando los contenedores de menús, formularios y paneles.",
+  "scope": {
+    "planned": [
+      "Extender el gradiente y acentos de brillo del Login a tokens globales en index.css",
+      "Actualizar App.tsx eliminando bg-slate-100 para permitir la visibilidad del fondo corporativo fijo",
+      "Adaptar MenuSeleccion, FormularioMantencionTaller, FormularioNeumaticos, ListaUsuarios y PerfilUsuario como tarjetas elevadas con sombra sobre el fondo oscuro",
+      "Garantizar legibilidad óptima con tipografía clara en encabezados y contenedores con contraste"
+    ],
+    "completed": [
+      "index.css: Definido background global en html, body y #root con gradiente angular (#0b1727, #112239, #1e3a5f) y dos focos radiales difusos fijados al viewport",
+      "App.tsx: Modificado el contenedor raíz a bg-transparent",
+      "MenuSeleccion.css: Fondo transparente, títulos principales en blanco (#ffffff) y subtítulos en slate (#94a3b8) con tarjetas en vidrio blanco y sombras de alta elevación",
+      "FormularioMantencionTaller.css & FormularioNeumaticos.css: Wrappers transparentes y tarjetas flotantes redondeadas con sombras 3D y bordes sutiles",
+      "PerfilUsuario.css & ListaUsuarios.css: Elevación de tarjetas de datos y usuarios",
+      "PatioTab.tsx: Encabezado titular enmarcado en tarjeta blanca para garantizar contraste impecable"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones en lógica de negocio o servicios de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/index.css",
+      "action": "modified",
+      "summary": "Se añadieron los gradientes corporativos y halos radiales fijos del login al elemento raíz body y variables del sistema de diseño."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Se reemplazó bg-slate-100 por bg-transparent en el contenedor base para proyectar el fondo global."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.css",
+      "action": "modified",
+      "summary": "Se ajustaron contrastes tipográficos a blanco/slate claro y elevación de tarjetas de acceso por rol."
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.css",
+      "action": "modified",
+      "summary": "Se desacopló el fondo rígido slate-100 transformando el formulario en una tarjeta de recepción flotante con sombras suaves."
+    },
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.css",
+      "action": "modified",
+      "summary": "Se configuró como tarjeta flotante sobre el fondo corporativo de la flota."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Se aumentó el radio de borde y la sombra difusa para armonizar con el nuevo fondo."
+    },
+    {
+      "path": "src/supervisores/gestion_usuarios/ListaUsuarios.css",
+      "action": "modified",
+      "summary": "Se ajustó la sombra y borde de la tarjeta del módulo de usuarios."
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/PatioTab.tsx",
+      "action": "modified",
+      "summary": "Se integró contenedor de tarjeta blanca al titular de control físico de patio."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-029",
+      "title": "Homogeneización Visual con Fondo Corporativo Deep Navy Fixed",
+      "rationale": "El login presentaba una estética industrial y tecnológica premium con gradiente angular deep navy (#0b1727 a #1e3a5f) y halos radiales azules que transmitían la identidad de Narbus, mientras que las pantallas interiores utilizaban un fondo plano gris (bg-slate-100). Unificar el fondo corporativo fijo en body y presentar las pantallas operativas como tarjetas elevadas genera una experiencia cohesiva, inmersiva y moderna tanto en pantallas táctiles de taller como en navegadores de escritorio.",
+      "consequences": "Mayor coherencia de marca en toda la aplicación; las tarjetas operativas ganan relieve y contraste sin perder legibilidad ni ergonomía para guantes y entorno de taller."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Exit code 0, tipado TypeScript 100% íntegro."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación visual general de todos los módulos en ejecución local.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "La TopBar corporativa con efecto glassmorphism se integra de manera armónica sobre este fondo oscuro."
+  ]
+}

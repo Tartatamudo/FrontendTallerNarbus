@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Users, UserX, Shield, RefreshCw, AlertCircle, CheckCircle2, UserPlus, Search } from 'lucide-react';
 import { obtenerUsuarios, deshabilitarUsuario } from '../../usuarios/auth/authService';
 import type { User } from '../../usuarios/auth/authTypes';
+import { getApiErrorMessage } from '../../utils/apiErrors';
+import ModalConfirmacion from '../../components/ModalConfirmacion/ModalConfirmacion';
+import SkeletonLoader from '../../components/SkeletonLoader/SkeletonLoader';
 import CrearUsuario from './CrearUsuario';
 import './ListaUsuarios.css';
 
@@ -17,6 +20,7 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [deshabilitandoId, setDeshabilitandoId] = useState<number | null>(null);
+  const [usuarioADeshabilitar, setUsuarioADeshabilitar] = useState<User | null>(null);
 
   const cargarUsuarios = async () => {
     setLoading(true);
@@ -25,10 +29,9 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
       // Consumir Endpoint 1.4: GET /api/v1/auth/usuarios?skip=0&limit=100
       const data = await obtenerUsuarios(0, 100);
       setUsuarios(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error al cargar usuarios:", err);
-      const detail = err.response?.data?.detail;
-      setErrorMsg(detail || 'No se pudieron cargar los usuarios del sistema.');
+      setErrorMsg(getApiErrorMessage(err, 'No se pudieron cargar los usuarios del sistema.'));
     } finally {
       setLoading(false);
     }
@@ -40,10 +43,14 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
     }
   }, [tabActiva]);
 
-  const handleDeshabilitar = async (user: User) => {
+  const handleSolicitarDeshabilitar = (user: User) => {
     if (!user.is_active) return;
-    const seguro = window.confirm(`¿Está seguro de deshabilitar al usuario "${user.username}"?`);
-    if (!seguro) return;
+    setUsuarioADeshabilitar(user);
+  };
+
+  const confirmarDeshabilitar = async () => {
+    if (!usuarioADeshabilitar) return;
+    const user = usuarioADeshabilitar;
 
     setDeshabilitandoId(user.id);
     setErrorMsg(null);
@@ -53,12 +60,12 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
       const updatedUser = await deshabilitarUsuario(user.id);
       setSuccessMsg(`El usuario "${updatedUser.username}" ha sido deshabilitado.`);
       setUsuarios(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error al deshabilitar usuario:", err);
-      const detail = err.response?.data?.detail;
-      setErrorMsg(detail || 'No se pudo deshabilitar al usuario.');
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo deshabilitar al usuario.'));
     } finally {
       setDeshabilitandoId(null);
+      setUsuarioADeshabilitar(null);
     }
   };
 
@@ -170,9 +177,8 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
 
               {/* Tabla / Tarjetas de Usuarios */}
               {loading && usuarios.length === 0 ? (
-                <div className="py-12 text-center text-slate-500 font-bold text-xs flex flex-col items-center gap-2">
-                  <RefreshCw size={24} className="animate-spin text-amber-600" />
-                  <span>Cargando usuarios desde /api/v1/auth/usuarios...</span>
+                <div className="py-4">
+                  <SkeletonLoader variant="row" count={4} />
                 </div>
               ) : usuariosFiltrados.length === 0 ? (
                 <div className="py-10 text-center text-slate-500 font-bold text-xs bg-slate-50 rounded-2xl border border-slate-200">
@@ -224,15 +230,15 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
                         </div>
                       </div>
 
-                      {/* Acción Deshabilitar */}
+                      {/* Acción Deshabilitar (Táctil accesible) */}
                       {user.is_active ? (
                         <button
-                          onClick={() => handleDeshabilitar(user)}
+                          onClick={() => handleSolicitarDeshabilitar(user)}
                           disabled={deshabilitandoId === user.id}
-                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-black transition flex items-center gap-1 shrink-0 cursor-pointer"
+                          className="min-h-[40px] px-3.5 py-2 bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-700 border border-red-200 rounded-xl text-xs font-black transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                           title="Deshabilitar Usuario (Soft Delete)"
                         >
-                          <UserX size={14} />
+                          <UserX size={15} />
                           <span>{deshabilitandoId === user.id ? 'Deshabilitando...' : 'Deshabilitar'}</span>
                         </button>
                       ) : (
@@ -246,6 +252,19 @@ export default function ListaUsuarios({ onVolver }: ListaUsuariosProps) {
           )}
         </div>
       </div>
+
+      {/* Modal de Confirmación Táctil Preventivo */}
+      <ModalConfirmacion
+        abierto={usuarioADeshabilitar !== null}
+        titulo="¿Deshabilitar Usuario?"
+        mensaje={`Esta acción deshabilitará el acceso al sistema para el usuario "${usuarioADeshabilitar?.username}" (Rol: ${usuarioADeshabilitar?.rol}). No podrá iniciar sesión hasta que sea reactivado.`}
+        textoConfirmar="Sí, Deshabilitar"
+        textoCancelar="Cancelar"
+        variante="danger"
+        cargando={deshabilitandoId !== null}
+        onConfirmar={confirmarDeshabilitar}
+        onCancelar={() => setUsuarioADeshabilitar(null)}
+      />
     </div>
   );
 }

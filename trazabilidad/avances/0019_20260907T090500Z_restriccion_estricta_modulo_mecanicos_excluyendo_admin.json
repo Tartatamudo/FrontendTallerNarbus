@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 19,
+  "id": "AV-0019",
+  "timestamp": "2026-09-07T09:05:00Z",
+  "phase": "control_de_acceso_y_roles",
+  "milestone": {
+    "id": "FRONT-ROLES-02",
+    "name": "Restricción Estricta de Módulo Mecánicos Excluyendo Rol Admin",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Desacoplamiento total del rol ADMIN respecto de la consola operacional de mecánicos (/mecanico): remoción de la tarjeta en el Menú Principal, eliminación de autoasignación o tareas de taller en la pantalla de Perfil y restricción en la guardia de rutas de App.tsx para permitir acceso única y exclusivamente al rol MECANICO.",
+  "scope": {
+    "planned": [
+      "Modificar MenuSeleccion.tsx para que isMecanico aplique única y exclusivamente a rol === 'MECANICO'",
+      "Actualizar PerfilUsuario.tsx para que el rol ADMIN describa atribuciones de supervisión y personal sin mención al taller mecánico",
+      "Restringir en App.tsx la ruta /mecanico redirigiendo a /home si el rol no es MECANICO"
+    ],
+    "completed": [
+      "MenuSeleccion.tsx: Tarjeta 'Consola de Mecánicos: Órdenes en Curso' oculta para ADMIN y visible solo para MECANICO",
+      "PerfilUsuario.tsx: Ficha de ADMIN enfocada en Administración y Supervisión General con botones hacia /supervision y /crear_usuario",
+      "PerfilUsuario.tsx: Remoción de la fila inferior de botones (Volver a la Consola y Cerrar Sesión) para eliminar duplicidad con respecto a la TopBar",
+      "App.tsx: Protección condicional en ruta /mecanico con redirección inmediata a /home para ADMIN"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.tsx",
+      "action": "modified",
+      "summary": "isMecanico reemplaza a isMecanicoOrAdmin para aislar la consola de taller al personal técnico."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Atribuciones de ADMIN reorientadas a supervisión de flota y control de personal, eliminando mención a taller mecánico."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Guardia de ruta /mecanico restringida exclusivamente para currentUser.rol === 'MECANICO'."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-034",
+      "title": "Separación Estricta de Competencias Operacionales vs Administrativas para el Rol ADMIN",
+      "rationale": "El administrador posee facultades de auditoría, telemetría y gestión de personal, pero no es un operario de faena mecánica. Permitirle acceder a la pantalla de mecánicos generaba inconsistencias de autoasignación de turnos, cronometraje fantasma en cuadrilla y visualización de órdenes de trabajo que corresponden exclusivamente al personal técnico de maestranza.",
+      "consequences": "El rol ADMIN no visualiza la tarjeta de mecánicos en /home ni puede acceder a /mecanico por URL, y en /perfil se detallan sus atribuciones directas de supervisión y gestión de usuarios."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Exit code 0, tipado TypeScript 100% íntegro."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Compilación exitosa con Vite en 813ms."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas de visualización y validación por parte del usuario.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la regla de negocio de evitar que usuarios no mecánicos operen la pantalla de autoasignación y órdenes en curso."
+  ]
+}

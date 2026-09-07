@@ -5,6 +5,8 @@ import type { User } from './authTypes';
 import { guardarDato, obtenerDato } from '../../utils/storage';
 import './Login.css';
 
+import { getApiErrorMessage } from '../../utils/apiErrors';
+
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
 }
@@ -44,16 +46,10 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       await guardarDato('usuario_rut', username.trim());
 
       onLoginSuccess(authResult.user);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error de autenticación:', err);
-
-      if (err.code === 'ERR_NETWORK' || !err.response) {
-        setErrorMsg('No se pudo conectar con el servidor backend. Verifique la conexión.');
-      } else if (err.response?.status === 401) {
-        setErrorMsg('Credenciales inválidas. Usuario o contraseña incorrectos.');
-      } else {
-        setErrorMsg(err.response?.data?.detail || 'Error en el servidor al autenticar.');
-      }
+      const msg = getApiErrorMessage(err, 'No se pudo conectar con el servidor backend. Verifique su conexión o credenciales.');
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }

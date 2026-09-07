@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 21,
+  "id": "AV-0021",
+  "timestamp": "2026-09-07T09:21:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-03",
+    "name": "Adopción de Estética Dark Slate Corporativa del Mockup Oficial Narbus",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Rediseño visual integral de la pantalla de Perfil de Usuario y armonización de la paleta global al tema Dark Slate del sistema oficial de Narbus Internacional. Implementación de barra de estado con pills luminiscentes, encabezado con saludo dinámico, grilla de 4 tarjetas de métricas KPI con badges temáticos, sección de 'Accesos Rápidos Operativos' con microinteracciones y tarjeta de 'Inspiración & Seguridad Narbus' con rotación de consejos de conducción.",
+  "scope": {
+    "planned": [
+      "Ajustar tokens globales en index.css a fondo #0a0e17 y superficies oscuras #111622",
+      "Actualizar TopBar.css con fondo dark glassmorphic y borde sutil",
+      "Rediseñar PerfilUsuario.css y PerfilUsuario.tsx con la estructura y colores del mockup",
+      "Actualizar MenuSeleccion.css y banner de usuario para coherencia visual dark"
+    ],
+    "completed": [
+      "index.css: Paleta de color oficial con fondos #0a0e17, superficies #111622 / #141a26 y acentos cyan (#38bdf8), emerald (#10b981), amber (#f59e0b) y purple (#a855f7)",
+      "TopBar.css: Cabecera con fondo dark glassmorphic (#0a0e17) y borde inferior sutil",
+      "PerfilUsuario.tsx: Barra superior de pills (Rol, Plataforma Operativa, fecha chilena y filtros de período), saludo hero '¡Bienvenido, {Nombre}!' con nombre en sky-400 y subtítulo descriptivo",
+      "PerfilUsuario.tsx: 4 tarjetas KPI (Flota en Operación, Viajes del Período, Combustible Mensual, Gasto en Peajes) con iconos temáticos y flechas ↗",
+      "PerfilUsuario.tsx: Grilla de Accesos Rápidos Operativos con tarjetas temáticas por rol (categoría, descripción e icono coloreado)",
+      "PerfilUsuario.tsx: Widget de Comunidad e Inspiración Narbus con cita de seguridad, escudo verde e interactividad de rotación",
+      "PerfilUsuario.css: Estilos táctiles ergonómicos, bordes luminiscentes en hover y botones al pie (Volver y Cerrar Sesión)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/index.css",
+      "action": "modified",
+      "summary": "Tokens CSS de fondo, texto y sombras actualizados a la paleta dark slate corporativa."
+    },
+    {
+      "path": "src/components/TopBar/TopBar.css",
+      "action": "modified",
+      "summary": "Navbar adaptado al fondo dark slate con desenfoque de cristal (16px)."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Implementada la grilla tipo dashboard con pills, 4 KPIs, accesos rápidos y widget de prevención."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Estilos dark slate para métricas, tarjetas interactivas y botones ergonómicos."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.css",
+      "action": "modified",
+      "summary": "Tarjetas del menú principal actualizadas a fondo dark slate #111622 con bordes sutiles."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.tsx",
+      "action": "modified",
+      "summary": "Banner de operador activo adaptado a tonalidad dark con pill azul."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Contenedor de ruta /perfil ampliado a max-w-6xl para soportar el layout tipo dashboard."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-036",
+      "title": "Adopción de la Identidad Visual Dark Slate Ejecutiva de Narbus Internacional",
+      "rationale": "El usuario proporcionó la referencia visual exacta del sistema Narbus (fondo matte dark #0a0e17, tarjetas con bordes sutiles, acentos luminiscentes cian/esmeralda/ámbar/púrpura y tipografía de alto contraste). Esta estética reduce drásticamente la fatiga visual en faena y turnos nocturnos, y entrega una apariencia de nivel corporativo premium.",
+      "consequences": "La aplicación adquiere una identidad visual cohesiva y moderna, alineada al estándar de marca oficial de la empresa."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Exit code 0. Compilación exitosa con Vite y validación de tipos tsc -b completada sin advertencias."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Revisión visual del usuario en el navegador local.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple fielmente con los colores, tarjetas, tipografías y distribución presentados en la imagen de referencia."
+  ]
+}

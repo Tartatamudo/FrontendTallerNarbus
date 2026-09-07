@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 13,
+  "id": "AV-0013",
+  "timestamp": "2026-09-04T15:50:00Z",
+  "phase": "auditoria_y_modernizacion_ui_ux",
+  "milestone": {
+    "id": "FRONT-AESTHETICS",
+    "name": "Auditoría de Diseño Antigravity y Desacoplamiento Offline Tailwind",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Auditoría profunda del frontend según estándares de la skill antigravity-design-expert. Instalación y empaquetado 100% offline de Tailwind CSS v4, eliminación del CDN inseguro en index.html, sistema central de tokens de diseño en index.css, eliminación de App.css huérfano (1,115 líneas), creación de ModalConfirmacion y SkeletonLoader reutilizables, y corrección de cumplimiento normativo de getApiErrorMessage en Login, PerfilUsuario, ListaUsuarios y CrearUsuario.",
+  "scope": {
+    "planned": [
+      "Auditoría integral de la arquitectura de estilos, fuentes y dependencias frontend",
+      "Eliminación de dependencia externa de https://cdn.tailwindcss.com en index.html",
+      "Instalación local y configuración de Tailwind CSS v4 en Vite para funcionamiento offline en Android/Capacitor",
+      "Creación de sistema de variables y Design Tokens en src/index.css con tipografía Inter",
+      "Eliminación de archivo huérfano src/App.css",
+      "Creación de ModalConfirmacion accesible para reemplazar window.confirm",
+      "Creación de SkeletonLoader animado para transiciones suaves de carga",
+      "Mejora ergonómica táctil en botones de pauta preventiva, categorías y motivos de neumáticos",
+      "Corrección de manejo de errores getApiErrorMessage conforme a la Regla 2"
+    ],
+    "completed": [
+      "Auditoría técnica y de UI/UX documentada y aprobada en implementation_plan.md",
+      "Instalación de tailwindcss y @tailwindcss/vite v4.3.3 en devDependencies",
+      "Eliminación del script Play CDN de index.html e importación de la fuente Inter",
+      "Definición completa de variables :root (tokens semánticos de superficie, bordes, estados, radios y sombras) en src/index.css",
+      "Eliminación de src/App.css (17.1 KB huérfanos)",
+      "Creación de src/components/ModalConfirmacion/ModalConfirmacion.tsx",
+      "Creación de src/components/SkeletonLoader/SkeletonLoader.tsx",
+      "Rediseño y modernización de TopBar.css y TopBar.tsx con glassmorphism y botón de menú ergonómico",
+      "Modernización de MenuSeleccion.css con hover elevation y glows",
+      "Optimización táctil de pauta preventiva (mínimo 44px) en PautaPreventivaModal.css",
+      "Añadidos estilos faltantes de botones de motivo en FormularioNeumaticos.css y altura táctil en FormularioMantencionTaller.css",
+      "Actualización de KpisTab.tsx, AlertasTab.tsx, AuditoriaTab.tsx y PatioTab.tsx con SkeletonLoader y micro-indicadores luminosos",
+      "Corrección de Regla 2 (getApiErrorMessage) en Login.tsx, PerfilUsuario.tsx, ListaUsuarios.tsx y CrearUsuario.tsx",
+      "Reemplazo de window.confirm en ListaUsuarios.tsx por ModalConfirmacion"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend FastAPI (repositorio externo BackendTallerNarbus)"
+    ]
+  },
+  "changes": [
+    { "path": "index.html", "action": "modified", "summary": "Eliminación del CDN de Tailwind y agregado de tipografía Google Fonts Inter" },
+    { "path": "package.json", "action": "modified", "summary": "Instalación de tailwindcss y @tailwindcss/vite; optimización de comando de build" },
+    { "path": "vite.config.ts", "action": "modified", "summary": "Registro del plugin tailwindcss() en la configuración de Vite" },
+    { "path": "src/App.css", "action": "deleted", "summary": "Eliminación de archivo huérfano no importado con 1,115 líneas obsoletas" },
+    { "path": "src/index.css", "action": "modified", "summary": "Tokens :root, sistema de colores semánticos, utilidades táctiles y base antigravity-design-expert" },
+    { "path": "src/components/ModalConfirmacion/ModalConfirmacion.tsx", "action": "created", "summary": "Componente modal táctil accesible para confirmaciones críticas" },
+    { "path": "src/components/SkeletonLoader/SkeletonLoader.tsx", "action": "created", "summary": "Componente reutilizable de carga animada (variantes row, card, kpi)" },
+    { "path": "src/components/TopBar/TopBar.tsx", "action": "modified", "summary": "Cabecera con glassmorphism, badge Online/Offline y navegación ergonómica" },
+    { "path": "src/components/TopBar/TopBar.css", "action": "modified", "summary": "Estilos con backdrop-blur, sombras suaves y adaptabilidad móvil" },
+    { "path": "src/components/MenuSeleccion/MenuSeleccion.css", "action": "modified", "summary": "Tarjetas de rol con elevación, sombras suaves y tokens" },
+    { "path": "src/conductores/mantencion/FormularioMantencionTaller.css", "action": "modified", "summary": "Garantía de altura táctil mínima de 48px en botones de categorías" },
+    { "path": "src/conductores/neumaticos/FormularioNeumaticos.css", "action": "modified", "summary": "Implementación de clases táctiles fn-reason-grid y fn-reason-btn" },
+    { "path": "src/mecanicos/revisiones/PautaPreventivaModal.css", "action": "modified", "summary": "Botonera tri-estado ergonómica de 44px con glow en activo" },
+    { "path": "src/mecanicos/revisiones/DashboardMecanico.tsx", "action": "modified", "summary": "Integración de SkeletonLoader y elevación visual de cuadrilla activa" },
+    { "path": "src/supervisores/supervision/tabs/KpisTab.tsx", "action": "modified", "summary": "Tarjetas ejecutivas de telemetría de alto contraste y barra de rendimiento" },
+    { "path": "src/supervisores/supervision/tabs/AlertasTab.tsx", "action": "modified", "summary": "Badges de severidad con pulsing glow y SkeletonLoader" },
+    { "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx", "action": "modified", "summary": "Integración de SkeletonLoader en estados de búsqueda y carga" },
+    { "path": "src/supervisores/supervision/tabs/PatioTab.tsx", "action": "modified", "summary": "Integración de SkeletonLoader en catálogo de patio" },
+    { "path": "src/usuarios/auth/Login.tsx", "action": "modified", "summary": "Cumplimiento de Regla 2 aplicando getApiErrorMessage" },
+    { "path": "src/usuarios/perfil/PerfilUsuario.tsx", "action": "modified", "summary": "Cumplimiento de Regla 2 con getApiErrorMessage y SkeletonLoader" },
+    { "path": "src/supervisores/gestion_usuarios/ListaUsuarios.tsx", "action": "modified", "summary": "Sustitución de window.confirm por ModalConfirmacion y getApiErrorMessage" },
+    { "path": "src/supervisores/gestion_usuarios/CrearUsuario.tsx", "action": "modified", "summary": "Cumplimiento de Regla 2 con getApiErrorMessage" }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-007",
+      "title": "Empaquetado Offline Local de Tailwind CSS v4 vs CDN Play",
+      "rationale": "El script cdn.tailwindcss.com requiere conexión permanente a internet y compila en cliente. En una aplicación híbrida Capacitor ejecutada en tablets de taller, la pérdida de señal dejaba la app sin estilos. Se instaló Tailwind v4 local con @tailwindcss/vite.",
+      "consequences": "Resiliencia offline al 100%, empaquetado estático optimizado de 89 KB de CSS, eliminación total de FOUC y 0 warnings en consola."
+    },
+    {
+      "id": "DEC-008",
+      "title": "Sistema Central de Design Tokens en :root (index.css)",
+      "rationale": "El proyecto presentaba dispersión cromática (6 tonos de azul distintos, sombras duras y fuentes de sistema dispares). Se unificó bajo los estándares de la skill antigravity-design-expert.",
+      "consequences": "Consistencia estética total, soporte para elevaciones y sombras glow, y tipografía moderna Inter en toda la interfaz."
+    },
+    {
+      "id": "DEC-009",
+      "title": "Sustitución de window.confirm por ModalConfirmacion Táctil",
+      "rationale": "El método window.confirm nativo rompe la inmersión en dispositivos móviles Android y no cumple con el estándar de botones táctiles de 44px de la Regla 5.",
+      "consequences": "Experiencia móvil fluida, control preventivo de errores para deshabilitar operadores y prevención de bloqueos de webview."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin ningún error en 53 archivos."
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "oxlint completó con 0 warnings y 0 errors en 53 archivos."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Vite generó bundle estático en dist/ con CSS local de 89.60 kB en menos de 1 segundo."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Sincronizar artefactos compilados a la carpeta nativa Android con npx cap sync.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "fca9f9dbb2b1b0a0d7809fb07e7376132b7462e5",
+    "dirty": true
+  },
+  "notes": [
+    "La eliminación de src/App.css liberó 1,115 líneas de código obsoleto no referenciado.",
+    "Se solventaron los estilos huérfanos del selector de motivos de neumáticos en FormularioNeumaticos.css."
+  ]
+}
