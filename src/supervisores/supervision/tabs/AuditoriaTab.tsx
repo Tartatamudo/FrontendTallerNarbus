@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Search,
-  RefreshCw,
   ChevronDown,
   ChevronUp,
   UserPlus,
@@ -14,6 +13,7 @@ import {
 import type { AuditoriaBusTallerDTO, AuditoriaFiltros } from '../supervisionService';
 import { formatearFechaHora } from '../../../utils/formatters';
 import EstadoBadge from '../../../components/EstadoBadge/EstadoBadge';
+import SkeletonLoader from '../../../components/SkeletonLoader/SkeletonLoader';
 
 export interface AuditoriaTabProps {
   auditorias: AuditoriaBusTallerDTO[];
@@ -114,10 +114,7 @@ export default function AuditoriaTab({
 
       {/* Lista de Fichas de Auditoría */}
       {loading && auditorias.length === 0 ? (
-        <div className="py-16 text-center text-slate-400 font-bold text-xs flex flex-col items-center gap-2 bg-white rounded-3xl border">
-          <RefreshCw size={28} className="animate-spin text-indigo-600" />
-          <span>Cargando bitácora de auditoría...</span>
-        </div>
+        <SkeletonLoader variant="card" count={3} />
       ) : auditorias.length === 0 ? (
         <div className="p-8 text-center bg-white rounded-3xl border border-slate-200 text-xs font-bold text-slate-500">
           No se encontraron registros de auditoría con los filtros aplicados.
@@ -139,8 +136,8 @@ export default function AuditoriaTab({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-                        Folio #{aud.id}
+                      <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                        OT #{aud.id}
                       </span>
                       <EstadoBadge estado={aud.estado} size="xs" />
                       <span className="text-xs text-slate-400">

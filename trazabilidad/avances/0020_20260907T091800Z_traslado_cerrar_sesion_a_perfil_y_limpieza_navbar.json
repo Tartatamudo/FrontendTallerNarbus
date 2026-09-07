@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 20,
+  "id": "AV-0020",
+  "timestamp": "2026-09-07T09:18:00Z",
+  "phase": "diseno_ui_ux_y_navegacion",
+  "milestone": {
+    "id": "FRONT-NAV-01",
+    "name": "Traslado de Cerrar Sesión a Perfil y Limpieza Definitiva de Navbar",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Remoción total del botón Cerrar Sesión y del indicador de conectividad de la TopBar (Navbar), simplificando la cabecera exclusivamente a la marca corporativa NARBUS y al botón de retorno interior. El botón de Cerrar Sesión se ubica ergonómicamente al final de la pantalla de Perfil de Usuario (/perfil) junto a 'Volver a la Consola Principal', con conexión directa al manejador global handleLogout de App.tsx.",
+  "scope": {
+    "planned": [
+      "Eliminar botón y prop onLogout de TopBar.tsx y TopBar.css",
+      "Simplificar título de TopBar exclusivamente a 'NARBUS'",
+      "Reubicar botón 'Volver a la Consola Principal' y añadir botón 'Cerrar Sesión' al pie de PerfilUsuario.tsx",
+      "Conectar onLogout={handleLogout} en App.tsx para PerfilUsuario"
+    ],
+    "completed": [
+      "TopBar.tsx: Removido botón Cerrar Sesión, badge 'En Línea' y subtítulos; cabecera limpia con 'NARBUS' y retorno inteligente",
+      "TopBar.css: Limpieza de estilos obsoletos de logout de cabecera",
+      "PerfilUsuario.tsx: Incorporado botón ergonómico de 'Cerrar Sesión' (.perfil-btn-logout) al lado de 'Volver a la Consola Principal' (.perfil-btn-volver-menu)",
+      "App.tsx: Desvinculado onLogout de TopBar y vinculado como prop a PerfilUsuario para centralizar la invalidación de token y redirección a /login"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/components/TopBar/TopBar.tsx",
+      "action": "modified",
+      "summary": "Eliminada prop y renderizado de onLogout, simplificada marca a 'NARBUS'."
+    },
+    {
+      "path": "src/components/TopBar/TopBar.css",
+      "action": "modified",
+      "summary": "Removidas reglas CSS de .topbar-btn-logout."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Añadido botón de Cerrar Sesión al final de la tarjeta junto al botón de Volver."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Estilos táctiles de 50px de altura para .perfil-btn-volver-menu y .perfil-btn-logout."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Paso de onLogout={handleLogout} a PerfilUsuario y remoción en TopBar."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-035",
+      "title": "Centralización del Flujo de Salida Segura en el Perfil de Usuario",
+      "rationale": "Para evitar toques accidentales de 'Cerrar Sesión' en la barra superior durante la navegación rápida en terreno y pantallas táctiles de taller, la acción de logout se concentró dentro del Perfil de Usuario junto a las opciones de navegación de regreso, dejando una cabecera más despejada, minimalista y centrada en la identidad de marca NARBUS.",
+      "consequences": "TopBar queda libre de distracciones y PerfilUsuario ofrece un punto único de gestión de identidad y cierre de sesión."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Exit code 0. TypeScript validado con tsc -b y bundle generado con Vite en 618ms sin errores ni warnings."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Confirmación visual por parte del usuario en el navegador.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la solicitud de dejar solo NARBUS en el navbar y ubicar Cerrar Sesión al lado de Volver en Perfil."
+  ]
+}

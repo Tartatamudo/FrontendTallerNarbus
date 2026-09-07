@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Login from './usuarios/auth/Login';
 import PerfilUsuario from './usuarios/perfil/PerfilUsuario';
 import MenuSeleccion from './components/MenuSeleccion/MenuSeleccion';
@@ -12,99 +13,212 @@ import { logout, getStoredUser } from './usuarios/auth/authService';
 import { obtenerDato } from './utils/storage';
 import type { User } from './usuarios/auth/authTypes';
 
-type PantallaState = 'login' | 'menu' | 'mantencion' | 'neumaticos' | 'crear_usuario' | 'mecanico' | 'perfil' | 'supervision';
+interface RutaProtegidaProps {
+  children: ReactNode;
+  sesionActiva: boolean | null;
+  comprobando: boolean;
+}
 
-export default function App() {
-  const [pantallaActual, setPantallaActual] = useState<PantallaState>('login');
+function RutaProtegida({ children, sesionActiva, comprobando }: RutaProtegidaProps) {
+  if (comprobando) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 min-h-[50vh]">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!sesionActiva) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [sesionActiva, setSesionActiva] = useState<boolean | null>(null);
+  const [comprobando, setComprobando] = useState(true);
 
   useEffect(() => {
-    // Comprobar si existe sesión activa persistida en el dispositivo
     const comprobarSesion = async () => {
-      const sesionActiva = await obtenerDato('sesion_activa');
-      if (sesionActiva === 'true') {
-        const storedUser = await getStoredUser();
-        if (storedUser) {
-          setCurrentUser(storedUser);
+      try {
+        const sesion = await obtenerDato('sesion_activa');
+        if (sesion === 'true') {
+          const storedUser = await getStoredUser();
+          if (storedUser) {
+            setCurrentUser(storedUser);
+          }
+          setSesionActiva(true);
+        } else {
+          setSesionActiva(false);
         }
-        setPantallaActual('menu');
+      } catch (err) {
+        console.error('Error comprobando sesión:', err);
+        setSesionActiva(false);
+      } finally {
+        setComprobando(false);
       }
     };
+
     comprobarSesion();
   }, []);
 
   const handleLogout = async () => {
     await logout();
     setCurrentUser(null);
-    setPantallaActual('login');
+    setSesionActiva(false);
+    navigate('/login');
   };
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
-    setPantallaActual('menu');
+    setSesionActiva(true);
+    navigate('/home');
   };
 
+  const esLogin = location.pathname === '/login';
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
-      {pantallaActual !== 'login' && (
+    <div className="min-h-screen bg-transparent flex flex-col font-sans">
+      {!esLogin && sesionActiva && (
         <TopBar
-          onLogout={handleLogout}
-          onVolver={pantallaActual !== 'menu' ? () => setPantallaActual('menu') : undefined}
+          onVolver={location.pathname !== '/home' && location.pathname !== '/' ? () => navigate('/home') : undefined}
         />
       )}
 
-      {/* 🔐 MÓDULO USUARIOS (Pantalla compartida Login) */}
-      {pantallaActual === 'login' && (
-        <Login onLoginSuccess={handleLoginSuccess} />
-      )}
+      <main className="flex-1 flex flex-col">
+        <Routes>
+          {/* Ruta Pública: Login */}
+          <Route 
+            path="/login" 
+            element={
+              sesionActiva ? (
+                <Navigate to="/home" replace />
+              ) : (
+                <Login onLoginSuccess={handleLoginSuccess} />
+              )
+            } 
+          />
 
-      {/* 👤 MÓDULO USUARIOS (Perfil me) */}
-      {pantallaActual === 'perfil' && (
-        <div className="container max-w-3xl mx-auto p-4">
-          <PerfilUsuario initialUser={currentUser} />
-        </div>
-      )}
+          {/* Rutas Protegidas */}
+          <Route 
+            path="/home" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <MenuSeleccion
+                  user={currentUser}
+                  onLogout={handleLogout}
+                />
+              </RutaProtegida>
+            } 
+          />
 
-      {/* 📋 MENÚ PRINCIPAL ESTRUCTURADO POR ROLES */}
-      {pantallaActual === 'menu' && (
-        <MenuSeleccion
-          user={currentUser}
-          onSelectOption={(opcion) => setPantallaActual(opcion)}
-          onLogout={handleLogout}
-        />
-      )}
+          <Route 
+            path="/menu" 
+            element={<Navigate to="/home" replace />} 
+          />
 
-      {/* 🚌 MÓDULO CONDUCTORES: Mantención Taller */}
-      {pantallaActual === 'mantencion' && (
-        <FormularioMantencionTaller onVolver={() => setPantallaActual('menu')} />
-      )}
+          <Route 
+            path="/perfil" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <div className="container max-w-6xl mx-auto px-3 py-6 sm:px-6">
+                  <PerfilUsuario
+                    initialUser={currentUser}
+                    onVolver={() => navigate('/home')}
+                    onLogout={handleLogout}
+                    onNavigate={(opcion) => navigate(`/${opcion}`)}
+                  />
+                </div>
+              </RutaProtegida>
+            } 
+          />
 
-      {/* 🛞 MÓDULO CONDUCTORES: Reporte Neumáticos */}
-      {pantallaActual === 'neumaticos' && (
-        <FormularioNeumaticos onVolver={() => setPantallaActual('menu')} />
-      )}
+          <Route 
+            path="/mantencion" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <FormularioMantencionTaller onVolver={() => navigate('/home')} />
+              </RutaProtegida>
+            } 
+          />
 
-      {/* 👑 MÓDULO SUPERVISORES: Gestión de Usuarios (Crear / Listar / Deshabilitar) */}
-      {pantallaActual === 'crear_usuario' && (
-        <div className="container max-w-3xl mx-auto p-4">
-          <ListaUsuarios onVolver={() => setPantallaActual('menu')} />
-        </div>
-      )}
+          <Route 
+            path="/neumaticos" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <FormularioNeumaticos onVolver={() => navigate('/home')} />
+              </RutaProtegida>
+            } 
+          />
 
-      {/* 📊 MÓDULO SUPERVISORES: Telemetría KPIs y Auditoría Inmutable de Buses */}
-      {pantallaActual === 'supervision' && (
-        <div className="container max-w-6xl mx-auto p-4">
-          <DashboardSupervision onVolver={() => setPantallaActual('menu')} />
-        </div>
-      )}
+          <Route 
+            path="/crear_usuario" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <div className="container max-w-3xl mx-auto p-4">
+                  <ListaUsuarios onVolver={() => navigate('/home')} />
+                </div>
+              </RutaProtegida>
+            } 
+          />
 
-      {/* 🔧 MÓDULO MECÁNICOS: Panel de Revisiones Taller */}
-      {pantallaActual === 'mecanico' && (
-        <div className="container max-w-4xl mx-auto p-4">
-          <DashboardMecanico onVolver={() => setPantallaActual('menu')} />
-        </div>
-      )}
+          <Route 
+            path="/supervision" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                <div className="container max-w-6xl mx-auto p-4">
+                  <DashboardSupervision onVolver={() => navigate('/home')} />
+                </div>
+              </RutaProtegida>
+            } 
+          />
+
+          <Route 
+            path="/mecanico" 
+            element={
+              <RutaProtegida sesionActiva={sesionActiva} comprobando={comprobando}>
+                {currentUser?.rol?.toUpperCase() === 'MECANICO' ? (
+                  <div className="container max-w-4xl mx-auto p-4">
+                    <DashboardMecanico onVolver={() => navigate('/home')} />
+                  </div>
+                ) : (
+                  <Navigate to="/home" replace />
+                )}
+              </RutaProtegida>
+            } 
+          />
+
+          {/* Redirección raíz y fallback */}
+          <Route 
+            path="/" 
+            element={
+              comprobando ? (
+                <div className="flex-1 flex items-center justify-center p-8 min-h-[50vh]">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : sesionActiva ? (
+                <Navigate to="/home" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </main>
     </div>
   );
 }
 
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}

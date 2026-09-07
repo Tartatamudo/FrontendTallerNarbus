@@ -41,7 +41,7 @@ const MOTIVOS_TACTILES = [
 ];
 
 export default function FormularioNeumaticos({
-  onVolver,
+  onVolver: _onVolver,
 }: FormularioNeumaticosProps = {}) {
   // Datos principales (chofer proviene automáticamente de la sesión/Login)
   const [chofer, setChofer] = useState("");
@@ -315,15 +315,6 @@ export default function FormularioNeumaticos({
       <div className="fn-card">
         {/* Header Corporativo Oficial Narbus */}
         <div className="fn-header">
-          {onVolver && (
-            <button
-              type="button"
-              onClick={onVolver}
-              className="mb-3 inline-flex items-center gap-1.5 text-xs font-black text-white bg-white/20 hover:bg-white/30 border border-white/30 px-3 py-1.5 rounded-xl transition cursor-pointer"
-            >
-              <span>← Volver al Menú Principal</span>
-            </button>
-          )}
           <div className="fn-header-inner">
             <div className="fn-header-icon-box">
               <Disc size={26} />
@@ -331,9 +322,9 @@ export default function FormularioNeumaticos({
             <div>
               <div className="flex items-center gap-2">
                 <span className="fn-badge-company">NARBUS BUSES</span>
-                <span className="fn-badge-subtitle">DEPARTAMENTO NEUMÁTICOS</span>
+                <span className="fn-badge-subtitle">NEUMÁTICOS & AUXILIOS EN RUTA</span>
               </div>
-              <h1 className="fn-header-title">Reporte de Neumático</h1>
+              <h1 className="fn-header-title">Emergencia de Neumáticos en Ruta</h1>
             </div>
           </div>
         </div>
@@ -419,7 +410,7 @@ export default function FormularioNeumaticos({
                 </div>
               ) : (
                 <div className="mt-2 text-center text-xs font-bold text-slate-500 italic">
-                  👉 Toca las ruedas afectadas en el diagrama superior.
+                  👉 Toca la(s) rueda(s) afectadas en el diagrama del chasis (Ejes Delantero / Trasero).
                 </div>
               )}
             </div>
@@ -447,9 +438,8 @@ export default function FormularioNeumaticos({
                       if (item.id !== "Otro") setOtroMotivo("");
                       setErrorMsg("");
                     }}
-                    className={`fn-reason-btn ${
-                      isSelected ? "fn-reason-btn-selected" : ""
-                    }`}
+                    className={`fn-reason-btn ${isSelected ? "fn-reason-btn-selected" : ""
+                      }`}
                   >
                     <span className="text-2xl">{item.icon}</span>
                     <span>{item.label}</span>
@@ -502,7 +492,7 @@ export default function FormularioNeumaticos({
                 <div className="fn-step-header mb-1">
                   <div className="fn-step-title-group">
                     <span className="fn-step-badge">5</span>
-                    <label className="fn-step-label">Valor Pagado:</label>
+                    <label className="fn-step-label">Costo Auxilio en Ruta ($):</label>
                   </div>
                   <span className="fn-optional-badge">Opcional</span>
                 </div>
@@ -511,7 +501,7 @@ export default function FormularioNeumaticos({
                   <input
                     type="text"
                     inputMode="numeric"
-                    placeholder="Ej: 25.000"
+                    placeholder="Ej: 25.000 (Monto boleta auxilio)"
                     value={precio}
                     onChange={manejarPrecio}
                     className="fn-price-input"
@@ -523,7 +513,7 @@ export default function FormularioNeumaticos({
                 <div className="fn-step-header mb-1">
                   <div className="fn-step-title-group">
                     <span className="fn-step-badge">6</span>
-                    <label className="fn-step-label">Marca de Fuego:</label>
+                    <label className="fn-step-label">Marca de Fuego (N° Neumático):</label>
                   </div>
                   <span className="fn-optional-badge">Opcional</span>
                 </div>
@@ -534,7 +524,7 @@ export default function FormularioNeumaticos({
                   <input
                     type="text"
                     inputMode="numeric"
-                    placeholder="Ej: 123456"
+                    placeholder="Ej: 123456 (Grabado en goma)"
                     value={marcaFuego}
                     onChange={manejarMarcaFuego}
                     className="fn-price-input"

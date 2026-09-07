@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 18,
+  "id": "AV-0018",
+  "timestamp": "2026-09-07T08:55:00Z",
+  "phase": "arquitectura_navegacion_y_rutas",
+  "milestone": {
+    "id": "FRONT-ROUTER-01",
+    "name": "Migración a react-router-dom y Estilos de Navegación",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Migración completa de la navegación de la aplicación a rutas URL reales con react-router-dom (/home, /perfil, /mantencion, /neumaticos, /mecanico, /supervision, /crear_usuario, /login). Eliminación del botón Actualizar Datos en el perfil y aplicación de diseño destacado y ergonómico con relieve para el botón Volver a la Consola Principal.",
+  "scope": {
+    "planned": [
+      "Instalar react-router-dom v7 compatible con React 19",
+      "Reestructurar App.tsx con BrowserRouter, Routes, Route y guard de rutas protegidas",
+      "Conectar TopBar.tsx con useLocation y useNavigate para activar el botón Volver en rutas interiores",
+      "Actualizar MenuSeleccion.tsx para navegar a rutas URL",
+      "Eliminar el botón Actualizar Datos en PerfilUsuario.tsx",
+      "Estilizar con alto contraste y ergonomía el botón Volver en PerfilUsuario.css (.perfil-btn-volver-menu)"
+    ],
+    "completed": [
+      "package.json: Agregada dependencia react-router-dom v7.18.3",
+      "App.tsx: Implementadas rutas públicas (/login) y protegidas (/home, /perfil, /mantencion, /neumaticos, /mecanico, /supervision, /crear_usuario) con redirección automática",
+      "TopBar.tsx: Detección reactiva de pantalla interior mediante useLocation() para botón ← Menú con retorno a /home",
+      "MenuSeleccion.tsx: Navegación declarativa mediante useNavigate hacia cada módulo operacional",
+      "PerfilUsuario.tsx: Eliminado botón de actualizar datos y conectado botón volver con estilo perfil-btn-volver-menu",
+      "PerfilUsuario.css: Estilizado con fondo slate-900 en gradiente, micro-relieve, elevación 3D, sombra y 50px de altura táctil"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "package.json",
+      "action": "modified",
+      "summary": "Instalación de react-router-dom v7.18.3."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Reemplazo de estado pantallaActual por BrowserRouter, Routes y componente RutaProtegida."
+    },
+    {
+      "path": "src/components/TopBar/TopBar.tsx",
+      "action": "modified",
+      "summary": "Integración de useNavigate y useLocation para navegación fluida y regreso al menú."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.tsx",
+      "action": "modified",
+      "summary": "Adición de useNavigate para navegar directamente a las rutas de cada módulo."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Remoción de botón Actualizar Datos y estilización del botón Volver con clase perfil-btn-volver-menu."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Clase perfil-btn-volver-menu con acabado dark slate, relieve, glow y altura táctil de 50px."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-032",
+      "title": "Migración a Enrutamiento Declarativo URL con react-router-dom",
+      "rationale": "La navegación mediante estados locales impedía compartir enlaces directos (/perfil, /home), imposibilitaba el uso de los botones adelante/atrás del navegador y dificultaba el refresco de página. Con react-router-dom cada pantalla posee una URL semántica clara tanto en navegador web como en Capacitor Android.",
+      "consequences": "URLs limpias y directas, soporte completo para historial del navegador y arquitectura estándar de React."
+    },
+    {
+      "id": "DEC-033",
+      "title": "Estilizado Ergonómico para el Botón de Retorno Operacional",
+      "rationale": "El botón de retorno al menú principal en la pantalla de perfil carecía de contraste suficiente. Se diseñó con fondo oscuro en gradiente (#0f172a a #1e293b), borde semi-translúcido, sombra difusa y tamaño táctil de 50px para garantizar máxima visibilidad y ergonomía de taller.",
+      "consequences": "El operador identifica de inmediato cómo volver a la consola sin confusiones."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Exit code 0, tipado TypeScript 100% íntegro con react-router-dom."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Compilación exitosa con Vite y generación de bundle de producción en 627ms."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas de navegación en vivo entre /home, /perfil y demás rutas.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Compatible con recarga de página en servidor de desarrollo Vite y empaquetado WebView de Capacitor."
+  ]
+}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { UserPlus, Shield, Key, UserCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { crearUsuario } from '../../usuarios/auth/authService';
 import type { RolUsuario } from '../../usuarios/auth/authTypes';
+import { getApiErrorMessage } from '../../utils/apiErrors';
 import './CrearUsuario.css';
 
 interface CrearUsuarioProps {
@@ -52,13 +53,9 @@ export default function CrearUsuario({ onUsuarioCreado, onVolver }: CrearUsuario
       if (onUsuarioCreado) {
         onUsuarioCreado();
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al registrar usuario:', err);
-      if (err.response?.status === 400 || err.response?.status === 409) {
-        setErrorMsg(err.response?.data?.detail || 'El nombre de usuario ya existe en el sistema.');
-      } else {
-        setErrorMsg('Error al conectar con el servidor para registrar el usuario.');
-      }
+      setErrorMsg(getApiErrorMessage(err, 'Error al conectar con el servidor para registrar el usuario.'));
     } finally {
       setLoading(false);
     }

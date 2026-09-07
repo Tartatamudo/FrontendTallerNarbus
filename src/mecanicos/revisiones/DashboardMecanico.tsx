@@ -46,7 +46,8 @@ import ModalNuevaObservacion from './modales/ModalNuevaObservacion';
 import ModalReportarRepuesto from './modales/ModalReportarRepuesto';
 import ModalFinalizarOrden from './modales/ModalFinalizarOrden';
 import ModalAgregarFalla from './modales/ModalAgregarFalla';
-import { formatearEstadoSolicitud } from '../../utils/formatters';
+import EstadoBadge from '../../components/EstadoBadge/EstadoBadge';
+import SkeletonLoader from '../../components/SkeletonLoader/SkeletonLoader';
 
 interface DashboardMecanicoProps {
   onVolver?: () => void;
@@ -497,7 +498,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
           }`}
         >
           <Clock size={16} />
-          <span>Bandeja 1: Solicitudes Pendientes ({pendientes.length})</span>
+          <span>Buses por Atender en Taller ({pendientes.length})</span>
         </button>
 
         <button
@@ -512,7 +513,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
           }`}
         >
           <Wrench size={16} />
-          <span>Bandeja 2: Mis Trabajos ({misTrabajos.length})</span>
+          <span>Mis Órdenes en Curso ({misTrabajos.length})</span>
         </button>
       </div>
 
@@ -547,7 +548,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
         <div className="lg:col-span-1 space-y-3">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-black text-sm text-slate-700 uppercase tracking-wider">
-              {tabActiva === 'pendientes' ? 'Buses en Espera' : 'Mis Órdenes Asignadas'}
+              {tabActiva === 'pendientes' ? 'Buses por Atender' : 'Mis Órdenes en Curso'}
             </h2>
             <button
               onClick={cargarDatos}
@@ -560,14 +561,11 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
           </div>
 
           {loading && pendientes.length === 0 && misTrabajos.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 font-bold text-xs flex flex-col items-center gap-2">
-              <RefreshCw size={24} className="animate-spin text-indigo-600" />
-              <span>Cargando datos del taller...</span>
-            </div>
+            <SkeletonLoader variant="card" count={3} />
           ) : (tabActiva === 'pendientes' ? pendientes : misTrabajos).length === 0 ? (
             <div className="p-6 text-center bg-slate-50 border border-dashed border-slate-300 rounded-2xl text-xs font-bold text-slate-500">
               {tabActiva === 'pendientes'
-                ? 'No hay solicitudes pendientes en este momento.'
+                ? 'No hay buses por atender en este momento en taller.'
                 : 'No tienes órdenes de trabajo asignadas activamente.'}
             </div>
           ) : (
@@ -589,9 +587,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       <Bus size={18} className="text-indigo-600" />
                       <span className="font-black text-slate-900 text-base">Bus {sol.n_bus}</span>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
-                      {formatearEstadoSolicitud(sol.estado)}
-                    </span>
+                    <EstadoBadge estado={sol.estado} size="xs" />
                   </div>
 
                   <p className="text-xs font-bold text-slate-600 line-clamp-2 mb-3">
@@ -599,7 +595,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   </p>
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
-                    <span>Folio #{sol.id}</span>
+                    <span className="font-bold text-indigo-700">OT #{sol.id}</span>
                     <span>{sol.detalles?.length || 0} avería(s)</span>
                   </div>
 
@@ -623,12 +619,10 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-2.5 py-0.5 rounded-full">
-                      Folio #{solicitudSeleccionada.id}
+                    <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest bg-indigo-100/80 border border-indigo-200 px-2.5 py-0.5 rounded-full">
+                      OT #{solicitudSeleccionada.id}
                     </span>
-                    <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-black rounded-full">
-                      {formatearEstadoSolicitud(solicitudSeleccionada.estado)}
-                    </span>
+                    <EstadoBadge estado={solicitudSeleccionada.estado} size="xs" />
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 mt-1">
                     Bus N° {solicitudSeleccionada.n_bus}
@@ -646,20 +640,20 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       {solicitudSeleccionada.mecanicos.map((m) => (
                         <span
                           key={m.id}
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1.5 ${
+                          className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 transition shadow-sm ${
                             m.is_activo
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-emerald-500/10'
                               : 'bg-slate-100 text-slate-600 border-slate-200'
                           }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              m.is_activo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                            className={`w-2 h-2 rounded-full ${
+                              m.is_activo ? 'bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse' : 'bg-slate-400'
                             }`}
                           />
                           <span>{m.mecanico_nombre || `Mecánico #${m.mecanico_id}`}</span>
                           {m.duracion_minutos != null && (
-                            <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-1 rounded">
+                            <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
                               {m.duracion_minutos} min
                             </span>
                           )}
@@ -678,14 +672,14 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       nBus: solicitudSeleccionada.n_bus,
                     })
                   }
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer self-start"
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer self-start min-h-[40px]"
                 >
                   <ClipboardCheck size={16} />
                   <span>
-                    Pauta Preventiva{' '}
+                    Checklist de Seguridad (11 Ítems){' '}
                     {pautaResumenActual
                       ? `(${pautaResumenActual.respondidos}/${pautaResumenActual.total_items || 11})`
-                      : '(11 Ítems)'}
+                      : ''}
                   </span>
                 </button>
               </div>
@@ -695,9 +689,9 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                 <div className="p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-black text-sm text-indigo-900">Tomar Orden de Trabajo</h4>
+                      <h4 className="font-black text-sm text-indigo-900">Iniciar Atención de Averías</h4>
                       <p className="text-xs text-indigo-700">
-                        Selecciona averías específicas para autoasignarte con tu equipo o toma todas las fallas del bus.
+                        Selecciona averías específicas para autoasignarte con tu equipo técnico o atiende todas las fallas pendientes del bus.
                       </p>
                     </div>
                     <button
@@ -727,7 +721,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 min-h-[44px]"
                     >
                       <UserCheck size={16} />
-                      <span>Autoasignar ({selectedDetallesIds.length}) Averías</span>
+                      <span>Autoasignar ({selectedDetallesIds.length}) Avería(s)</span>
                     </button>
 
                     <button
@@ -741,7 +735,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                     >
                       <Play size={15} />
                       <span>
-                        Tomar Averías Pendientes (
+                        Atender Averías Pendientes (
                         {solicitudSeleccionada.detalles?.filter((d) => !d.resuelto).length || 0})
                       </span>
                     </button>

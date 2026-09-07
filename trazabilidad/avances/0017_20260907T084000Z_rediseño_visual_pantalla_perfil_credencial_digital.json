@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 17,
+  "id": "AV-0017",
+  "timestamp": "2026-09-07T08:50:00Z",
+  "phase": "diseno_global_e_identidad_visual",
+  "milestone": {
+    "id": "FRONT-UX-05",
+    "name": "Rediseño Visual Pantalla Perfil Credencial Digital de Operador",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Rediseño visual de la pantalla Perfil de Usuario con concepto de Credencial Oficial de Operador y enfoque centrado en el usuario común: eliminación de metadatos técnicos irrelevantes (@username, ID en base de datos y detalles de cifrado JWT) y reformulación de las tareas operacionales con explicaciones cotidianas, claras y didácticas por rol.",
+  "scope": {
+    "planned": [
+      "Investigar patrones de UI/UX de perfiles en gestión de flotas y transporte industrial",
+      "Rediseñar PerfilUsuario.css con estilos modernos, elevación 3D, halos por rol y micro-interacciones",
+      "Actualizar PerfilUsuario.tsx implementando Hero Card (Credencial Oficial) y tareas amigables",
+      "Eliminar tecnicismos irrelevantes (@admin, ID de base de datos, ficha de seguridad JWT)",
+      "Redactar atribuciones con lenguaje claro y accesible para choferes, mecánicos y supervisores",
+      "Conectar atajos de navegación ergonómica en App.tsx hacia la consola principal y módulos directos"
+    ],
+    "completed": [
+      "PerfilUsuario.css: Estilos visuales con banner corporativo Narbus, avatar con halo temático por rol (azul, índigo, ámbar, rojo), tarjetas de módulos claros y botones táctiles ergonómicos (>=48px)",
+      "PerfilUsuario.tsx: Renderizado de nombre destacado, rol oficial, RUT limpio, estado habilitado, catálogo de funciones explicadas de forma cotidiana y atajos directos de navegación",
+      "App.tsx: Integradas funciones onVolver, onLogout y onNavigate",
+      "Creación de rama GitFlow feature/mejora-visual-pantalla-perfil"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones en contratos de API backend (GET /api/v1/auth/me se mantiene 100% compatible)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Estilos de credencial oficial, halos luminosos por rol, tarjetas de funciones operacionales amigables y botones táctiles de 48px."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.tsx",
+      "action": "modified",
+      "summary": "Remoción de tecnicismos (@admin, ID de sistema, ficha de seguridad) e incorporación de descripciones claras y directas para cada puesto de trabajo."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Conexión de navegación onVolver, onLogout y onNavigate al módulo de Perfil."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-030",
+      "title": "Adopción de Credencial Digital de Operador en Pantalla Perfil",
+      "rationale": "En aplicaciones operacionales de transporte de pasajeros, un perfil plano de datos resulta estéril. Diseñar la pantalla como una Credencial Oficial de Operador eleva el sentido de pertenencia y profesionalismo del chofer o mecánico.",
+      "consequences": "Mayor claridad operativa y validación visual inmediata de credenciales en terreno."
+    },
+    {
+      "id": "DEC-031",
+      "title": "Depuración de Metadatos Técnicos y Lenguaje Didáctico en Perfil",
+      "rationale": "Mostrar @username, ID de base de datos (#005) o detalles de tokens JWT resulta irrelevante y confuso para un chofer o mecánico de taller. Reemplazar esos elementos por explicaciones en lenguaje natural sobre lo que cada operador puede hacer en la plataforma mejora la adopción y usabilidad.",
+      "consequences": "Interfaz limpia, humana y 100% orientada al usuario operativo real de Narbus."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Exit code 0, tipado TypeScript 100% íntegro."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Compilación exitosa con Vite y empaquetado de producción sin incidencias."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas de visualización y validación por parte del usuario.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Compatible con Capacitor 8 en tablets Android para faena de maestranza central."
+  ]
+}

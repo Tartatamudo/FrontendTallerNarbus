@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 22,
+  "id": "AV-0022",
+  "timestamp": "2026-09-07T09:27:00Z",
+  "phase": "diseno_ui_ux_y_estetica",
+  "milestone": {
+    "id": "FRONT-UI-04",
+    "name": "Corrección de Paleta a Negro/Gris Neutro y Oscurecimiento de Símbolos",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Corrección de la paleta general eliminando cualquier tonalidad azul/navy del fondo y superficies, migrando a negro neutro (#0f1014) y gris grafito (#15171c / #1a1d23 / #21252d). Oscurecimiento integral de las cajas de iconos y símbolos (incluyendo los módulos de formularios de mantención y neumáticos que tenían fondos pastel claros #eff6ff y #f0fdf4), reemplazándolos por contenedores gris oscuro con bordes sutiles y glifos saturados de alto contraste.",
+  "scope": {
+    "planned": [
+      "Eliminar degradados azules de index.css y fijar fondo negro neutro #0f1014",
+      "Actualizar MenuSeleccion.css y MenuSeleccion.tsx para oscurecer las cajas de iconos y badges de los 2 módulos de formulario",
+      "Actualizar PerfilUsuario.css y TopBar.css con la paleta estricta negro/gris grafito"
+    ],
+    "completed": [
+      "index.css: Fondo plano negro grafito #0f1014 sin gradientes azules, superficies en gris oscuro neutro #15171c y #1a1d23",
+      "MenuSeleccion.css: .menu-card-icon-mantencion y .menu-card-icon-neumaticos cambiados de fondos blancos/claros (#eff6ff, #f0fdf4) a gris oscuro #21242d y #1e2621 con acentos vibrantes",
+      "MenuSeleccion.tsx: Badges claros (bg-blue-100, bg-emerald-100, bg-indigo-200) reemplazados por píldoras oscuras en contraste (#1b2330, #1a2820, #261c33)",
+      "TopBar.css: Cabecera con fondo dark grafito rgba(18, 20, 25, 0.96) y borde inferior sutil",
+      "PerfilUsuario.css: Estructura y tarjetas depuradas en paleta neutral negro/gris (#16181d / #1c1f26 / #20242e)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/index.css",
+      "action": "modified",
+      "summary": "Eliminación de gradientes radiales azules y estandarización a fondo negro grafito neutro #0f1014."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.css",
+      "action": "modified",
+      "summary": "Reemplazo de fondos pastel claros en cajas de iconos de mantención y neumáticos por contenedores oscuros de alto contraste."
+    },
+    {
+      "path": "src/components/MenuSeleccion/MenuSeleccion.tsx",
+      "action": "modified",
+      "summary": "Reemplazo de etiquetas pastel claras por badges oscuros de rol y eliminación de bordes violetas."
+    },
+    {
+      "path": "src/usuarios/perfil/PerfilUsuario.css",
+      "action": "modified",
+      "summary": "Depuración completa a gris grafito y negro neutro en todas las superficies e iconos de perfil."
+    },
+    {
+      "path": "src/components/TopBar/TopBar.css",
+      "action": "modified",
+      "summary": "Cabecera sincronizada al tono grafito negro neutro."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-037",
+      "title": "Alineación Estricta con la Paleta Monocromática Negro/Gris sin Matices Azules",
+      "rationale": "El diseño de referencia utiliza una base cromática neutra (negro #0f1014 y gris grafito #16181d) donde los colores existen únicamente como acentos luminosos en los iconos y textos destacados, evitando la saturación azul en fondos o cajas de símbolos.",
+      "consequences": "La interfaz adquiere el aspecto exacto del mockup corporativo, con alto contraste y sin componentes con fondos claros o lechosos."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Exit code 0. TypeScript validado con tsc -b y bundle generado con Vite en 621ms."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación visual del usuario.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/mejora-visual-pantalla-perfil",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con la retroalimentación del usuario de pasar a paleta negro/gris y corregir los símbolos demasiado claros de los formularios."
+  ]
+}
