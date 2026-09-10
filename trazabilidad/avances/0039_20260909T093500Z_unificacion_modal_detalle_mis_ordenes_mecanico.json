@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 39,
+  "id": "AV-0039",
+  "timestamp": "2026-09-09T09:35:00Z",
+  "phase": "mecanicos_ux_modal_unificado",
+  "milestone": {
+    "id": "FRONT-3",
+    "name": "Módulo Mecánicos",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Unificación de la experiencia de usuario en el Módulo de Mecánicos: en la pestaña 'Mis Órdenes en Curso', el clic sobre cualquier tarjeta de orden ahora abre una ventana modal flotante superpuesta (ModalDetalleReporte en modo 'misTrabajos'), reemplazando la columna dividida y ofreciendo paridad total con la bandeja de 'Buses por Atender'. La ventana modal centraliza la ficha técnica, fotos de evidencia, pauta preventiva, checkboxes táctiles de resolución de fallas, declaración de repuestos faltantes, incorporación de averías en caliente, bitácora de comentarios y botones de cierre cronometrado ('Terminar Avance' y 'Finalizar y Liberar Bus').",
+  "scope": {
+    "planned": [
+      "Permitir que al hacer clic en una orden de 'Mis Órdenes en Curso' se abra una ventana modal emergente superpuesta idéntica a la vista de 'Buses por Atender'.",
+      "Centralizar en la ventana modal la resolución de averías, reporte de repuestos, adición de fallas en caliente, comentarios y cierres cronometrados.",
+      "Ajustar la jerarquía de z-index de ModalBase para que los modales hijos (agregar falla, terminar avance, finalizar orden) se superpongan limpiamente sobre la ventana modal de detalle.",
+      "Preservar diseño responsive y soporte completo para modo oscuro/claro con botones táctiles >= 44x44px."
+    ],
+    "completed": [
+      "Ampliación de ModalDetalleReporte.tsx para soportar la propiedad modo?: 'pendientes' | 'misTrabajos', integrando la consola operacional completa en modo misTrabajos.",
+      "Ajuste de z-index en ModalBase.tsx de z-50 a z-[60] para apilamiento correcto de modales secundarios de confirmación y formulario.",
+      "Rediseño de la pestaña 'Mis Órdenes en Curso' en DashboardMecanico.tsx con grilla panorámica de tarjetas idéntica a 'Buses por Atender', buscador reactivo de trabajos y disparador táctil 'Gestionar Orden de Trabajo →'.",
+      "Vinculación reactiva de eventos onToggleCheckFalla, onReportarRepuestoClick, onAgregarFallaClick, onAgregarComentarioClick, onTerminarAvanceClick y onFinalizarOrdenClick dentro del modal.",
+      "Verificación de 0 warnings y 0 errores en oxlint y compilación limpia en vite build."
+    ],
+    "pending": [
+      "Continuar pruebas de integración en terreno con tablets Android y Capacitor 8."
+    ],
+    "outOfScope": [
+      "Modificaciones de backend o alteración de contratos de API REST."
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/components/ModalBase/ModalBase.tsx",
+      "action": "modified",
+      "summary": "Elevación de z-index a z-[60] para garantizar que los diálogos modales derivados de ModalBase (confirmaciones, agregar falla, etc.) se superpongan a ModalDetalleReporte (z-50)."
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx",
+      "action": "modified",
+      "summary": "Incorporación de la prop modo ('pendientes' | 'misTrabajos') y renderizado de la consola de trabajo activa: checkboxes de averías, botones de falta de repuestos, adición de falla en caliente, bitácora y botones de cierre."
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Sustitución de la distribución en 2 columnas por grilla panorámica de tarjetas en 'Mis Órdenes en Curso', buscador dedicado y apertura de ModalDetalleReporte al hacer clic en cualquier orden."
+    },
+    {
+      "path": "trazabilidad/01_ESTADO_ACTUAL_PROYECTO.md",
+      "action": "modified",
+      "summary": "Actualización de la descripción funcional del Módulo Mecánicos reflejando la unificación de modales en ambas bandejas operacionales."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-043",
+      "title": "Unificación de Modal Operacional en 'Mis Órdenes en Curso' y 'Buses por Atender'",
+      "rationale": "La disposición previa en 2 columnas dividía la pantalla en tablets y pantallas compactas de taller, haciendo incómoda la lectura del reporte original del chofer y la resolución simultánea de fallas. Al abrir ModalDetalleReporte superpuesto tanto en pendientes como en órdenes en curso, el mecánico goza de un flujo ergonómico homogéneo, mayor área de trabajo y foco exclusivo en la orden abierta.",
+      "consequences": "Mayor claridad visual en terreno, menor carga cognitiva para los mecánicos y reutilización de componentes de interfaz cumpliendo con el estándar de botones táctiles >= 44x44px."
+    },
+    {
+      "id": "DEC-044",
+      "title": "Jerarquía de Z-Index para Diálogos Secundarios",
+      "rationale": "Dado que ModalDetalleReporte utiliza z-50 para cubrir la consola principal, los modales de acción rápida o confirmación (ModalAgregarFalla, ModalTerminarAvance, ModalFinalizarOrden) que heredan de ModalBase requerían un nivel superior z-[60] para no quedar ocultos detrás del telón de fondo.",
+      "consequences": "Transiciones fluidas entre la orden de trabajo y los cuadros de diálogo secundarios sin parpadeos ni bloqueos visuales."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "oxlint: 0 warnings, 0 errors on 57 files."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build finalizados exitosamente en 5.23s generando dist/ assets."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validar la experiencia de usuario directamente en el entorno de desarrollo y continuar con las siguientes mejoras requeridas en el Frontend.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "local",
+    "dirty": true
+  },
+  "notes": [
+    "La interfaz conserva total compatibilidad con el modo oscuro oficial de Narbus y el modo claro.",
+    "El estado local de la orden abierta se sincroniza de forma reactiva e instantánea al resolver averías o agregar comentarios."
+  ]
+}

@@ -1,0 +1,65 @@
+# ============================================================
+# docker-compose.yml — FrontendTallerNarbus
+# Producción: solo el contenedor del frontend.
+#
+# VARIABLES REQUERIDAS (NO van hardcodeadas aquí):
+#   Pasarlas como secretos en el entorno del host o CI/CD.
+#   Ver .env.example para la lista completa.
+#
+# USO:
+#   VITE_API_BASE_URL=https://api.narbus.cl docker-compose up -d
+# ============================================================
+
+services:
+  frontend:
+    image: narbus-frontend:latest
+    # O construir localmente:
+    # build:
+    #   context: .
+    #   args:
+    #     VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    #     VITE_API_URL: ${VITE_API_URL}
+
+    container_name: narbus-frontend
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      # Descomentar si hay SSL terminado aquí (no recomendado; usar un proxy como Traefik/Caddy):
+      # - "443:443"
+
+    # El frontend NO necesita variables de entorno en runtime:
+    # las URLs del backend están baked-in en el bundle durante el build.
+    # Aquí van solo variables de configuración de nginx si las necesitas.
+
+    # Volúmenes de logs (opcional)
+    volumes:
+      - nginx_logs:/var/log/nginx
+
+    # Red interna si el backend también está en Docker
+    # networks:
+    #   - narbus-network
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.5"
+
+volumes:
+  nginx_logs:
+    driver: local
+
+# Descomentar para red compartida con el backend:
+# networks:
+#   narbus-network:
+#     external: true
+#     name: narbus-network

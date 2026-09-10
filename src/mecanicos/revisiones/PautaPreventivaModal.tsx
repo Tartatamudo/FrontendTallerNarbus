@@ -7,51 +7,145 @@ import {
   X,
   Save,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Wrench
 } from 'lucide-react';
 import {
   obtenerPautaItems,
   obtenerPautaResumen,
   guardarPautaBatch,
+  obtenerSolicitud,
+  agregarFallaSolicitud,
+  obtenerCategorias,
+  tieneAsignacionMecanico,
   type PautaTallerItemDTO,
   type PautaEvaluacionItemDTO,
-  type EstadoPauta
-} from '../../conductores/mantencion/mantencionService';
+  type EstadoPauta,
+  type SolicitudDTO,
+  type CategoriaFalla,
+  type DetalleSolicitudDTO
+} from '../../services/mantencionService';
+import { getStoredUser } from '../../usuarios/auth/authService';
 import { getApiErrorMessage } from '../../utils/apiErrors';
 import './PautaPreventivaModal.css';
 
 interface PautaPreventivaModalProps {
   solicitudId: number;
   nBus: string;
+  solicitud?: SolicitudDTO | null;
+  tabActiva?: 'pendientes' | 'misTrabajos';
+  readOnly?: boolean;
   onClose: () => void;
   onGuardadoExitoso?: () => void;
 }
 
+const CATEGORIAS_FALLBACK: { id: number; nombre: string }[] = [
+  { id: 1, nombre: 'Frenos' },
+  { id: 2, nombre: 'Eléctrico' },
+  { id: 3, nombre: 'Motor' },
+  { id: 4, nombre: 'Carrocería' },
+  { id: 5, nombre: 'Climatización' },
+  { id: 6, nombre: 'Otro' },
+];
+
+const mapearCategoria = (nombreCatPauta: string, categoriasDb: CategoriaFalla[]): number => {
+  const norm = (str: string) =>
+    (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const pautaNorm = norm(nombreCatPauta);
+
+  // 1. Coincidencia por nombre en las categorías de la base de datos
+  for (const cat of categoriasDb) {
+    const dbNorm = norm(cat.nombre);
+    if (pautaNorm.includes(dbNorm) || dbNorm.includes(pautaNorm)) {
+      return cat.id;
+    }
+  }
+
+  // 2. Mapeo semántico de palabras clave
+  if (pautaNorm.includes('freno') || pautaNorm.includes('aire')) {
+    const cat = categoriasDb.find((c) => norm(c.nombre).includes('freno'));
+    if (cat) return cat.id;
+    return 1;
+  }
+  if (pautaNorm.includes('electric') || pautaNorm.includes('luz') || pautaNorm.includes('luces')) {
+    const cat = categoriasDb.find((c) => norm(c.nombre).includes('electr'));
+    if (cat) return cat.id;
+    return 2;
+  }
+  if (pautaNorm.includes('motor') || pautaNorm.includes('transmision')) {
+    const cat = categoriasDb.find((c) => norm(c.nombre).includes('motor'));
+    if (cat) return cat.id;
+    return 3;
+  }
+  if (
+    pautaNorm.includes('carroceria') ||
+    pautaNorm.includes('cabina') ||
+    pautaNorm.includes('direccion') ||
+    pautaNorm.includes('suspension')
+  ) {
+    const cat = categoriasDb.find((c) => norm(c.nombre).includes('carroc'));
+    if (cat) return cat.id;
+    return 4;
+  }
+  if (pautaNorm.includes('clima') || pautaNorm.includes('aire acond')) {
+    const cat = categoriasDb.find((c) => norm(c.nombre).includes('clima'));
+    if (cat) return cat.id;
+    return 5;
+  }
+
+  // 3. Fallback
+  const otroCat = categoriasDb.find((c) => norm(c.nombre).includes('otro'));
+  return otroCat ? otroCat.id : 6;
+};
+
 export default function PautaPreventivaModal({
   solicitudId,
   nBus,
+  solicitud,
+  tabActiva = 'misTrabajos',
+  readOnly,
   onClose,
   onGuardadoExitoso,
 }: PautaPreventivaModalProps) {
   const [items, setItems] = useState<PautaTallerItemDTO[]>([]);
   const [evaluaciones, setEvaluaciones] = useState<Record<number, { estado: EstadoPauta; observacion: string }>>({});
+  const [categoriasDb, setCategoriasDb] = useState<CategoriaFalla[]>(CATEGORIAS_FALLBACK as CategoriaFalla[]);
+  const [autoasignarDefectos, setAutoasignarDefectos] = useState<boolean>(tabActiva === 'misTrabajos');
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [guardandoTexto, setGuardandoTexto] = useState('Guardando Pauta...');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
-  // Cargar catálogo maestro y respuestas existentes
+  useEffect(() => {
+    getStoredUser().then((u) => {
+      if (u) setCurrentUserId(u.id);
+    });
+  }, []);
+
+  // Determinar si la pauta es de solo lectura (mecánico sin la OT ni averías asignadas a su orden)
+  const esReadOnly =
+    readOnly !== undefined
+      ? readOnly
+      : (tabActiva === 'pendientes' && !tieneAsignacionMecanico(solicitud, currentUserId));
+
+  // Cargar catálogo maestro, respuestas existentes y categorías de fallas
   useEffect(() => {
     const cargarDatos = async () => {
       setLoading(true);
       setErrorMsg(null);
       try {
-        const [catalogo, resumenExistente] = await Promise.all([
+        const [catalogo, resumenExistente, cats] = await Promise.all([
           obtenerPautaItems(),
           obtenerPautaResumen(solicitudId).catch(() => null),
+          obtenerCategorias().catch(() => CATEGORIAS_FALLBACK as CategoriaFalla[]),
         ]);
 
         setItems(catalogo);
+        if (cats && cats.length > 0) {
+          setCategoriasDb(cats.filter((c) => c.is_active));
+        }
 
         // Inicializar mapa de respuestas previas si existen
         const prevMap: Record<number, { estado: EstadoPauta; observacion: string }> = {};
@@ -75,6 +169,7 @@ export default function PautaPreventivaModal({
   }, [solicitudId]);
 
   const handleSetEstado = (itemId: number, nuevoEstado: EstadoPauta) => {
+    if (esReadOnly) return;
     setEvaluaciones((prev) => ({
       ...prev,
       [itemId]: {
@@ -85,6 +180,7 @@ export default function PautaPreventivaModal({
   };
 
   const handleSetObservacion = (itemId: number, observacion: string) => {
+    if (esReadOnly) return;
     setEvaluaciones((prev) => ({
       ...prev,
       [itemId]: {
@@ -96,6 +192,7 @@ export default function PautaPreventivaModal({
 
   // Marcar todos los ítems pendientes como OK con 1 clic
   const handleMarcarTodosOK = () => {
+    if (esReadOnly) return;
     const updated = { ...evaluaciones };
     for (const it of items) {
       if (!updated[it.id]) {
@@ -105,8 +202,12 @@ export default function PautaPreventivaModal({
     setEvaluaciones(updated);
   };
 
-  // Guardar en el backend
+  // Guardar en el backend y registrar defectos como averías
   const handleGuardar = async () => {
+    if (esReadOnly) {
+      setErrorMsg('No puedes modificar ni guardar la pauta preventiva sin tener asignada esta orden o alguna de sus averías.');
+      return;
+    }
     setErrorMsg(null);
     setSuccessMsg(null);
 
@@ -133,15 +234,73 @@ export default function PautaPreventivaModal({
     }
 
     setGuardando(true);
+    setGuardandoTexto('Guardando pauta preventiva...');
     try {
+      // 1. Guardar la pauta preventiva en batch
       await guardarPautaBatch(solicitudId, payloadBatch);
-      setSuccessMsg('¡Pauta preventiva guardada exitosamente!');
+
+      // 2. Identificar ítems calificados como DEFECTO
+      const itemsConDefecto = items.filter(
+        (it) => evaluaciones[it.id]?.estado === 'DEFECTO'
+      );
+
+      let averiasCreadasCount = 0;
+
+      if (itemsConDefecto.length > 0) {
+        setGuardandoTexto('Registrando defectos en Averías y Tareas Técnicas...');
+
+        // Obtener lista fresca de averías de la orden para deduplicar
+        let detallesActuales: DetalleSolicitudDTO[] = solicitud?.detalles || [];
+        try {
+          const solFresco = await obtenerSolicitud(solicitudId);
+          if (solFresco?.detalles) {
+            detallesActuales = solFresco.detalles;
+          }
+        } catch {
+          // Mantener detalles existentes si no se puede refrescar
+        }
+
+        for (const it of itemsConDefecto) {
+          const obs = evaluaciones[it.id]?.observacion?.trim() || '';
+          const prefijo = `[Pauta: ${it.item}]`;
+
+          // Verificar si ya existe una avería no resuelta para este ítem
+          const yaExiste = detallesActuales.some((d) => {
+            const desc = d.descripcion_personalizada || '';
+            return desc.includes(prefijo);
+          });
+
+          if (!yaExiste) {
+            const catId = mapearCategoria(it.categoria, categoriasDb);
+            const descCompleta = `${prefijo} ${obs}`;
+
+            const res = await agregarFallaSolicitud(solicitudId, {
+              categoria_id: catId,
+              falla_id: null,
+              descripcion_personalizada: descCompleta,
+              autoasignar: autoasignarDefectos,
+            });
+
+            if (res?.detalles) {
+              detallesActuales = res.detalles;
+            }
+            averiasCreadasCount++;
+          }
+        }
+      }
+
+      const detalleTexto =
+        averiasCreadasCount > 0
+          ? `¡Pauta preventiva guardada! Se generaron ${averiasCreadasCount} avería(s) técnica(s) en la orden.`
+          : '¡Pauta preventiva guardada exitosamente!';
+
+      setSuccessMsg(detalleTexto);
       if (onGuardadoExitoso) onGuardadoExitoso();
       setTimeout(() => {
         onClose();
-      }, 1200);
+      }, 1500);
     } catch (err) {
-      setErrorMsg(getApiErrorMessage(err, 'No se pudo guardar la pauta preventiva.'));
+      setErrorMsg(getApiErrorMessage(err, 'No se pudo guardar la pauta preventiva o registrar las averías.'));
     } finally {
       setGuardando(false);
     }
@@ -171,9 +330,14 @@ export default function PautaPreventivaModal({
               <ClipboardCheck size={24} />
             </div>
             <div>
-              <h2 className="text-lg font-black leading-tight">
-                Pauta Preventiva de Taller ({items.length || 11} Ítems)
-              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-black leading-tight">
+                  Pauta Preventiva de Taller ({items.length || 11} Ítems)
+                </h2>
+                {esReadOnly && (
+                  <span className="pauta-badge-readonly">Solo Lectura</span>
+                )}
+              </div>
               <p className="text-xs text-blue-100 font-medium">
                 Bus N° {nBus} • Orden #{solicitudId}
               </p>
@@ -190,6 +354,21 @@ export default function PautaPreventivaModal({
 
         {/* Body */}
         <div className="pauta-modal-body">
+          {/* Banner de Aviso de Modo Solo Lectura si no está asignado */}
+          {esReadOnly && (
+            <div className="p-3.5 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs flex items-start gap-2.5 [data-theme=dark]_&:bg-amber-950/40 [data-theme=dark]_&:border-amber-700/50 [data-theme=dark]_&:text-amber-200">
+              <AlertTriangle size={18} className="shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-black uppercase tracking-wider text-[11px] mb-0.5">
+                  Modo Consulta / Solo Lectura
+                </p>
+                <p className="font-medium text-slate-700 [data-theme=dark]_&:text-slate-300">
+                  No tienes esta orden de trabajo ni averías asignadas a tu orden. Puedes revisar el estado de los 11 ítems, pero no puedes evaluar ni guardar modificaciones. Para rellenar la pauta preventiva debes autoasignarte la orden o alguna de sus averías.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Mensajes de Alerta / Éxito */}
           {errorMsg && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-2">
@@ -232,18 +411,51 @@ export default function PautaPreventivaModal({
               />
             </div>
 
-            <div className="flex justify-end mt-2">
-              <button
-                type="button"
-                onClick={handleMarcarTodosOK}
-                className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
-                title="Marcar todos los ítems aún no evaluados como OK"
-              >
-                <Sparkles size={13} />
-                <span>Marcar pendientes como OK</span>
-              </button>
-            </div>
+            {!esReadOnly && (
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={handleMarcarTodosOK}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                  title="Marcar todos los ítems aún no evaluados como OK"
+                >
+                  <Sparkles size={13} />
+                  <span>Marcar pendientes como OK</span>
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Banner de Defectos para Creación Automática de Averías */}
+          {!esReadOnly && defectosCount > 0 && (
+            <div className="pauta-defectos-banner">
+              <div className="flex items-start gap-2.5">
+                <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700 shrink-0 mt-0.5">
+                  <Wrench size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-black text-amber-900">
+                    {defectosCount === 1
+                      ? '1 defecto detectado en la pauta:'
+                      : `${defectosCount} defectos detectados en la pauta:`}
+                  </p>
+                  <p className="text-[11px] font-medium text-amber-800 mt-0.5">
+                    Al guardar, se registrarán automáticamente como nuevas averías en{' '}
+                    <strong>"Averías y Tareas Técnicas"</strong> de la orden.
+                  </p>
+                  <label className="flex items-center gap-2 mt-2 text-xs font-bold text-amber-950 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoasignarDefectos}
+                      onChange={(e) => setAutoasignarDefectos(e.target.checked)}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                    <span>Autoasignarme estas averías inmediatamente</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500">
@@ -292,7 +504,8 @@ export default function PautaPreventivaModal({
                             <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
                               <button
                                 type="button"
-                                onClick={() => handleSetEstado(it.id, 'OK')}
+                                disabled={esReadOnly}
+                                onClick={() => !esReadOnly && handleSetEstado(it.id, 'OK')}
                                 className={`pauta-btn-state pauta-btn-ok ${
                                   estado === 'OK' ? 'active' : ''
                                 }`}
@@ -303,7 +516,8 @@ export default function PautaPreventivaModal({
 
                               <button
                                 type="button"
-                                onClick={() => handleSetEstado(it.id, 'DEFECTO')}
+                                disabled={esReadOnly}
+                                onClick={() => !esReadOnly && handleSetEstado(it.id, 'DEFECTO')}
                                 className={`pauta-btn-state pauta-btn-defecto ${
                                   estado === 'DEFECTO' ? 'active' : ''
                                 }`}
@@ -314,7 +528,8 @@ export default function PautaPreventivaModal({
 
                               <button
                                 type="button"
-                                onClick={() => handleSetEstado(it.id, 'NO_APLICA')}
+                                disabled={esReadOnly}
+                                onClick={() => !esReadOnly && handleSetEstado(it.id, 'NO_APLICA')}
                                 className={`pauta-btn-state pauta-btn-na ${
                                   estado === 'NO_APLICA' ? 'active' : ''
                                 }`}
@@ -333,9 +548,14 @@ export default function PautaPreventivaModal({
                               </label>
                               <input
                                 type="text"
+                                disabled={esReadOnly}
                                 value={obs}
                                 onChange={(e) => handleSetObservacion(it.id, e.target.value)}
-                                placeholder="Especifique el defecto o pieza dañada (ej: Fuga en manguera de retorno)..."
+                                placeholder={
+                                  esReadOnly
+                                    ? 'Sin detalle adicional'
+                                    : 'Especifique el defecto o pieza dañada (ej: Fuga en manguera de retorno)...'
+                                }
                                 className="pauta-obs-input"
                               />
                             </div>
@@ -358,28 +578,40 @@ export default function PautaPreventivaModal({
 
         {/* Footer */}
         <div className="pauta-modal-footer">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={guardando}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
-          >
-            Cancelar
-          </button>
+          {esReadOnly ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition cursor-pointer min-h-[44px] flex items-center justify-center [data-theme=dark]_&:bg-slate-700 [data-theme=dark]_&:text-white"
+            >
+              Cerrar Consulta
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={guardando}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer min-h-[44px]"
+              >
+                Cancelar
+              </button>
 
-          <button
-            type="button"
-            onClick={handleGuardar}
-            disabled={guardando || loading}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            {guardando ? (
-              <RefreshCw size={15} className="animate-spin" />
-            ) : (
-              <Save size={15} />
-            )}
-            <span>{guardando ? 'Guardando Evaluaciones...' : 'Guardar Pauta'}</span>
-          </button>
+              <button
+                type="button"
+                onClick={handleGuardar}
+                disabled={guardando || loading}
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer disabled:opacity-50 min-h-[44px]"
+              >
+                {guardando ? (
+                  <RefreshCw size={15} className="animate-spin" />
+                ) : (
+                  <Save size={15} />
+                )}
+                <span>{guardando ? guardandoTexto : 'Guardar Pauta'}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

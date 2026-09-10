@@ -88,6 +88,29 @@
   color: #334155 !important;
 }
 
+.maf-btn-toggle-todas {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #818cf8;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.maf-btn-toggle-todas:hover {
+  color: #a5b4fc;
+}
+
+[data-theme="light"] .maf-btn-toggle-todas {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .maf-btn-toggle-todas:hover {
+  color: #3730a3 !important;
+}
+
 .maf-averia-item {
   display: flex;
   align-items: flex-start;

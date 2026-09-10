@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 34,
+  "id": "AV-0034",
+  "timestamp": "2026-09-08T11:15:00Z",
+  "phase": "fase_1_conductores_y_formularios",
+  "milestone": { "id": "COND-005", "name": "Validación Estricta de Buses en Solicitudes de Conductor", "statusBefore": "in_progress", "statusAfter": "completed" },
+  "type": "completed",
+  "summary": "Implementación de validación estricta y silenciosa de existencia de buses en la flota registrada para conductores. Si el bus existe se acepta sin mostrar mensajes redundantes; si el chofer introduce un bus inexistente (ej: 30), el sistema alerta visualmente, bloquea la apertura del modal y prohíbe el envío de la orden.",
+  "scope": {
+    "planned": [
+      "Precargar y consultar el catálogo de buses activos de la flota Narbus (/api/v1/buses)",
+      "Eliminar el texto engañoso 'Se usará: Bus N° X' en BusSelector cuando el bus no existe",
+      "Validar silenciosamente cuando el bus existe sin mostrar insignias de éxito redundantes",
+      "Mostrar alerta únicamente cuando el bus ingresado NO existe en la flota",
+      "Verificación asíncrona preventiva con /api/v1/buses/numero/{n_bus} para máquinas no cargadas en memoria",
+      "Bloquear la apertura del modal y el envío en FormularioMantencionTaller si el bus no existe en la flota",
+      "Bloquear la apertura del modal y el envío en FormularioNeumaticos si la máquina no existe en la flota",
+      "Añadir función auxiliar verificarBusEnLista en validators.ts"
+    ],
+    "completed": [
+      "Actualizado BusSelector.tsx con validación silenciosa de buses existentes (sin mensajes de éxito), alerta restrictiva para buses inexistentes y supresión de fallbacks permisivos",
+      "Añadidos estilos para validación de entrada e ítems de error en BusSelector.css con soporte para temas claro y oscuro",
+      "Refactorizado FormularioMantencionTaller.tsx para exigir bus existente antes de abrir modal de confirmación y asociar bus_id al payload de creación",
+      "Refactorizado FormularioNeumaticos.tsx para exigir máquina existente de la flota antes de enviar reporte de emergencia",
+      "Añadida función verificarBusEnLista en src/utils/validators.ts",
+      "Verificado mediante oxlint (0 warnings, 0 errors) y npm run build (éxito en 580ms)"
+    ],
+    "pending": [],
+    "outOfScope": ["Modificaciones de esquemas en Backend (no requeridas, endpoints existentes ya suministran catálogo y ficha técnica)"]
+  },
+  "changes": [
+    {
+      "path": "src/components/BusSelector/BusSelector.tsx",
+      "action": "modified",
+      "summary": "Validación silenciosa de flota (sin insignias de éxito cuando existe), alerta de error cuando no existe y eliminación de selección arbitraria"
+    },
+    {
+      "path": "src/components/BusSelector/BusSelector.css",
+      "action": "modified",
+      "summary": "Estilos para estados .bus-selector-input-invalid, .bus-selector-status-invalid y .bus-selector-empty-error"
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Bloqueo preventivo de envío y apertura de modal ante bus no registrado en flota y resolución de bus_id"
+    },
+    {
+      "path": "src/conductores/neumaticos/FormularioNeumaticos.tsx",
+      "action": "modified",
+      "summary": "Bloqueo preventivo en handlePreSubmit ante máquina no registrada en flota de buses"
+    },
+    {
+      "path": "src/utils/validators.ts",
+      "action": "modified",
+      "summary": "Adición de función verificarBusEnLista para comprobación de máquinas contra listas de catálogo"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-035",
+      "title": "Validación preventiva reactiva en cliente respaldada por catálogo oficial y endpoint unitario",
+      "rationale": "Para optimizar la experiencia táctil en pantallas de taller con conectividad intermitente, BusSelector precarga el catálogo de buses activos (/api/v1/buses). Esto permite validar instantáneamente si un número ingresado por el chofer (ej: 30) existe o no, con fallback asíncrono a /api/v1/buses/numero/{n_bus}. Evita peticiones fallidas al servidor y previene la creación de órdenes huérfanas.",
+      "consequences": "Feedback visual inmediato para el conductor, imposibilidad de emitir órdenes con números erróneos o ficticios, y total compatibilidad con la base de datos de flota."
+    },
+    {
+      "id": "DEC-036",
+      "title": "Eliminación del fallback permisivo 'Se usará: Bus N° X'",
+      "rationale": "Anteriormente BusSelector permitía que cualquier valor numérico tecleado fuera asumido como válido si la lista venía vacía. Al erradicar dicho comportamiento, el sistema pasa a ser una lista blanca estricta gobernada por la flota registrada de Narbus.",
+      "consequences": "Mayor integridad de datos en los módulos de mantención y neumáticos, cumpliendo la regla de negocio solicitada."
+    },
+    {
+      "id": "DEC-037",
+      "title": "Validación silenciosa sin mensajes de éxito",
+      "rationale": "Cuando un bus existe, la selección debe fluir con naturalidad sin recargar la interfaz con badges o textos redundantes de que el bus existe. La confirmación es implícita al permitir continuar y enviar la solicitud; el sistema solo interviene visualmente si el bus no existe en la flota para alertar y bloquear el envío.",
+      "consequences": "Interfaz sobria y limpia para el chofer, alertando exclusivamente ante anomalías o datos incorrectos."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "oxlint: 0 warnings y 0 errores en 55 archivos analizados."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript y empaquetado de producción de Vite completados exitosamente en 580ms."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Prueba visual con los formularios de conductor.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "local-working-tree",
+    "dirty": true
+  },
+  "notes": ["Cumple la directriz de interfaz accesible para taller con botones legibles y advertencias en alto contraste."]
+}

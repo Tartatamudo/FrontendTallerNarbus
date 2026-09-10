@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, ZoomIn, Maximize2, X, Trash2 } from 'lucide-react';
 import { capturarFotoCamara, seleccionarFotoGaleria } from '../../utils/capacitorCamera';
+import { getFullImageUrl } from '../../utils/imageUrl';
 import './PhotoSelector.css';
 
 export interface PhotoSelectorProps {
@@ -135,7 +136,7 @@ export default function PhotoSelector({
             className="photo-selector-image-card group"
           >
             <img
-              src={fotoPreview}
+              src={getFullImageUrl(fotoPreview) || ''}
               alt="Evidencia Adjunta"
               className="photo-selector-image"
             />
@@ -175,7 +176,7 @@ export default function PhotoSelector({
 
             <div className="photo-selector-modal-body">
               <img
-                src={fotoPreview}
+                src={getFullImageUrl(fotoPreview) || ''}
                 alt="Vista Completa"
                 className="photo-selector-modal-image"
               />

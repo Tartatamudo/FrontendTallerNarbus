@@ -9,7 +9,7 @@ import {
   X
 } from "lucide-react";
 import "./FormularioNeumaticos.css";
-import BusSelector from "../../components/BusSelector/BusSelector";
+import BusSelector, { type BusItem } from "../../components/BusSelector/BusSelector";
 import PhotoSelector from "../../components/PhotoSelector/PhotoSelector";
 import { guardarDato, obtenerDato } from "../../utils/storage";
 import { getApiErrorMessage } from "../../utils/apiErrors";
@@ -46,6 +46,8 @@ export default function FormularioNeumaticos({
   // Datos principales (chofer proviene automáticamente de la sesión/Login)
   const [chofer, setChofer] = useState("");
   const [maquina, setMaquina] = useState("");
+  const [selectedBusObj, setSelectedBusObj] = useState<BusItem | null>(null);
+  const [isBusValido, setIsBusValido] = useState(false);
 
   // Ruedas
   const [ruedasSeleccionadas, setRuedasSeleccionadas] = useState<string[]>([]);
@@ -115,6 +117,11 @@ export default function FormularioNeumaticos({
       return;
     }
 
+    if (!isBusValido || !selectedBusObj) {
+      setErrorMsg(`⚠️ La máquina / Bus N° ${maquina} no existe en la flota Narbus. Selecciona un bus registrado.`);
+      return;
+    }
+
     if (ruedasSeleccionadas.length === 0) {
       setErrorMsg("⚠️ OBLIGATORIO: Selecciona al menos 1 rueda afectada en el diagrama del bus.");
       return;
@@ -146,7 +153,9 @@ export default function FormularioNeumaticos({
 
     const motivoFinal = motivo === "Otro" ? otroMotivo.trim() : motivo;
     const choferFinal = chofer.trim() || "CHOFER-NARBUS";
-    const busFormatted = limpiarSoloNumeros(maquina) || maquina.trim();
+    const busFormatted = selectedBusObj
+      ? String(selectedBusObj.n_bus)
+      : (limpiarSoloNumeros(maquina) || maquina.trim());
     const precioLimpio = limpiarSoloNumeros(precio);
     const ruedasString = [...ruedasSeleccionadas]
       .sort((a, b) => Number(a) - Number(b))
@@ -215,6 +224,8 @@ export default function FormularioNeumaticos({
   const handleResetForm = () => {
     setChofer("");
     setMaquina("");
+    setSelectedBusObj(null);
+    setIsBusValido(false);
     setRuedasSeleccionadas([]);
     setMotivo("");
     setOtroMotivo("");
@@ -345,8 +356,10 @@ export default function FormularioNeumaticos({
               label="Identificación de la Máquina"
               placeholder="Escriba el N° de máquina (ej: 398)..."
               value={maquina}
-              onChange={(val) => {
+              onChange={(val, busObj, isValid) => {
                 setMaquina(val);
+                setSelectedBusObj(busObj || null);
+                setIsBusValido(Boolean(isValid));
                 setErrorMsg("");
               }}
               onClearError={() => setErrorMsg("")}

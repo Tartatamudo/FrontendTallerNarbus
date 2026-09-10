@@ -1,0 +1,40 @@
+﻿{
+  "schemaVersion": "1.0",
+  "sequence": 41,
+  "id": "AV-0041",
+  "timestamp": "2026-09-10T13:38:03Z",
+  "phase": "almacenamiento_cloud_evidencias_multifoto",
+  "milestone": {
+    "id": "FRONT-FOTO-MULTI",
+    "name": "Soporte Multi-Foto Evidencias Mantencion (GCS 3NF)",
+    "statusBefore": "pending",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Integracion completa del soporte de multiples fotografias de evidencia en el modulo de mantencion de buses. El conductor puede adjuntar N fotos en 1 solo request HTTP multipart/form-data (clave 'fotos'). El mecanico y el supervisor visualizan una galeria con scroll horizontal cuando hay mas de 1 evidencia, e imagen unica clasica cuando solo hay 1 foto o solo foto_url. TypeScript sin errores (tsc exit 0).",
+  "scope": {
+    "planned": ["Agregar SolicitudEvidenciaDTO","Extender SolicitudCreateDTO con fotos[]","Extender SolicitudDTO con evidencias[]","Actualizar crearSolicitud()","Selector multi-foto en formulario conductor","Galeria en ModalDetalleReporte mecanico","Galeria en ModalDetalleAuditoria supervisor"],
+    "completed": ["SolicitudEvidenciaDTO en types/mantencion.ts","SolicitudCreateDTO.fotos?: File[]","SolicitudDTO.evidencias?: SolicitudEvidenciaDTO[]","crearSolicitud() itera fotos[] en FormData bajo clave fotos","FormularioMantencionTaller: grilla 3col miniaturas, boton agregar, boton X por foto, Capacitor nativo + fallback web multiple","ModalDetalleReporte: galeria horizontal scroll si evidencias>1","ModalDetalleAuditoria: misma logica galeria","tsc --noEmit: exit 0"],
+    "pending": [],
+    "outOfScope": ["Modulo neumaticos (no tocado)","Limite maximo de fotos (usuario solicito sin limite)"]
+  },
+  "changes": [
+    {"path": "src/types/mantencion.ts", "action": "modified", "summary": "Agrega SolicitudEvidenciaDTO. Extiende SolicitudCreateDTO con fotos?: File[]. Agrega evidencias?: SolicitudEvidenciaDTO[] a SolicitudDTO."},
+    {"path": "src/conductores/mantencion/mantencionService.ts", "action": "modified", "summary": "crearSolicitud() normaliza fotos[] y foto singular legacy, itera bajo clave fotos en FormData."},
+    {"path": "src/conductores/mantencion/FormularioMantencionTaller.tsx", "action": "modified", "summary": "Selector multi-foto: boton agregar foto (Capacitor nativo + fallback web multiple), grilla 3col de miniaturas con badge numero y boton X, contador badge, payload usa fotos[]. Elimina import PhotoSelector."},
+    {"path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx", "action": "modified", "summary": "Galeria horizontal scroll si evidencias.length>1, imagen unica clasica si 1 o menos."},
+    {"path": "src/supervisores/supervision/supervisionService.ts", "action": "modified", "summary": "AuditoriaBusTallerDTO extendido con evidencias?: SolicitudEvidenciaDTO[]."},
+    {"path": "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx", "action": "modified", "summary": "Misma logica de galeria multi-foto que ModalDetalleReporte."}
+  ],
+  "decisions": [
+    {"id": "DEC-041-01","title": "Sin limite maximo de fotos por UI","rationale": "Usuario confirmo explicitamente sin limites. Solo se muestra contador de fotos seleccionadas.","consequences": "El conductor puede adjuntar N fotos. GCS del backend maneja concurrencia."},
+    {"id": "DEC-041-02","title": "Galeria horizontal con scroll en modales de lectura","rationale": "En entorno taller movil, scroll horizontal tactico es mas ergonomico que navegacion paginada. CSS snap-x garantiza ajuste.","consequences": "Mecanico desliza horizontalmente para ver todas las fotos. Clic abre URL GCS en nueva pestana."},
+    {"id": "DEC-041-03","title": "Retrocompatibilidad total: foto_url singular sigue funcionando","rationale": "OTs antiguas sin evidencias[] usan foto_url. Renderizado: evidencias[0].url || foto_url como fallback.","consequences": "Cero breaking changes en vistas historicas."},
+    {"id": "DEC-041-04","title": "Selector multi-foto directo en formulario (no en PhotoSelector generico)","rationale": "PhotoSelector disenado para 1 foto. Multi-foto directo evita complejizar componente generico. PhotoSelector sigue funcional para neumaticos.","consequences": "FormularioMantencionTaller autosuficiente. PhotoSelector sin cambios para neumaticos."}
+  ],
+  "verification": [{"command": "npx tsc --noEmit","result": "passed","evidence": "exit code 0, sin errores TypeScript"}],
+  "blockers": [],
+  "nextStep": "Probar en dispositivo Android: adjuntar 2-3 fotos, verificar request multipart con multiples campos fotos, confirmar evidencias[] en respuesta y galeria en dashboard mecanico.",
+  "git": {"repository": "FrontendTallerNarbus","branch": "develop","commit": "pending","dirty": true},
+  "notes": ["Campo foto singular marcado @deprecated pero no eliminado para retrocompatibilidad.","handleAgregarFoto: capturarFotoCamara > seleccionarFotoGaleria > fallback input[multiple].","ModalDetalleReporte y ModalDetalleAuditoria comparten misma logica de galeria para consistencia visual."]
+}

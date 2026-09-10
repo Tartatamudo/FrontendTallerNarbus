@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 40,
+  "id": "AV-0040",
+  "timestamp": "2026-09-09T11:35:00Z",
+  "phase": "seguridad_sesion_autenticacion",
+  "milestone": {
+    "id": "FRONT-CORE",
+    "name": "Seguridad y Gestión de Sesión",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de arquitectura de validación de sesión activa de 3 capas en el Frontend: verificación inmediata de tiempo de expiración de token JWT en cliente (exp), comprobación activa de identidad y vigencia de usuario contra el backend (GET /api/v1/auth/me) al iniciar la aplicación, e interceptor global en Axios (apiClient.ts) para capturar respuestas 401 Unauthorized en vuelo y redirigir al login con mensaje contextual. Se eliminó la dependencia exclusiva en la bandera estática local 'sesion_activa', impidiendo accesos indebidos cuando el token ha caducado o cuando el backend se encuentra fuera de línea.",
+  "scope": {
+    "planned": [
+      "Evitar que el usuario acceda a pantallas protegidas (/home, módulos) si el token JWT ya caducó (límite de 1 día) o si el backend está apagado.",
+      "Crear utilidad de decodificación y chequeo de expiración de JWT sin librerías externas pesadas.",
+      "Incorporar función de verificación integral de sesión en authService.ts.",
+      "Agregar interceptor de respuesta en apiClient.ts para expulsión automática ante 401 Unauthorized sin interferir con el formulario de login.",
+      "Vincular guardia de ruta en App.tsx y feedback visual de error en Login.tsx."
+    ],
+    "completed": [
+      "Creación de src/utils/token.ts con funciones parseJwt, isTokenExpired y getTokenRemainingTime.",
+      "Implementación de verificarSesion() en src/usuarios/auth/authService.ts integrando validación local exp y confirmación remota con GET /api/v1/auth/me.",
+      "Configuración de interceptor de respuesta en src/api/apiClient.ts que limpia storage y dispara evento narbus:auth-unauthorized ante respuestas 401 en llamadas autenticadas.",
+      "Actualización de App.tsx para ejecutar verificarSesion(), escuchar narbus:auth-unauthorized y redirigir con mensaje claro a Login.",
+      "Ampliación de Login.tsx para recibir y renderizar initialErrorMsg cuando la sesión caduca o el backend está desconectado.",
+      "Validación de 0 errores y 0 advertencias en oxlint y compilación exitosa en vite build."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones en el backend (FastAPI ya emite tokens estándar con exp y responde 401 correspondientemente)."
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/utils/token.ts",
+      "action": "created",
+      "summary": "Módulo utilitario para decodificar base64url del JWT y evaluar si el timestamp actual supera el claim exp con margen de seguridad."
+    },
+    {
+      "path": "src/api/apiClient.ts",
+      "action": "modified",
+      "summary": "Inclusión de interceptor de respuesta Axios para capturar errores 401 Unauthorized, limpiar credenciales y despachar evento de expiración de sesión."
+    },
+    {
+      "path": "src/usuarios/auth/authService.ts",
+      "action": "modified",
+      "summary": "Adición de verificarSesion() para comprobación de doble factor (exp local + GET /api/v1/auth/me) y tipado VerificacionSesionResult."
+    },
+    {
+      "path": "src/usuarios/auth/Login.tsx",
+      "action": "modified",
+      "summary": "Soporte para prop initialErrorMsg que muestra la razón de expiración de sesión o desconexión del servidor al cargar la pantalla de login."
+    },
+    {
+      "path": "src/App.tsx",
+      "action": "modified",
+      "summary": "Reemplazo de la comprobación estática local por verificarSesion(), escucha del evento narbus:auth-unauthorized y propagación del mensaje de error a Login."
+    },
+    {
+      "path": "trazabilidad/01_ESTADO_ACTUAL_PROYECTO.md",
+      "action": "modified",
+      "summary": "Actualización de las especificaciones de Enrutamiento & Navegación y Core & Utilidades Compartidas."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-045",
+      "title": "Verificación de Sesión Activa en 3 Capas (Cliente, Servidor e Interceptor)",
+      "rationale": "Confiar ciegamente en una bandera estática de almacenamiento local permitía que usuarios con tokens vencidos o con el servidor apagado ingresaran a rutas protegidas, encontrando pantallas vacías o excepciones de red. La arquitectura de 3 capas valida el token instantáneamente en cliente por tiempo de vida (0 ms), corrobora su validez con GET /api/v1/auth/me en el arranque y captura cualquier 401 en tiempo real mediante interceptores.",
+      "consequences": "Seguridad robusta, experiencia de usuario consistente, prevención de fallas operacionales en taller y retroalimentación inmediata sobre la necesidad de reautenticarse."
+    },
+    {
+      "id": "DEC-046",
+      "title": "Desacoplamiento de Eventos de Expiración mediante CustomEvent",
+      "rationale": "apiClient.ts no debe importar directamente componentes de React ni crear dependencias cíclicas con authService. El uso de CustomEvent('narbus:auth-unauthorized') permite a la capa de infraestructura HTTP notificar a la capa de UI de forma totalmente desacoplada.",
+      "consequences": "Cero ciclos de importación, arquitectura limpia y testeable, y manejo reactivo de la redirección en App.tsx."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "oxlint: 0 warnings, 0 errors en 58 archivos."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completados con éxito en 4.83s generando paquete de producción."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Continuar con las pruebas operacionales y validaciones de usuario en el frontend.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "local",
+    "dirty": true
+  },
+  "notes": [
+    "No se requirieron cambios en BackendTallerNarbus ya que el contrato de autenticación y endpoints cumplían con los estándares de seguridad.",
+    "Si el backend está apagado al abrir la app, ahora el frontend bloquea el acceso al home y advierte con claridad en la pantalla de Login."
+  ]
+}

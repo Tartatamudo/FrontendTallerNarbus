@@ -120,7 +120,6 @@
 .mda-body {
   padding: 1.25rem 1.5rem;
   overflow-y: auto;
-  space-y: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;

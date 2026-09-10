@@ -99,6 +99,8 @@ export interface AuditoriaBusTallerDTO {
   estado: string;
   descripcion_general?: string | null;
   foto_url?: string | null;
+  /** Array completo de todas las fotografías de evidencia adjuntas (3NF). */
+  evidencias?: import('../../types/mantencion').SolicitudEvidenciaDTO[];
   fecha_creacion: string;
   fecha_cierre?: string | null;
   motivo_incompleto_checklist?: string | null;
@@ -113,6 +115,8 @@ export interface AuditoriaFiltros {
   estado?: string;
   mecanico_id?: number;
   mecanico_nombre?: string;
+  skip?: number;
+  limit?: number;
 }
 
 export interface AsignarFallasPayloadDTO {
@@ -131,8 +135,8 @@ export async function obtenerAlertasSupervision(): Promise<AlertaSupervisionDTO[
 }
 
 /**
- * 7.2 Tablero de auditoría y trazabilidad exhaustiva en vivo
- * GET /api/v1/supervision/auditoria/buses-taller
+ * 7.2 Tablero de auditoría y trazabilidad exhaustiva en vivo con paginación y filtros
+ * GET /api/v1/supervision/auditoria/buses-taller?skip=0&limit=20
  */
 export async function obtenerAuditoriaBusesTaller(filtros?: AuditoriaFiltros): Promise<AuditoriaBusTallerDTO[]> {
   const params: Record<string, any> = {};
@@ -147,6 +151,12 @@ export async function obtenerAuditoriaBusesTaller(filtros?: AuditoriaFiltros): P
   }
   if (filtros?.mecanico_id) {
     params.mecanico_id = filtros.mecanico_id;
+  }
+  if (filtros?.skip !== undefined) {
+    params.skip = filtros.skip;
+  }
+  if (filtros?.limit !== undefined) {
+    params.limit = filtros.limit;
   }
 
   const response = await apiClient.get<AuditoriaBusTallerDTO[]>('/api/v1/supervision/auditoria/buses-taller', { params });

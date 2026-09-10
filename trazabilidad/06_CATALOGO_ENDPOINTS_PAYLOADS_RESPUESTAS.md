@@ -455,14 +455,20 @@ Códigos de error estándar:
 
 ### 6.4 `POST /api/v1/mantencion/solicitudes`
 - **Autenticación:** Token Bearer (`require_conductor_or_admin`).
-- **Propósito:** Creación de una orden/solicitud de taller por parte del conductor. Establece automáticamente el bus con `en_taller = True`.
-- **Payload (`SolicitudCreateDTO` - `application/json`):**
+- **Propósito:** Creación de una orden/solicitud de taller por parte del conductor. Establece automáticamente el bus con `en_taller = True`. Admite subida directa de fotografía de evidencia en el mismo request HTTP a Google Cloud Storage (GCS).
+- **Modalidad 1: Payload Multipart (`multipart/form-data` - Con Foto Binaria Adjunta):**
+  - `n_bus` *(string, obligatorio)*: Número visible del bus reportado (ej: `"339"`).
+  - `bus_id` *(integer/string, opcional)*: ID primario del bus para optimización zero-query.
+  - `descripcion_general` *(string, opcional)*: Resumen descriptivo de la condición del bus.
+  - `foto` *(File/Blob, opcional)*: Archivo de fotografía binaria (.jpg, .jpeg, .png, .webp hasta 10 MB). El backend lo sube automáticamente a Google Cloud Storage y persiste la URL en PostgreSQL.
+  - `detalles` *(string JSON, opcional)*: Arreglo JSON serializado con `JSON.stringify(detalles)`.
+- **Modalidad 2: Payload JSON (`SolicitudCreateDTO` - `application/json` - Sin Foto o con URL Previa):**
 ```json
 {
   "n_bus": "339",
   "bus_id": 12,
   "descripcion_general": "Ruido fuerte metálico al frenar y luz baja izquierda quemada",
-  "foto_url": "https://servidor/fotos/evidencia_chofer_339.jpg",
+  "foto_url": "https://storage.googleapis.com/narbus-taller-media/solicitudes/550e8400-e29b-41d4-a716-446655440000.jpg",
   "detalles": [
     {
       "categoria_id": 1,
@@ -481,18 +487,21 @@ Códigos de error estándar:
     - `n_bus` *(string, obligatorio)*: Número visible del bus reportado.
     - `bus_id` *(integer, opcional)*: ID primario del bus. Si no se provee, se resuelve automáticamente por el `n_bus`.
     - `descripcion_general` *(string, opcional)*: Resumen descriptivo de la condición del bus.
-    - `foto_url` *(string, opcional)*: Enlace web a foto previa si existe.
+    - `foto_url` *(string, opcional)*: Enlace web a foto previa si existe (GCS o local).
     - `detalles` *(array de objetos, opcional)*: Desglose atómico de averías detectadas:
-      - `categoria_id` *(integer, opcional)*: ID de categoría macro seleccionada por el chofer (1: FRENOS, 2: ELECTRICO, 3: MOTOR, 4: CARROCERIA, 5: CLIMATIZACION, 6: OTRO). El backend lo mapea a su falla representativa.
+      - `categoria_id` *(integer, opcional)*: ID de categoría macro seleccionada por el chofer (1: FRENOS, 2: ELECTRICO, 3: MOTOR, 4: CARROCERIA, 5: CLIMATIZACION, 6: OTRO).
       - `falla_id` *(integer, opcional)*: ID de falla preconfigurada del catálogo maestro (opcional si se envía `categoria_id`).
       - `descripcion_personalizada` *(string, opcional)*: Texto libre del conductor detallando la avería.
-- **Respuesta (`SolicitudDTO` - 201 Created):** Objeto completo de la solicitud creada con estado `"REPORTADO"`.
+- **Respuesta (`SolicitudDTO` - 201 Created):** Objeto completo de la solicitud creada con estado `"REPORTADO"` y campo `foto_url` con la URL pública HTTPS de Google Cloud Storage.
 
 ---
 
 ### 6.5 `GET /api/v1/mantencion/pendientes`
 - **Autenticación:** Token Bearer (`require_mecanico_or_admin`).
 - **Propósito:** Bandeja principal de trabajo del mecánico (Pestaña 1). Lista todos los buses que están esperando atención en taller (estados `REPORTADO`, `PENDIENTE`, `PENDIENTE_REASIGNACION`).
+- **Parámetros Query:**
+  - `skip` *(integer $\ge 0$, opcional, default: 0)*: Desplazamiento de registros para paginación.
+  - `limit` *(integer 1..100, opcional, default: 50)*: Cantidad de órdenes por página (frontend usa 20).
 - **Payload:** Ninguno.
 - **Respuesta (`List[SolicitudDTO]` - 200 OK):** Lista de solicitudes pendientes ordenadas cronológicamente.
 
@@ -501,6 +510,9 @@ Códigos de error estándar:
 ### 6.6 `GET /api/v1/mantencion/mis-trabajos`
 - **Autenticación:** Token Bearer (`require_mecanico_or_admin`).
 - **Propósito:** Bandeja personal del mecánico (Pestaña 2). Retorna exclusivamente aquellas órdenes de trabajo donde el mecánico autenticado tiene fallas asignadas activamente.
+- **Parámetros Query:**
+  - `skip` *(integer $\ge 0$, opcional, default: 0)*: Desplazamiento de registros para paginación.
+  - `limit` *(integer 1..100, opcional, default: 50)*: Cantidad de órdenes por página (frontend usa 20).
 - **Payload:** Ninguno.
 - **Respuesta (`List[SolicitudDTO]` - 200 OK):** Lista de órdenes activas del mecánico.
 
@@ -866,6 +878,8 @@ Códigos de error estándar:
 - **Autenticación:** Token Bearer (`require_supervisor_or_admin`).
 - **Propósito:** Tablero de auditoría y trazabilidad exhaustiva en vivo para supervisores y auditores. Permite inspeccionar el historial completo de solicitudes, cambios de turno cronometrados, resolución de averías y notas de bitácora.
 - **Parámetros Query:**
+  - `skip` *(integer $\ge 0$, opcional, default: 0)*: Desplazamiento de registros para paginación.
+  - `limit` *(integer 1..100, opcional, default: 50)*: Cantidad de órdenes por página (frontend usa 20).
   - `n_bus` *(string, opcional)*: Filtrar por número de bus específico (ej: `"339"`).
   - `estado` *(string, opcional)*: Filtrar por estado (`REPORTADO`, `EN_REPARACION`, `PENDIENTE`, `PENDIENTE_REASIGNACION`, `FINALIZADO`).
   - `mecanico_nombre` *(string, opcional)*: Búsqueda de órdenes donde haya participado un mecánico por su nombre, apellido o username.

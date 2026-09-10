@@ -31,13 +31,24 @@ export default function ModalAsignarFallas({
 }: ModalAsignarFallasProps) {
   const [selectedMecanicos, setSelectedMecanicos] = useState<MecanicoItem[]>([]);
   const [detallesIds, setDetallesIds] = useState<number[]>(
-    detallePreseleccionadoId
-      ? [detallePreseleccionadoId]
-      : detalles.filter((d) => !d.resuelto).map((d) => d.id)
+    detallePreseleccionadoId ? [detallePreseleccionadoId] : []
   );
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const averiasPendientes = detalles.filter((d) => !d.resuelto);
+  const todasSeleccionadas =
+    averiasPendientes.length > 0 &&
+    averiasPendientes.every((d) => detallesIds.includes(d.id));
+
+  const toggleSeleccionarTodas = () => {
+    if (todasSeleccionadas) {
+      setDetallesIds([]);
+    } else {
+      setDetallesIds(averiasPendientes.map((d) => d.id));
+    }
+  };
 
   const toggleDetalle = (id: number) => {
     const d = detalles.find((item) => item.id === id);
@@ -114,9 +125,20 @@ export default function ModalAsignarFallas({
 
         {/* Lista de Averías */}
         <div>
-          <label className="maf-label">
-            Averías a Encargar ({detallesIds.length} seleccionadas):
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="maf-label" style={{ marginBottom: 0 }}>
+              Averías a Encargar ({detallesIds.length} seleccionada{detallesIds.length === 1 ? '' : 's'}):
+            </label>
+            {averiasPendientes.length > 1 && (
+              <button
+                type="button"
+                onClick={toggleSeleccionarTodas}
+                className="maf-btn-toggle-todas"
+              >
+                {todasSeleccionadas ? 'Desmarcar todas' : 'Marcar todas'}
+              </button>
+            )}
+          </div>
           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
             {detalles.map((d) => {
               const isChecked = detallesIds.includes(d.id);

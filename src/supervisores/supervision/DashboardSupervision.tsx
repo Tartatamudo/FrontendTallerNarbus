@@ -47,6 +47,11 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
   const [alertas, setAlertas] = useState<AlertaSupervisionDTO[]>([]);
   const [busesPatio, setBusesPatio] = useState<BusAutocompleteDTO[]>([]);
 
+  // Paginación y filtros de Auditoría (skip y limit)
+  const PAGE_SIZE_AUDITORIA = 20;
+  const [paginaAuditoria, setPaginaAuditoria] = useState<number>(1);
+  const [filtrosAuditoria, setFiltrosAuditoria] = useState<AuditoriaFiltros>({});
+
   // Estados de carga y error
   const [loading, setLoading] = useState<boolean>(true);
   const [errorAcceso, setErrorAcceso] = useState<string | null>(null);
@@ -96,10 +101,19 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
     }
   };
 
-  // Cargar Lista de Auditoría
-  const cargarAuditoria = async (filtrosAplicados?: AuditoriaFiltros) => {
+  // Cargar Lista de Auditoría con skip y limit
+  const cargarAuditoria = async (
+    filtrosAplicados?: AuditoriaFiltros,
+    pag: number = paginaAuditoria
+  ) => {
     try {
-      const data = await obtenerAuditoriaBusesTaller(filtrosAplicados);
+      const skip = (pag - 1) * PAGE_SIZE_AUDITORIA;
+      const params: AuditoriaFiltros = {
+        ...(filtrosAplicados !== undefined ? filtrosAplicados : filtrosAuditoria),
+        skip,
+        limit: PAGE_SIZE_AUDITORIA,
+      };
+      const data = await obtenerAuditoriaBusesTaller(params);
       setAuditorias(data);
     } catch (err: unknown) {
       const e = err as { response?: { status?: number } };
@@ -127,7 +141,7 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
       await Promise.all([
         cargarAlertas(),
         cargarResumen(),
-        cargarAuditoria(filtrosAud),
+        cargarAuditoria(filtrosAud, paginaAuditoria),
         cargarPatio(),
       ]);
       setUltimaActualizacion(new Date().toLocaleTimeString('es-CL'));
@@ -136,6 +150,17 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFiltrarAuditoria = (nuevosFiltros: AuditoriaFiltros) => {
+    setFiltrosAuditoria(nuevosFiltros);
+    setPaginaAuditoria(1);
+    cargarAuditoria(nuevosFiltros, 1);
+  };
+
+  const handleCambiarPaginaAuditoria = (nuevaPagina: number) => {
+    setPaginaAuditoria(nuevaPagina);
+    cargarAuditoria(filtrosAuditoria, nuevaPagina);
   };
 
   useEffect(() => {
@@ -262,6 +287,7 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
           <span>Auditoría de Buses</span>
           <span className="ml-1 px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-black rounded-md">
             {auditorias.length}
+            {auditorias.length === PAGE_SIZE_AUDITORIA ? '+' : ''}
           </span>
         </button>
 
@@ -338,7 +364,11 @@ export default function DashboardSupervision({ onVolver: _onVolver }: DashboardS
         <AuditoriaTab
           auditorias={auditorias}
           loading={loading}
-          onFiltrar={(filtros) => cargarAuditoria(filtros)}
+          pagina={paginaAuditoria}
+          pageSize={PAGE_SIZE_AUDITORIA}
+          hasMore={auditorias.length === PAGE_SIZE_AUDITORIA}
+          onPageChange={handleCambiarPaginaAuditoria}
+          onFiltrar={handleFiltrarAuditoria}
           onAsignarClick={(aud) => {
             const estadoNorm = (aud.estado || '').toUpperCase();
             if (

@@ -9,11 +9,16 @@ import { formatearFechaHora } from '../../../utils/formatters';
 import EstadoBadge from '../../../components/EstadoBadge/EstadoBadge';
 import SkeletonLoader from '../../../components/SkeletonLoader/SkeletonLoader';
 import ModalDetalleAuditoria from './ModalDetalleAuditoria';
+import PaginationControl from '../../../components/PaginationControl/PaginationControl';
 import './AuditoriaTab.css';
 
 export interface AuditoriaTabProps {
   auditorias: AuditoriaBusTallerDTO[];
   loading: boolean;
+  pagina: number;
+  pageSize: number;
+  hasMore: boolean;
+  onPageChange: (newPage: number) => void;
   onFiltrar: (filtros: AuditoriaFiltros) => void;
   onAsignarClick: (aud: AuditoriaBusTallerDTO) => void;
 }
@@ -21,6 +26,10 @@ export interface AuditoriaTabProps {
 export default function AuditoriaTab({
   auditorias,
   loading,
+  pagina,
+  pageSize,
+  hasMore,
+  onPageChange,
   onFiltrar,
   onAsignarClick,
 }: AuditoriaTabProps) {
@@ -167,6 +176,20 @@ export default function AuditoriaTab({
             );
           })}
         </div>
+      )}
+
+      {/* Control de Paginación */}
+      {(auditorias.length > 0 || pagina > 1) && (
+        <PaginationControl
+          page={pagina}
+          pageSize={pageSize}
+          itemCount={auditorias.length}
+          hasMore={hasMore}
+          onPageChange={onPageChange}
+          loading={loading}
+          label="buses auditados"
+          className="mt-4"
+        />
       )}
 
       {/* Modal Flotante de Ficha de Auditoría */}

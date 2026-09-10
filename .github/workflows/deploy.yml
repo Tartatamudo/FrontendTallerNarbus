@@ -1,0 +1,58 @@
+name: CI — Validación de Pull Requests
+
+# Este workflow SOLO valida que el código compila correctamente.
+# El BUILD y DEPLOY real lo hace Google Cloud Build
+# conectado directamente a GitHub vía trigger en la rama main.
+#
+# Flujo completo:
+#   PR → Este workflow (typecheck + lint)
+#   Push a main → Cloud Build Trigger → Artifact Registry → Cloud Run
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  # ── TypeScript Check ──────────────────────────────────────
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci --ignore-scripts
+
+      - name: TypeScript — verificar tipos
+        run: npx tsc --noEmit
+
+  # ── Lint ─────────────────────────────────────────────────
+  lint:
+    name: Lint (oxlint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint

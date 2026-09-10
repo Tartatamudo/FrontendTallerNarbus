@@ -1,0 +1,298 @@
+/* =========================================================
+   MODAL DETALLE DE REPORTE / ORDEN DE TRABAJO - MODO DUAL
+   Narbus Flota & Mecánicos de Taller
+   ========================================================= */
+
+.mdr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(10, 11, 14, 0.82);
+  backdrop-filter: blur(8px);
+  animation: mdrFadeIn 0.18s ease-out;
+  overflow-y: auto;
+}
+
+@keyframes mdrFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mdrScaleUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.mdr-card {
+  width: 100%;
+  max-width: 50rem; /* 800px */
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.5rem;
+  background-color: #16181d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  animation: mdrScaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  margin: auto;
+}
+
+[data-theme="light"] .mdr-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18);
+}
+
+/* Cabecera */
+.mdr-header {
+  padding: 1.25rem 1.5rem;
+  background-color: #1a1e27;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .mdr-header {
+  background-color: #f8fafc;
+  border-bottom-color: #e2e8f0;
+}
+
+.mdr-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.mdr-icon-box {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+  background-color: #4f46e5;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.mdr-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-top: 0.15rem;
+}
+
+[data-theme="light"] .mdr-title {
+  color: #0f172a;
+}
+
+.mdr-ot-badge {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  background-color: #4f46e5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.mdr-btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.mdr-btn-close:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .mdr-btn-close:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+
+/* Cuerpo Scrollable */
+.mdr-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mdr-section {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 1rem;
+  padding: 1.15rem;
+}
+
+[data-theme="light"] .mdr-section {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.mdr-section-title {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+[data-theme="light"] .mdr-section-title {
+  color: #64748b;
+}
+
+.mdr-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.mdr-meta-item {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+[data-theme="light"] .mdr-meta-item {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.mdr-meta-item span {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+[data-theme="light"] .mdr-meta-item span {
+  color: #64748b;
+}
+
+.mdr-meta-item p {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+[data-theme="light"] .mdr-meta-item p {
+  color: #0f172a;
+}
+
+/* Evidencia Fotográfica */
+.mdr-photo-box {
+  border-radius: 0.875rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #000000;
+  max-height: 16rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mdr-photo-box:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.mdr-photo-img {
+  width: 100%;
+  height: auto;
+  max-height: 16rem;
+  object-fit: contain;
+}
+
+/* Fila de Avería */
+.mdr-falla-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.mdr-falla-row:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background-color: rgba(99, 102, 241, 0.06);
+}
+
+[data-theme="light"] .mdr-falla-row {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .mdr-falla-row:hover {
+  background-color: #f8fafc;
+  border-color: #c7d2fe;
+}
+
+.mdr-falla-row.is-selected {
+  border-color: #4f46e5;
+  background-color: rgba(79, 70, 229, 0.12);
+}
+
+[data-theme="light"] .mdr-falla-row.is-selected {
+  border-color: #4f46e5;
+  background-color: #eef2ff;
+}
+
+/* Footer de Acciones */
+.mdr-footer {
+  padding: 1.25rem 1.5rem;
+  background-color: #1a1e27;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .mdr-footer {
+  background-color: #f8fafc;
+  border-top-color: #e2e8f0;
+}

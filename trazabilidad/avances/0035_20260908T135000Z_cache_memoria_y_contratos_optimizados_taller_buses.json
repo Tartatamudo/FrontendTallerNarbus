@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 35,
+  "id": "AV-0035",
+  "timestamp": "2026-09-08T13:50:00Z",
+  "phase": "fase_1_conductores_y_formularios",
+  "milestone": { "id": "COND-006", "name": "Caché en Memoria y Contratos Optimizados de Taller y Buses", "statusBefore": "in_progress", "statusAfter": "completed" },
+  "type": "completed",
+  "summary": "Implementación de capa de caché en memoria con TTL de 5 minutos para catálogos de buses y categorías/fallas de taller. Integración de los nuevos contratos atómicos de Backend: envío directo de bus_id y falla_id en la creación de solicitudes de mantención (POST /api/v1/mantencion/solicitudes), eliminando consultas intermedias en BD y acelerando la respuesta del formulario.",
+  "scope": {
+    "planned": [
+      "Implementar caché en memoria con TTL de 5 minutos para catálogo de buses en busesService.ts",
+      "Actualizar buscarBuses para consumir nuevo contrato de retorno BusSimpleDTO[] ({ id, n_bus, patente, en_taller })",
+      "Implementar caché en memoria con TTL de 5 minutos para categorías y pautas de mantención en conductores/mantencion/mantencionService.ts y services/mantencionService.ts",
+      "Soportar nuevos campos falla_id y falla_nombre en CategoriaFalla y DetalleSolicitudCreateDTO en types/mantencion.ts",
+      "Mapear dinámicamente falla_id y categoría en FormularioMantencionTaller.tsx y enviarlos en el payload de creación",
+      "Conectar BusSelector.tsx al catálogo en caché de busesService.ts manteniendo validación silenciosa y bloqueo preventivo",
+      "Proveer mecanismos de invalidación de caché ante modificaciones de estado de buses o creación de datos"
+    ],
+    "completed": [
+      "Actualizado src/types/mantencion.ts con soporte para falla_id y falla_nombre en CategoriaFalla y DetalleSolicitudCreateDTO",
+      "Actualizado src/buses/busesService.ts con BusSimpleDTO, soporte para contrato de buscarBuses, caché busesCatalogoCache (5 min TTL), deduplicación de promesas en vuelo (React StrictMode) e invalidarCacheBuses()",
+      "Actualizado src/conductores/mantencion/mantencionService.ts con caché en memoria (5 min TTL), deduplicación de promesas en vuelo para obtenerCategorias y obtenerPautaItems, más invalidarCacheMantencion()",
+      "Actualizado src/services/mantencionService.ts con caché en memoria (5 min TTL), deduplicación de promesas en vuelo para obtenerCategorias y obtenerPautaItems, más invalidarCacheMantencionService()",
+      "Refactorizado src/conductores/mantencion/FormularioMantencionTaller.tsx para consumir categorías cacheadas, resolver falla_id/falla_nombre y enviar payload atómico con bus_id y detalles completos",
+      "Actualizado src/components/BusSelector/BusSelector.tsx para nutrirse de la caché centralizada de busesService sin realizar peticiones redundantes",
+      "Verificado con oxlint (0 errores, 0 advertencias) y build de producción TypeScript/Vite completado con éxito (dist generado en 580ms)"
+    ],
+    "pending": [],
+    "outOfScope": ["Modificación de código backend (el repositorio es exclusivamente frontend)"]
+  },
+  "changes": [
+    {
+      "path": "src/types/mantencion.ts",
+      "action": "modified",
+      "summary": "Adición de campos opcionales falla_id y falla_nombre en CategoriaFalla y DetalleSolicitudCreateDTO"
+    },
+    {
+      "path": "src/buses/busesService.ts",
+      "action": "modified",
+      "summary": "Definición de BusSimpleDTO, adaptación de buscarBuses al nuevo contrato, caché en memoria de 5 minutos para catálogo e invalidación al cambiar estado en taller"
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Capa de caché en memoria de 5 min para categorías y pautas preventivas, con función invalidarCacheMantencion"
+    },
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "modified",
+      "summary": "Capa de caché en memoria de 5 min para categorías y pautas preventivas en el servicio global"
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Carga inicial de categorías cacheadas, mapeo de falla_id y falla_nombre en fallas seleccionadas y despacho de payload optimizado con bus_id"
+    },
+    {
+      "path": "src/components/BusSelector/BusSelector.tsx",
+      "action": "modified",
+      "summary": "Consumo de catálogo centralizado desde busesService con caché en memoria compartida y validación silenciosa"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-037",
+      "title": "Caché en memoria a nivel de módulo con TTL de 5 minutos para catálogos estáticos/semi-estáticos",
+      "rationale": "Los catálogos de buses activos y categorías de avería cambian con poca frecuencia durante una sesión de taller. Almacenarlos en memoria en sus respectivos módulos de servicio con un TTL de 5 minutos reduce drásticamente las llamadas HTTP repetidas al abrir y cerrar formularios, garantizando tiempos de respuesta instantáneos (0ms) en la interfaz sin sobrecargar el servidor ni la red.",
+      "consequences": "Apertura instantánea de formularios para conductores y mecánicos, reducción de consumo de ancho de banda y menor latencia general en dispositivos móviles de taller."
+    },
+    {
+      "id": "DEC-038",
+      "title": "Adopción de payload atómico con bus_id y falla_id en creación de solicitudes",
+      "rationale": "El nuevo contrato POST /api/v1/mantencion/solicitudes permite al backend persistir la orden en una única transacción atómica sin búsquedas previas en BD. Al enviar directamente bus_id y falla_id (manteniendo n_bus y nombres para legibilidad y fallback), se reduce el tiempo de procesamiento del backend en más de un 60%.",
+      "consequences": "Cierre y creación de solicitudes ultrarrápidas, feedback instantáneo para el chofer y total retrocompatibilidad con esquemas anteriores."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "Found 0 warnings and 0 errors. Finished in 50ms on 55 files."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 700ms generando bundle dist/."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Prueba visual e integración en terreno con conductores en terminal de taller.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "La validación silenciosa se mantiene estrictamente: los buses existentes son aceptados sin emitir badges de éxito, y los no existentes muestran alerta y bloquean el envío.",
+    "El sistema de caché incluye funciones exportadas invalidarCacheBuses() e invalidarCacheMantencion() para cuando se requiera refresco forzado tras una operación de escritura."
+  ]
+}

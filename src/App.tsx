@@ -9,8 +9,7 @@ import ListaUsuarios from './supervisores/gestion_usuarios/ListaUsuarios';
 import DashboardMecanico from './mecanicos/revisiones/DashboardMecanico';
 import DashboardSupervision from './supervisores/supervision/DashboardSupervision';
 import TopBar from './components/TopBar/TopBar';
-import { logout, getStoredUser } from './usuarios/auth/authService';
-import { obtenerDato } from './utils/storage';
+import { logout, verificarSesion } from './usuarios/auth/authService';
 import type { User } from './usuarios/auth/authTypes';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -42,22 +41,26 @@ function AppContent() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [sesionActiva, setSesionActiva] = useState<boolean | null>(null);
   const [comprobando, setComprobando] = useState(true);
+  const [sessionErrorMsg, setSessionErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const comprobarSesion = async () => {
       try {
-        const sesion = await obtenerDato('sesion_activa');
-        if (sesion === 'true') {
-          const storedUser = await getStoredUser();
-          if (storedUser) {
-            setCurrentUser(storedUser);
-          }
+        const resultado = await verificarSesion();
+        if (resultado.activa && resultado.user) {
+          setCurrentUser(resultado.user);
           setSesionActiva(true);
+          setSessionErrorMsg(null);
         } else {
+          setCurrentUser(null);
           setSesionActiva(false);
+          if (resultado.mensajeError && resultado.motivo !== 'sin_token') {
+            setSessionErrorMsg(resultado.mensajeError);
+          }
         }
       } catch (err) {
         console.error('Error comprobando sesión:', err);
+        setCurrentUser(null);
         setSesionActiva(false);
       } finally {
         setComprobando(false);
@@ -67,16 +70,36 @@ function AppContent() {
     comprobarSesion();
   }, []);
 
+  // Escuchar eventos globales de sesión revocada o expirada (401 en llamadas de Axios)
+  useEffect(() => {
+    const handleUnauthorized = (e: Event) => {
+      const customEvent = e as CustomEvent<{ message?: string }>;
+      setCurrentUser(null);
+      setSesionActiva(false);
+      setSessionErrorMsg(
+        customEvent.detail?.message || 'Tu sesión ha expirado en el servidor. Por favor, inicia sesión nuevamente.'
+      );
+      navigate('/login', { replace: true });
+    };
+
+    window.addEventListener('narbus:auth-unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('narbus:auth-unauthorized', handleUnauthorized);
+    };
+  }, [navigate]);
+
   const handleLogout = async () => {
     await logout();
     setCurrentUser(null);
     setSesionActiva(false);
+    setSessionErrorMsg(null);
     navigate('/login');
   };
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
     setSesionActiva(true);
+    setSessionErrorMsg(null);
     navigate('/home');
   };
 
@@ -97,7 +120,10 @@ function AppContent() {
               sesionActiva ? (
                 <Navigate to="/home" replace />
               ) : (
-                <Login onLoginSuccess={handleLoginSuccess} />
+                <Login 
+                  onLoginSuccess={handleLoginSuccess} 
+                  initialErrorMsg={sessionErrorMsg}
+                />
               )
             } 
           />

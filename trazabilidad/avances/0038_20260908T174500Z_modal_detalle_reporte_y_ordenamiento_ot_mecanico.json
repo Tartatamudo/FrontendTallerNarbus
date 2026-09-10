@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 38,
+  "id": "AV-0038",
+  "timestamp": "2026-09-08T17:45:00Z",
+  "phase": "fase_2_mecanicos_y_taller",
+  "milestone": {
+    "id": "FRONT-MEC-05",
+    "name": "Modal Flotante de Detalle de Reporte y Ordenamiento por Orden de Trabajo",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de la ventana modal emergente (ModalDetalleReporte) para la inspección detallada de reportes técnicos y evidencias fotográficas de choferes en la consola del mecánico, y reestructuración completa de la pestaña 'Buses por Atender' con grilla responsiva de tarjetas orientada primariamente a Órdenes de Trabajo (OT) y barra de herramientas con selector de ordenamiento y buscador dinámico.",
+  "scope": {
+    "planned": [
+      "Crear componente ModalDetalleReporte y sus estilos CSS con diseño tokenizado dual (dark y light mode)",
+      "Reorganizar la pantalla 'Buses por Atender' en una grilla panorámica responsiva enfocada en la Orden de Trabajo (OT)",
+      "Incorporar barra de herramientas con selector de ordenamiento (OT Descendente, OT Ascendente, N° Bus, Fecha) y buscador reactivo",
+      "Permitir la apertura del modal emergente al hacer clic en cualquier reporte de bus por atender o en su botón directo",
+      "Habilitar desde el modal la selección atómica o global de averías para autoasignación o reanudación de turnos pausados",
+      "Permitir acceso al reporte original en modal flotante también desde la consola activa de 'Mis Órdenes en Curso'",
+      "Verificación con linter oxlint y compilación de producción con Vite"
+    ],
+    "completed": [
+      "Creado src/mecanicos/revisiones/modales/ModalDetalleReporte.css con estilos de alta legibilidad, backdrop blur, soporte dark (#16181d) y light mode (#ffffff), insignias OT y área táctil >= 44px",
+      "Creado src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx con tecla Escape, bloqueo de scroll corporal, visor de fotos de evidencia, checklist preventivo, desglose de averías y cuadrilla técnica",
+      "Modificado src/mecanicos/revisiones/DashboardMecanico.tsx desacoplando 'Buses por Atender' a una grilla completa de 3 columnas (grid-cols-1 md:grid-cols-2 lg:grid-cols-3) con toolbar de búsqueda y ordenamiento",
+      "Implementado ordenamiento reactivo por defecto con 'ot_desc' (OT más reciente primero), opciones para 'ot_asc', 'bus_asc' y 'fecha_desc'",
+      "Integrado ModalDetalleReporte en la raíz del dashboard con sincronización de estado, selección atómica y apertura de modales hijos",
+      "Agregado botón 'Ver Reporte' en el header del detalle de 'Mis Órdenes en Curso' para consulta técnica continua",
+      "Verificado con npx tsc --noEmit (0 errores) y npx oxlint (0 advertencias, 0 errores), compilación Vite exitosa en 29.79s"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de esquema en el backend (consumo exclusivo de contratos existentes)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.css",
+      "action": "created",
+      "summary": "Estilos CSS encapsulados con diseño corporativo Narbus, soporte dual dark/light y botones táctiles >= 44px"
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx",
+      "action": "created",
+      "summary": "Componente modal flotante de detalle de reporte técnico, fotos de evidencia, checklist y autoasignación"
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Separación de layout entre bandejas, grilla responsiva para pendientes, barra de ordenamiento por OT y buscador"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-040",
+      "title": "Diseño de ventana modal superpuesta para reportes de taller",
+      "rationale": "En lugar de dividir la pantalla en columnas estrechas cuando el mecánico solo desea explorar la bandeja de entrada, se provee una ventana flotante modal (dialog) idéntica a ModalDetalleAuditoria de supervisión. Esto maximiza el espacio útil de la pantalla para ver fotos y descripciones técnicas de choferes sin perder el contexto de la bandeja.",
+      "consequences": "La experiencia de usuario en taller es más fluida tanto en dispositivos móviles/tablets como en escritorios de supervisión técnica."
+    },
+    {
+      "id": "DEC-041",
+      "title": "Enfoque de ordenamiento por Orden de Trabajo (OT) por defecto",
+      "rationale": "El flujo operacional del taller Narbus procesa el trabajo mediante órdenes cronológicas (OTs) y no puramente por el número de máquina. Se configuró 'ot_desc' (OT descendente) como criterio primario por omisión y se añadieron insignias visuales prominentes de OT en cada tarjeta.",
+      "consequences": "Los mecánicos ubican de forma inmediata las órdenes más recientes y pueden alternar entre órdenes ascendentes, número de bus o fecha de ingreso según su flujo de turno."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin errores de tipado"
+    },
+    {
+      "command": "npx oxlint",
+      "result": "passed",
+      "evidence": "0 warnings, 0 errors en 57 archivos con 96 reglas"
+    },
+    {
+      "command": "npx vite build",
+      "result": "passed",
+      "evidence": "✓ built in 29.79s (dist/assets/index-D9DRqD3c.js 514.57 kB)"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Validación en terreno de la experiencia del mecánico con la nueva ventana flotante de reporte.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "pending",
+    "dirty": true
+  },
+  "notes": [
+    "Cumplimiento estricto de AGENTS.md en accesibilidad táctil, modo oscuro y manejo de estados.",
+    "El reporte original del conductor ahora se puede consultar tanto antes de tomar la orden como durante la ejecución de los trabajos."
+  ]
+}

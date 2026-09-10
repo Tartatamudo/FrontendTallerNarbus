@@ -9,13 +9,21 @@ import { getApiErrorMessage } from '../../utils/apiErrors';
 
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
+  initialErrorMsg?: string | null;
 }
 
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login({ onLoginSuccess, initialErrorMsg }: LoginProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(initialErrorMsg || null);
+
+  useEffect(() => {
+    if (initialErrorMsg) {
+      setErrorMsg(initialErrorMsg);
+    }
+  }, [initialErrorMsg]);
+
 
   useEffect(() => {
     // Al cargar la pantalla, revisar si ya existe un usuario recordado en el teléfono
@@ -80,7 +88,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <div className="auth-field">
             <label className="auth-label">
               <UserIcon size={15} className="text-blue-600" />
-              <span>Usuario / RUT</span>
+              <span>Usuario / RUT (Ej: 12345678-9)</span>
             </label>
             <div className="auth-input-wrapper">
               <UserIcon size={18} className="auth-input-icon" />

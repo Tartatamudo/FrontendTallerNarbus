@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 37,
+  "id": "AV-0037",
+  "timestamp": "2026-09-08T17:10:00Z",
+  "phase": "fase_2_mecanicos_y_taller",
+  "milestone": {
+    "id": "FRONT-OPT-01",
+    "name": "Paginación Uniforme skip/limit y Optimización de Supervisión",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Adaptación completa de servicios y pantallas frontend a la paginación uniforme con skip y limit implementada en el backend, así como al desacoplamiento de alta velocidad del Centro de Alertas y telemetría analítica de Taller. Se introdujo el componente reusable PaginationControl con botones táctiles de 44x44px conformes a AGENTS.md y compatibilidad dark/light mode, integrándolo en las dos bandejas del mecánico (pendientes y mis trabajos) y en el tablero de auditoría de supervisión con reseteo inteligente de filtros.",
+  "scope": {
+    "planned": [
+      "Crear componente reusable PaginationControl con diseño táctil industrial (área >= 44x44px) y soporte dual dark/light",
+      "Actualizar obtenerPendientes y obtenerMisTrabajos con soporte para limit y skip en mantencionService.ts",
+      "Actualizar obtenerAuditoriaBusesTaller con soporte para limit y skip en supervisionService.ts",
+      "Integrar controles de paginación en DashboardMecanico.tsx para bandejas independientes de pendientes y mis trabajos",
+      "Integrar controles de paginación en AuditoriaTab.tsx y DashboardSupervision.tsx coordinados con filtros de búsqueda",
+      "Actualizar trazabilidad del proyecto: 01_ESTADO_ACTUAL_PROYECTO.md, 05_CONTRATOS_API_FRONTEND.md y 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md"
+    ],
+    "completed": [
+      "Creado src/components/PaginationControl/PaginationControl.tsx con botones accesibles, loader animado y navegación anterior/siguiente",
+      "Actualizado src/services/mantencionService.ts y src/conductores/mantencion/mantencionService.ts para enviar limit y skip",
+      "Actualizado src/supervisores/supervision/supervisionService.ts extendiendo AuditoriaFiltros y pasando parámetros al backend",
+      "Implementada paginación en DashboardMecanico.tsx con tamaño de bloque de 20 registros y contador dinámico por pestaña",
+      "Implementada paginación en AuditoriaTab.tsx y DashboardSupervision.tsx con reseteo automático a página 1 ante nuevos filtros",
+      "Actualizada la documentación técnica y contractual en trazabilidad/01, trazabilidad/05 y trazabilidad/06",
+      "Verificado con oxlint (0 advertencias, 0 errores) y compilación TypeScript/Vite completada en 599ms"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones en el repositorio BackendTallerNarbus (manejado de forma autónoma)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/components/PaginationControl/PaginationControl.tsx",
+      "action": "created",
+      "summary": "Componente reusable de control de paginación táctil industrial con soporte dark y light mode"
+    },
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "modified",
+      "summary": "Parámetros limit=20 y skip=0 en obtenerPendientes y obtenerMisTrabajos"
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Parámetros limit y skip en servicios de mantención para consistencia global"
+    },
+    {
+      "path": "src/supervisores/supervision/supervisionService.ts",
+      "action": "modified",
+      "summary": "Soporte para skip y limit en AuditoriaFiltros y llamada a /supervision/auditoria/buses-taller"
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Paginación independiente por pestaña, inserción de PaginationControl y llamadas con skip y limit"
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/AuditoriaTab.tsx",
+      "action": "modified",
+      "summary": "Integración de PaginationControl al pie de las fichas de auditoría"
+    },
+    {
+      "path": "src/supervisores/supervision/DashboardSupervision.tsx",
+      "action": "modified",
+      "summary": "Gestión de estado paginaAuditoria, cálculo de skip, limit y reseteo en filtros"
+    },
+    {
+      "path": "trazabilidad/01_ESTADO_ACTUAL_PROYECTO.md",
+      "action": "modified",
+      "summary": "Registro de estado completado para paginación y PaginationControl"
+    },
+    {
+      "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md",
+      "action": "modified",
+      "summary": "Sección 10 documentando skip, limit y optimización de alertas y KPIs"
+    },
+    {
+      "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md",
+      "action": "modified",
+      "summary": "Actualización de parámetros Query para endpoints 6.5, 6.6 y 7.2"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-041",
+      "title": "Paginación industrial táctil con bloque de 20 ítems en bandejas de taller y auditoría",
+      "rationale": "El taller opera sobre conexiones móviles y tablets en ambientes de alta vibración y grasa en pantalla. Un tamaño de bloque de 20 registros ofrece una respuesta de red instantánea (<100ms) y evita el scrolling infinito engorroso, proveyendo botones físicos grandes (mínimo 44x44px) para navegación anterior/siguiente de fácil pulsación con guantes.",
+      "consequences": "Menor consumo de datos móviles, menor carga en la base de datos y mayor ergonomía operativa para los mecánicos y supervisores."
+    },
+    {
+      "id": "DEC-042",
+      "title": "Reseteo contextual de paginación a página 1 ante aplicación o limpieza de filtros",
+      "rationale": "Al buscar por número de bus, cambiar de estado o filtrar por mecánico, mantener un offset distinto de cero provocaría falsos vacíos si el conjunto filtrado tiene menos registros que el skip actual. Al resetear automáticamente a página 1 (skip=0), se garantiza visibilidad inmediata de los resultados.",
+      "consequences": "Experiencia de búsqueda predecible y consistente sin discrepancias de registros para la supervisora."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "Found 0 warnings and 0 errors across 56 files"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 599ms sin errores de tipado"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas integradas de interacción en vivo con el backend local en ejecución.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/paginacion-y-optimizacion-supervision",
+    "commit": "HEAD",
+    "dirty": false
+  },
+  "notes": [
+    "Compatibilidad regresiva total: si el backend o un cliente no envía skip ni limit, se asume limit=50 y skip=0 automáticamente sin romper flujos."
+  ]
+}

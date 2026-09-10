@@ -53,7 +53,7 @@ export default function ModalBase({
 
   return (
     <div
-      className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[60] flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       onClick={onClose}

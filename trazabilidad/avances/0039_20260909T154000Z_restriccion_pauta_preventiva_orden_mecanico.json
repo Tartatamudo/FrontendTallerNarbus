@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 39,
+  "id": "AV-0039",
+  "timestamp": "2026-09-09T15:40:00Z",
+  "phase": "fase_2_mecanicos_y_taller",
+  "milestone": {
+    "id": "FRONT-MEC-06",
+    "name": "Restricción de Edición de Pauta Preventiva por Asignación de Orden de Trabajo",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Implementación de la restricción de acceso de llenado a la pauta preventiva (11 ítems): un mecánico únicamente puede calificar ítems, marcar OK o registrar defectos si la orden de trabajo completa o al menos una de sus averías técnicas está bajo su orden (asignada). Si no la tiene asignada (por ejemplo en 'Buses por atender'), la pauta se despliega en modo 'Solo Lectura' para consulta técnica sin permitir mutaciones ni registros no autorizados.",
+  "scope": {
+    "planned": [
+      "Crear función helper tieneAsignacionMecanico para verificar asignación como líder, colaborador o responsable de averías técnicas",
+      "Actualizar ModalDetalleReporte para reflejar estado 'Solo Lectura (No Asignado)' en el checklist preventivo si el mecánico no tiene la orden",
+      "Actualizar PautaPreventivaModal con soporte para readOnly (bloqueo de botones OK/DEFECTO/NA, ocultamiento de guardado y avisos visuales)",
+      "Agregar estilos CSS para modo consulta y controles deshabilitados en PautaPreventivaModal.css",
+      "Conectar cálculo de permisos en DashboardMecanico considerando bandeja activa y usuario autenticado",
+      "Verificación completa con linter y compilación de producción"
+    ],
+    "completed": [
+      "Agregada función tieneAsignacionMecanico en src/types/mantencion.ts y reexportada en src/services/mantencionService.ts",
+      "Adaptado ModalDetalleReporte.tsx con prop puedeRellenarPauta, badge 'Solo Lectura (No Asignado)', texto orientativo y botón adaptativo 'Consultar Pauta (Solo Lectura)'",
+      "Implementado modo readOnly en PautaPreventivaModal.tsx con banner preventivo, desactivación de botones de calificación, bloqueo de inputs y botón único 'Cerrar Consulta' en el footer",
+      "Añadidos estilos para .pauta-badge-readonly, .pauta-btn-state:disabled y .pauta-obs-input:disabled en PautaPreventivaModal.css",
+      "Integrado cálculo reactivo en DashboardMecanico.tsx propagando readOnly a modales según asignación de cuadrilla",
+      "Verificado con npx tsc --noEmit (0 errores), npm run lint (0 advertencias, 0 errores en 58 archivos) y npm run build (código 0)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de backend (el frontend asegura el comportamiento UI y el backend ya rechaza mutaciones no autorizadas)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/types/mantencion.ts",
+      "action": "modified",
+      "summary": "Definición y exportación de función tieneAsignacionMecanico con soporte para líder, colaboradores y asignaciones por avería"
+    },
+    {
+      "path": "src/mecanicos/revisiones/PautaPreventivaModal.css",
+      "action": "modified",
+      "summary": "Estilos CSS para badges de solo lectura, botones deshabilitados e inputs en modo consulta"
+    },
+    {
+      "path": "src/mecanicos/revisiones/PautaPreventivaModal.tsx",
+      "action": "modified",
+      "summary": "Soporte de propiedad readOnly, banner informativo, bloqueo de interacciones y reemplazo de footer por botón de cierre"
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx",
+      "action": "modified",
+      "summary": "Inclusión de prop puedeRellenarPauta con badges condicionales y botón de consulta en solo lectura"
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Cálculo centralizado de permisos de pauta preventiva según tabActiva, usuario autenticado y asignación de la OT"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-042",
+      "title": "Control Preventivo de Llenado de Pauta Preventiva por Asignación de OT",
+      "rationale": "La pauta preventiva es un control de seguridad operacional crítico. Permitir que mecánicos no asignados alteren las respuestas o generen defectos en una orden ajena en 'Buses por atender' creaba riesgos de confusión en el taller. Al restringir el llenado exclusivamente a mecánicos con la orden o alguna de sus averías asignadas, se garantiza la integridad de la bitácora técnica a la vez que se permite la consulta visual previa.",
+      "consequences": "Mayor orden en el flujo de taller: el mecánico primero debe autoasignarse la avería u orden técnica correspondiente para poder evaluar y completar el checklist de 11 ítems."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de tipos TypeScript con código de salida 0"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "oxlint completado en 52ms sin advertencias ni errores en 58 archivos"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 682ms"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Notificar al usuario y validar flujo de terreno con cuadrilla de taller.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "feature/pauta-preventiva-ot-permisos",
+    "commit": "working_tree",
+    "dirty": true
+  },
+  "notes": [
+    "Cumple con directrices de accesibilidad (botones >= 44px) y compatibilidad total con modo oscuro y claro."
+  ]
+}

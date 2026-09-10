@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { AuditoriaBusTallerDTO } from '../supervisionService';
 import { formatearFechaHora } from '../../../utils/formatters';
+import { getFullImageUrl } from '../../../utils/imageUrl';
 import EstadoBadge from '../../../components/EstadoBadge/EstadoBadge';
 import './ModalDetalleAuditoria.css';
 
@@ -162,16 +163,78 @@ export default function ModalDetalleAuditoria({
             )}
           </div>
 
-          {/* 2. Evidencia Fotográfica si existe */}
-          {aud.foto_url && (
+          {/* 2. Evidencia Fotográfica — galería multi-foto */}
+          {(aud.foto_url || (aud.evidencias && aud.evidencias.length > 0)) && (
             <div className="mda-section">
               <h3 className="mda-section-title">
                 <Camera size={14} />
-                <span>Evidencia Fotográfica de la Falla</span>
+                <span>
+                  Evidencia Fotográfica de la Falla
+                  {aud.evidencias && aud.evidencias.length > 1 && (
+                    <span className="ml-2 text-[11px] font-black bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-400/40">
+                      {aud.evidencias.length} fotos
+                    </span>
+                  )}
+                </span>
               </h3>
-              <div className="mda-photo-box" onClick={() => window.open(aud.foto_url!, '_blank')}>
-                <img src={aud.foto_url} alt="Evidencia de la falla" className="mda-photo-img" />
-              </div>
+
+              {/* Galería múltiple: scroll horizontal de miniaturas */}
+              {aud.evidencias && aud.evidencias.length > 1 ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory">
+                    {aud.evidencias.map((ev, idx) => {
+                      const url = getFullImageUrl(ev.url);
+                      return (
+                        <div
+                          key={ev.id}
+                          className="relative shrink-0 w-32 h-32 rounded-xl overflow-hidden border border-white/10 shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-400 transition snap-start"
+                          onClick={() => url && window.open(url, '_blank')}
+                          title={ev.original_filename || `Foto ${idx + 1}`}
+                        >
+                          <img
+                            src={url || ''}
+                            alt={ev.original_filename || `Evidencia ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow">
+                            {idx + 1}
+                          </div>
+                          {ev.original_filename && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1">
+                              <span className="text-[9px] font-bold text-white truncate block">
+                                {ev.original_filename}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] font-semibold text-slate-500">
+                    Toca cualquier foto para verla en tamaño completo
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className="mda-photo-box"
+                  onClick={() => {
+                    const url = aud.evidencias?.[0]?.url
+                      ? getFullImageUrl(aud.evidencias[0].url)
+                      : getFullImageUrl(aud.foto_url);
+                    if (url) window.open(url, '_blank');
+                  }}
+                >
+                  <img
+                    src={
+                      aud.evidencias?.[0]?.url
+                        ? getFullImageUrl(aud.evidencias[0].url) || ''
+                        : getFullImageUrl(aud.foto_url) || ''
+                    }
+                    alt="Evidencia de la falla"
+                    className="mda-photo-img"
+                  />
+                </div>
+              )}
             </div>
           )}
 

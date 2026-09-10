@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 41,
+  "id": "AV-0041",
+  "timestamp": "2026-09-09T17:30:00Z",
+  "phase": "fase_2_mecanicos_y_taller",
+  "milestone": {
+    "id": "FRONT-IMG-01",
+    "name": "Almacenamiento Cloud de Imágenes en Google Cloud Storage (1 Solo Request HTTP)",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Integración de la arquitectura de almacenamiento de imágenes en Google Cloud Storage (GCS) en 1 solo request HTTP atómico sin cuellos de botella. El formulario de mantención envía ahora el archivo binario directamente en multipart/form-data junto con los datos de la orden, eliminando subidas intermedias y evitando imágenes huérfanas en la nube. Se implementó la utilidad getFullImageUrl para resolución universal de URLs de imágenes (GCS y desarrollo local) en modales de supervisión y mecánica.",
+  "scope": {
+    "planned": [
+      "Implementar función utilitaria getFullImageUrl para resolver URLs absolutas de Google Cloud Storage (GCS) y rutas relativas de desarrollo local",
+      "Actualizar interface SolicitudCreateDTO para soportar foto?: File | null",
+      "Adaptar servicio crearSolicitud para soportar envío atómico en multipart/form-data con archivo foto y JSON.stringify(detalles)",
+      "Actualizar FormularioMantencionTaller para capturar el archivo binario File desde PhotoSelector y enviarlo en el payload",
+      "Actualizar PhotoSelector para renderizar previsualizaciones y modales de zoom resolviendo la URL mediante getFullImageUrl",
+      "Integrar getFullImageUrl en ModalDetalleAuditoria y ModalDetalleReporte para visualización y apertura de fotos en pantalla completa",
+      "Actualizar documentación de contratos (05_CONTRATOS_API_FRONTEND.md y 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md) y estado del proyecto (01_ESTADO_ACTUAL_PROYECTO.md)"
+    ],
+    "completed": [
+      "Creado src/utils/imageUrl.ts con getBackendBaseUrl y getFullImageUrl",
+      "Actualizada interface SolicitudCreateDTO en src/types/mantencion.ts con foto?: File | null",
+      "Actualizados crearSolicitud en src/services/mantencionService.ts y src/conductores/mantencion/mantencionService.ts con soporte dual FormData / JSON",
+      "Actualizado FormularioMantencionTaller.tsx eliminando el envío de cadenas Base64 masivas y reemplazándolas por el archivo binario en el FormData",
+      "Actualizado PhotoSelector.tsx con getFullImageUrl para renderizado de tarjeta y modal de zoom",
+      "Actualizados ModalDetalleAuditoria.tsx y ModalDetalleReporte.tsx con getFullImageUrl para visualización y apertura en nueva pestaña",
+      "Actualizados 05_CONTRATOS_API_FRONTEND.md, 06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md y 01_ESTADO_ACTUAL_PROYECTO.md"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones en el código fuente de BackendTallerNarbus (manejado en repositorio independiente)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/utils/imageUrl.ts",
+      "action": "created",
+      "summary": "Utilidad de resolución universal de URLs para Google Cloud Storage (https://storage.googleapis.com/...) y rutas locales (/uploads/...)"
+    },
+    {
+      "path": "src/types/mantencion.ts",
+      "action": "modified",
+      "summary": "Incorporación del campo foto?: File | null en SolicitudCreateDTO"
+    },
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "modified",
+      "summary": "Soporte dual en crearSolicitud para emitir multipart/form-data cuando se adjunta foto o application/json cuando no hay archivo"
+    },
+    {
+      "path": "src/conductores/mantencion/mantencionService.ts",
+      "action": "modified",
+      "summary": "Sincronización de crearSolicitud para soportar multipart/form-data con archivo de foto"
+    },
+    {
+      "path": "src/conductores/mantencion/FormularioMantencionTaller.tsx",
+      "action": "modified",
+      "summary": "Captura del archivo File desde PhotoSelector y envío en 1 solo request HTTP en lugar de Base64 crudo"
+    },
+    {
+      "path": "src/components/PhotoSelector/PhotoSelector.tsx",
+      "action": "modified",
+      "summary": "Integración de getFullImageUrl para garantizar renderizado de imágenes locales, remotas y previsualizaciones"
+    },
+    {
+      "path": "src/supervisores/supervision/tabs/ModalDetalleAuditoria.tsx",
+      "action": "modified",
+      "summary": "Resolución de URLs de evidencias fotográficas con getFullImageUrl en tarjeta y apertura de ventana"
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalDetalleReporte.tsx",
+      "action": "modified",
+      "summary": "Resolución de URLs de evidencias fotográficas con getFullImageUrl en tarjeta y apertura de ventana"
+    },
+    {
+      "path": "trazabilidad/05_CONTRATOS_API_FRONTEND.md",
+      "action": "modified",
+      "summary": "Sección 11 con especificación del almacenamiento de imágenes en Google Cloud Storage en 1 solo request HTTP"
+    },
+    {
+      "path": "trazabilidad/06_CATALOGO_ENDPOINTS_PAYLOADS_RESPUESTAS.md",
+      "action": "modified",
+      "summary": "Actualización del endpoint 6.4 (POST /api/v1/mantencion/solicitudes) documentando payload multipart y URLs de GCS"
+    },
+    {
+      "path": "trazabilidad/01_ESTADO_ACTUAL_PROYECTO.md",
+      "action": "modified",
+      "summary": "Actualización del estado de los módulos de mantención, neumáticos, supervisión y utilidades de imágenes"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-IMG-001",
+      "title": "Envío Atómico en 1 Solo Request HTTP sin Endpoint Intermedio de Upload",
+      "rationale": "Realizar dos peticiones secuenciales (/uploads/imagen seguido de /solicitudes) duplicaba la latencia en redes móviles 3G/4G y creaba el riesgo de imágenes huérfanas en Google Cloud Storage si fallaba la validación del formulario. El envío atómico en multipart/form-data delega la transferencia GCS al backend servidor-a-servidor en milisegundos y garantiza transaccionalidad total.",
+      "consequences": "Menor tiempo de espera para choferes y mecánicos, reducción de consumo de datos móviles, menor complejidad en el estado del formulario y cero imágenes huérfanas en el bucket."
+    },
+    {
+      "id": "DEC-IMG-002",
+      "title": "Resolución Desacoplada de URLs Duales con getFullImageUrl",
+      "rationale": "El backend responde URLs absolutas de Google Cloud Storage en producción (Cloud Run) pero devuelve rutas relativas (/uploads/...) en entornos locales donde no hay credenciales de Google Cloud configuradas.",
+      "consequences": "El frontend funciona de manera idéntica y sin errores 404 tanto en computadores de desarrollo como en la infraestructura cloud de producción."
+    },
+    {
+      "id": "DEC-IMG-003",
+      "title": "Eliminación de Cadenas Base64 en el Payload de Mantención",
+      "rationale": "Anteriormente se enviaba la cadena Base64 cruda en foto_url, inflando el tamaño del cuerpo HTTP en un 33% adicional sobre el tamaño del archivo y recargando la memoria del navegador y la base de datos.",
+      "consequences": "Peticiones HTTP ligeras y estándar, almacenamiento de URLs públicas simples en PostgreSQL y descarga optimizada desde la CDN de Google Cloud."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin errores de tipos en ningún archivo del proyecto."
+    },
+    {
+      "command": "npx vite build",
+      "result": "passed",
+      "evidence": "Bundle de producción generado exitosamente en dist/ (1941 módulos transformados en 1.13s)."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Realizar pruebas integradas en terreno en dispositivos Android con Capacitor para verificar captura de fotos y recepción en Google Cloud Storage.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": false
+  },
+  "notes": [
+    "El formulario de neumáticos (POST /api/v1/formularioNeumatico) ya operaba con multipart/form-data y no requirió modificaciones en el payload; el backend procesa automáticamente la evidencia hacia GCS."
+  ]
+}

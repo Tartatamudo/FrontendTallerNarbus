@@ -33,7 +33,7 @@ export default function ModalAgregarFalla({
   const [categoriaId, setCategoriaId] = useState<number>(1);
   const [descripcion, setDescripcion] = useState<string>('');
   const [autoasignar, setAutoasignar] = useState<boolean>(true);
-  const [categorias, setCategorias] = useState<{ id: number; nombre: string }[]>(CATEGORIAS_FALLBACK);
+  const [categorias, setCategorias] = useState<CategoriaFalla[]>(CATEGORIAS_FALLBACK as CategoriaFalla[]);
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
 
   // Cargar categorías activas desde el backend al abrir el modal
@@ -52,7 +52,7 @@ export default function ModalAgregarFalla({
         })
         .catch(() => {
           // Mantener categorías fallback si la consulta falla
-          setCategorias(CATEGORIAS_FALLBACK);
+          setCategorias(CATEGORIAS_FALLBACK as CategoriaFalla[]);
         });
     }
   }, [isOpen]);
@@ -68,9 +68,10 @@ export default function ModalAgregarFalla({
     }
 
     setErrorLocal(null);
+    const catSel = categorias.find((c) => c.id === categoriaId);
     await onConfirmar({
       categoria_id: categoriaId,
-      falla_id: null,
+      falla_id: catSel?.falla_id ?? null,
       descripcion_personalizada: descripcion.trim(),
       autoasignar,
     });

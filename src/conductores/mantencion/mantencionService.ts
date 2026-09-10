@@ -14,30 +14,81 @@ import type {
   ReportarRepuestoDTO,
   FinalizarSolicitudDTO,
   AgregarFallaDTO,
+  DetalleUpdateDTO,
+  ComentarioAddedDTO,
 } from '../../types/mantencion';
 
 export * from '../../types/mantencion';
 
 // ==================== ENDPOINTS ====================
 
-/**
- * 6.1 Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems) (EXCLUSIVO Mecánicos en Taller)
- * GET /api/v1/mantencion/pauta/items
- * Utilizado únicamente por PautaPreventivaModal.tsx para el checklist técnico previo a liberación.
- */
-export async function obtenerPautaItems(): Promise<PautaTallerItemDTO[]> {
-  const response = await apiClient.get<PautaTallerItemDTO[]>('/api/v1/mantencion/pauta/items');
-  return response.data;
+// ==================== CACHÉ EN MEMORIA ====================
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+let pautaItemsCache: { data: PautaTallerItemDTO[]; timestamp: number } | null = null;
+let categoriasCache: { data: CategoriaFalla[]; timestamp: number } | null = null;
+let pautaItemsPromise: Promise<PautaTallerItemDTO[]> | null = null;
+let categoriasPromise: Promise<CategoriaFalla[]> | null = null;
+
+export function invalidarCacheMantencion(): void {
+  pautaItemsCache = null;
+  categoriasCache = null;
+  pautaItemsPromise = null;
+  categoriasPromise = null;
 }
 
 /**
- * 6.2 Obtener Categorías Activas de Fallas (Formulario de Mantención Chofer)
- * GET /api/v1/mantencion/categorias
- * Utilizado por FormularioMantencionTaller.tsx para agrupar averías reportadas por el conductor.
+ * 6.1 Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems) (EXCLUSIVO Mecánicos en Taller)
+ * GET /api/v1/mantencion/pauta/items con caché en memoria y deduplicación en vuelo
  */
-export async function obtenerCategorias(): Promise<CategoriaFalla[]> {
-  const response = await apiClient.get<CategoriaFalla[]>('/api/v1/mantencion/categorias');
-  return response.data;
+export async function obtenerPautaItems(forceRefresh: boolean = false): Promise<PautaTallerItemDTO[]> {
+  const now = Date.now();
+  if (!forceRefresh && pautaItemsCache && now - pautaItemsCache.timestamp < CACHE_TTL_MS) {
+    return pautaItemsCache.data;
+  }
+  if (!forceRefresh && pautaItemsPromise) {
+    return pautaItemsPromise;
+  }
+  pautaItemsPromise = apiClient
+    .get<PautaTallerItemDTO[]>('/api/v1/mantencion/pauta/items')
+    .then((response) => {
+      pautaItemsCache = { data: response.data, timestamp: Date.now() };
+      pautaItemsPromise = null;
+      return response.data;
+    })
+    .catch((err) => {
+      pautaItemsPromise = null;
+      throw err;
+    });
+  return pautaItemsPromise;
+}
+
+/**
+ * 6.2 Obtener Categorías Activas de Fallas con falla_id y falla_nombre (Formulario de Mantención Chofer)
+ * GET /api/v1/mantencion/categorias con caché en memoria y deduplicación en vuelo
+ * Utilizado por FormularioMantencionTaller.tsx para vincular directamente categoria_id y falla_id.
+ */
+export async function obtenerCategorias(forceRefresh: boolean = false): Promise<CategoriaFalla[]> {
+  const now = Date.now();
+  if (!forceRefresh && categoriasCache && now - categoriasCache.timestamp < CACHE_TTL_MS) {
+    return categoriasCache.data;
+  }
+  if (!forceRefresh && categoriasPromise) {
+    return categoriasPromise;
+  }
+  categoriasPromise = apiClient
+    .get<CategoriaFalla[]>('/api/v1/mantencion/categorias')
+    .then((response) => {
+      categoriasCache = { data: response.data, timestamp: Date.now() };
+      categoriasPromise = null;
+      return response.data;
+    })
+    .catch((err) => {
+      categoriasPromise = null;
+      throw err;
+    });
+  return categoriasPromise;
 }
 
 /**
@@ -55,27 +106,80 @@ export async function obtenerFallas(categoriaId?: number): Promise<FallaItemDTO[
 /**
  * 6.4 Crear Solicitud de Mantención (Reportar Bus)
  * POST /api/v1/mantencion/solicitudes
+ *
+ * Soporte Dual Atómico:
+ * 1. Si payload.fotos[] (o legacy payload.foto) está presente: Se envía como multipart/form-data en 1 solo request HTTP.
+ *    El backend transfiere directamente a Google Cloud Storage, crea los registros en taller_solicitud_evidencias
+ *    y retorna el SolicitudDTO con foto_url (primera foto) + evidencias[] (todas las fotos).
+ * 2. Si no hay archivos binarios: Se envía como payload tradicional application/json.
  */
 export async function crearSolicitud(payload: SolicitudCreateDTO): Promise<SolicitudDTO> {
-  const response = await apiClient.post<SolicitudDTO>('/api/v1/mantencion/solicitudes', payload);
+  // Normalizar: si se pasó el campo legacy `foto`, envolverlo en array
+  const archivos: File[] = [];
+  if (payload.fotos && payload.fotos.length > 0) {
+    archivos.push(...payload.fotos);
+  } else if (payload.foto) {
+    archivos.push(payload.foto);
+  }
+
+  if (archivos.length > 0) {
+    const formData = new FormData();
+    formData.append('n_bus', payload.n_bus);
+    if (payload.bus_id) {
+      formData.append('bus_id', String(payload.bus_id));
+    }
+    if (payload.descripcion_general) {
+      formData.append('descripcion_general', payload.descripcion_general);
+    }
+    // Adjuntar cada archivo bajo la clave 'fotos' (el backend acepta también 'foto' singular)
+    archivos.forEach((file) => {
+      formData.append('fotos', file);
+    });
+    if (payload.detalles && payload.detalles.length > 0) {
+      formData.append('detalles', JSON.stringify(payload.detalles));
+    }
+
+    const response = await apiClient.post<SolicitudDTO>(
+      '/api/v1/mantencion/solicitudes',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  }
+
+  const response = await apiClient.post<SolicitudDTO>('/api/v1/mantencion/solicitudes', {
+    n_bus: payload.n_bus,
+    bus_id: payload.bus_id ?? null,
+    descripcion_general: payload.descripcion_general ?? null,
+    foto_url: payload.foto_url ?? null,
+    detalles: payload.detalles,
+  });
   return response.data;
 }
 
 /**
- * 6.5 Listar Solicitudes Pendientes (Pestaña 1 del Mecánico)
- * GET /api/v1/mantencion/pendientes
+ * 6.5 Listar Solicitudes Pendientes (Pestaña 1 del Mecánico con paginación)
+ * GET /api/v1/mantencion/pendientes?limit=20&skip=0
  */
-export async function obtenerPendientes(): Promise<SolicitudDTO[]> {
-  const response = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/pendientes');
+export async function obtenerPendientes(limit: number = 20, skip: number = 0): Promise<SolicitudDTO[]> {
+  const response = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/pendientes', {
+    params: { limit, skip },
+  });
   return response.data;
 }
 
 /**
- * 6.6 Listar Mis Trabajos (Pestaña 2 del Mecánico)
- * GET /api/v1/mantencion/mis-trabajos
+ * 6.6 Listar Mis Trabajos (Pestaña 2 del Mecánico con paginación)
+ * GET /api/v1/mantencion/mis-trabajos?limit=20&skip=0
  */
-export async function obtenerMisTrabajos(): Promise<SolicitudDTO[]> {
-  const response = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/mis-trabajos');
+export async function obtenerMisTrabajos(limit: number = 20, skip: number = 0): Promise<SolicitudDTO[]> {
+  const response = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/mis-trabajos', {
+    params: { limit, skip },
+  });
   return response.data;
 }
 
@@ -224,15 +328,15 @@ export async function liberarTurno(id: number, comentario: string): Promise<Soli
 }
 
 /**
- * 6.16 Marcar / Desmarcar Check de Falla Resuelta
+ * 6.16 Marcar / Desmarcar Check de Falla Resuelta (Contrato Atómico Nivel 3)
  * PATCH /api/v1/mantencion/{id}/detalles/{detalle_id}/check?resuelto=true
  */
 export async function marcarCheckDetalle(
   id: number,
   detalleId: number,
   resuelto: boolean
-): Promise<SolicitudDTO> {
-  const response = await apiClient.patch<SolicitudDTO>(
+): Promise<DetalleUpdateDTO> {
+  const response = await apiClient.patch<DetalleUpdateDTO>(
     `/api/v1/mantencion/${id}/detalles/${detalleId}/check`,
     null,
     { params: { resuelto } }
@@ -241,7 +345,7 @@ export async function marcarCheckDetalle(
 }
 
 /**
- * 6.17 Reportar Falta de Repuesto en Falla (Bloqueo / Desbloqueo)
+ * 6.17 Reportar Falta de Repuesto en Falla (Contrato Atómico Nivel 3)
  * PATCH /api/v1/mantencion/{id}/detalles/{detalle_id}/repuesto
  */
 export async function reportarRepuestoFalla(
@@ -249,12 +353,12 @@ export async function reportarRepuestoFalla(
   detalleId: number,
   faltaRepuesto: boolean,
   comentario?: string
-): Promise<SolicitudDTO> {
+): Promise<DetalleUpdateDTO> {
   const payload: ReportarRepuestoDTO = {
     falta_repuesto: faltaRepuesto,
     comentario,
   };
-  const response = await apiClient.patch<SolicitudDTO>(
+  const response = await apiClient.patch<DetalleUpdateDTO>(
     `/api/v1/mantencion/${id}/detalles/${detalleId}/repuesto`,
     payload
   );
@@ -278,15 +382,15 @@ export async function agregarColaborador(
 }
 
 /**
- * 6.19 Agregar Comentario a la Bitácora
+ * 6.19 Agregar Comentario a la Bitácora (Contrato Atómico Nivel 3)
  * POST /api/v1/mantencion/{id}/comentarios
  */
 export async function agregarComentario(
   id: number,
   comentario: string,
   tipo: string = 'GENERAL'
-): Promise<SolicitudDTO> {
-  const response = await apiClient.post<SolicitudDTO>(`/api/v1/mantencion/${id}/comentarios`, {
+): Promise<ComentarioAddedDTO> {
+  const response = await apiClient.post<ComentarioAddedDTO>(`/api/v1/mantencion/${id}/comentarios`, {
     comentario,
     tipo,
   });

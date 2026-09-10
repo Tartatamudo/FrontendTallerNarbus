@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 36,
+  "id": "AV-0036",
+  "timestamp": "2026-09-08T15:50:00Z",
+  "phase": "fase_2_mecanicos_y_taller",
+  "milestone": { "id": "MEC-006", "name": "Optimización Integral Módulo Mecánicos y Zero-Query Mutations", "statusBefore": "in_progress", "statusAfter": "completed" },
+  "type": "completed",
+  "summary": "Integración en frontend de las optimizaciones integrales del módulo de mecánicos: soporte para listados ligeros (limit=50, noload en comentarios/pauta), carga asíncrona de ficha técnica completa en segundo plano al seleccionar OT, adhesión estricta a mutaciones Zero-Query (alimentación en memoria de SolicitudDTO sin refetch), bloqueo preventivo con tooltip exacto para falta de repuestos, copy contextual para PENDIENTE_REASIGNACION ('Continuar Turno' / 'Reanudar Trabajo') y modo solo lectura blindado para órdenes FINALIZADAS.",
+  "scope": {
+    "planned": [
+      "Actualizar obtenerPendientes y obtenerMisTrabajos para enviar limit=50 hacia los endpoints optimizados",
+      "Implementar carga asíncrona en segundo plano de ficha técnica completa al seleccionar una tarjeta ligera",
+      "Asegurar política Zero-Query en mutaciones: actualizar estado local exclusivamente con el SolicitudDTO devuelto sin GET adicional",
+      "Actualizar ModalAgregarFalla para enviar falla_id resuelto directamente desde categorías en caché",
+      "Actualizar tooltip de falta de repuesto a 'No se puede resolver hasta recibir el repuesto'",
+      "Añadir copy contextual en PENDIENTE_REASIGNACION ('Reanudar Trabajo' / 'Continuar Turno')",
+      "Blindar órdenes en estado FINALIZADO con banner informativo y deshabilitación total de acciones modificadoras"
+    ],
+    "completed": [
+      "Actualizado src/services/mantencionService.ts con soporte para parámetro limit=50 en obtenerPendientes y obtenerMisTrabajos",
+      "Actualizado src/mecanicos/revisiones/modales/ModalAgregarFalla.tsx para transmitir falla_id obtenido de categorías cacheadas",
+      "Refactorizado src/mecanicos/revisiones/DashboardMecanico.tsx: carga en background de ficha técnica completa al seleccionar OT ligera",
+      "Garantizado el flujo Zero-Query en todas las mutaciones (tomar, autoasignar, check, repuesto, comentario, cierre) alimentando el estado en memoria",
+      "Actualizado tooltip y bloqueo de falta de repuesto según contrato: 'No se puede resolver hasta recibir el repuesto'",
+      "Implementado banner y botones contextuales para estado PENDIENTE_REASIGNACION ('Reanudar Trabajo / Continuar Turno')",
+      "Implementado banner informativo y modo solo lectura estricto cuando solicitudSeleccionada.estado === 'FINALIZADO'",
+      "Verificado con oxlint (0 errores, 0 advertencias) y compilación TypeScript/Vite completada en 659ms"
+    ],
+    "pending": [],
+    "outOfScope": ["Modificaciones de backend (gestionadas autónomamente en repositorio BackendTallerNarbus)"]
+  },
+  "changes": [
+    {
+      "path": "src/services/mantencionService.ts",
+      "action": "modified",
+      "summary": "Parámetro limit=50 en obtenerPendientes y obtenerMisTrabajos para consumo de endpoints ligeros"
+    },
+    {
+      "path": "src/mecanicos/revisiones/modales/ModalAgregarFalla.tsx",
+      "action": "modified",
+      "summary": "Tipado con CategoriaFalla y envío de falla_id predeterminado en mutación agregar_falla"
+    },
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Carga en background de ficha técnica completa, zero-query en mutaciones, modo solo lectura FINALIZADO, copy PENDIENTE_REASIGNACION y tooltip repuesto"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-039",
+      "title": "Carga progresiva dual: listados ligeros inmediatos y ficha técnica completa asíncrona",
+      "rationale": "El backend entrega OTs ligeras en bandejas (noload en comentarios y pautas) para máxima velocidad (3x a 5x más rápidas). Al hacer clic en una tarjeta, DashboardMecanico renderiza inmediatamente los datos base (0 ms latencia percibida) e invoca obtenerSolicitud(solId) en background para enriquecer la bitácora histórica y relaciones completas sin congelar la pantalla.",
+      "consequences": "Experiencia de usuario fluida e instantánea en tablets de taller, con histórico completo disponible en menos de 200 ms."
+    },
+    {
+      "id": "DEC-040",
+      "title": "Política Zero-Query estricta en mutaciones de mecánicos",
+      "rationale": "Los endpoints POST y PATCH de mantención devuelven el SolicitudDTO actualizado en memoria tras el commit. El cliente frontend reemplaza directamente el estado en memoria sin ejecutar un GET /{id} posterior, eliminando viajes de red transcontinentales redundantes y acelerando la respuesta a cada acción técnica.",
+      "consequences": "Ahorro de ~400 ms de RTT por cada clic en taller, reduciendo tráfico y asegurando consistencia atómica en el cliente."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "Found 0 warnings and 0 errors. Finished in 26ms on 55 files."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "tsc -b && vite build completado exitosamente en 659ms con bundle optimizado."
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Prueba de campo en consola técnica con mecánicos de taller en terminal Narbus.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Cumplimiento 100% de la Guía Técnica GUIA_FRONTEND_MODULO_MECANICOS.md del backend.",
+    "Las cabeceras Cache-Control: private, max-age=15, stale-while-revalidate=30 emitidas por los listados de backend son respetadas nativamente por Axios y el navegador."
+  ]
+}

@@ -16,6 +16,8 @@ import type {
   PautaEstadoResumenDTO,
   PautaEvaluacionItemDTO,
   ReportarRepuestoDTO,
+  DetalleUpdateDTO,
+  ComentarioAddedDTO,
 } from '../types/mantencion';
 
 export * from '../types/mantencion';
@@ -69,22 +71,69 @@ export const finalizarSolicitud = async (
 
 // ==================== ENDPOINTS COMPLEMENTARIOS DE MANTENCIÓN ====================
 
-/**
- * Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems)
- * GET /api/v1/mantencion/pauta/items
- */
-export const obtenerPautaItems = async (): Promise<PautaTallerItemDTO[]> => {
-  const { data } = await apiClient.get<PautaTallerItemDTO[]>('/api/v1/mantencion/pauta/items');
-  return data;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+let pautaItemsCache: { data: PautaTallerItemDTO[]; timestamp: number } | null = null;
+let categoriasCache: { data: CategoriaFalla[]; timestamp: number } | null = null;
+let pautaItemsPromise: Promise<PautaTallerItemDTO[]> | null = null;
+let categoriasPromise: Promise<CategoriaFalla[]> | null = null;
+
+export const invalidarCacheMantencionService = (): void => {
+  pautaItemsCache = null;
+  categoriasCache = null;
+  pautaItemsPromise = null;
+  categoriasPromise = null;
 };
 
 /**
- * Obtener Categorías Activas de Fallas
+ * Obtener Catálogo Maestro de Inspecciones Preventivas (11 Ítems) con caché en memoria y deduplicación en vuelo
+ * GET /api/v1/mantencion/pauta/items
+ */
+export const obtenerPautaItems = async (forceRefresh: boolean = false): Promise<PautaTallerItemDTO[]> => {
+  const now = Date.now();
+  if (!forceRefresh && pautaItemsCache && now - pautaItemsCache.timestamp < CACHE_TTL_MS) {
+    return pautaItemsCache.data;
+  }
+  if (!forceRefresh && pautaItemsPromise) {
+    return pautaItemsPromise;
+  }
+  pautaItemsPromise = apiClient
+    .get<PautaTallerItemDTO[]>('/api/v1/mantencion/pauta/items')
+    .then(({ data }) => {
+      pautaItemsCache = { data, timestamp: Date.now() };
+      pautaItemsPromise = null;
+      return data;
+    })
+    .catch((err) => {
+      pautaItemsPromise = null;
+      throw err;
+    });
+  return pautaItemsPromise;
+};
+
+/**
+ * Obtener Categorías Activas de Fallas con falla_id y falla_nombre con caché en memoria y deduplicación en vuelo
  * GET /api/v1/mantencion/categorias
  */
-export const obtenerCategorias = async (): Promise<CategoriaFalla[]> => {
-  const { data } = await apiClient.get<CategoriaFalla[]>('/api/v1/mantencion/categorias');
-  return data;
+export const obtenerCategorias = async (forceRefresh: boolean = false): Promise<CategoriaFalla[]> => {
+  const now = Date.now();
+  if (!forceRefresh && categoriasCache && now - categoriasCache.timestamp < CACHE_TTL_MS) {
+    return categoriasCache.data;
+  }
+  if (!forceRefresh && categoriasPromise) {
+    return categoriasPromise;
+  }
+  categoriasPromise = apiClient
+    .get<CategoriaFalla[]>('/api/v1/mantencion/categorias')
+    .then(({ data }) => {
+      categoriasCache = { data, timestamp: Date.now() };
+      categoriasPromise = null;
+      return data;
+    })
+    .catch((err) => {
+      categoriasPromise = null;
+      throw err;
+    });
+  return categoriasPromise;
 };
 
 /**
@@ -101,27 +150,68 @@ export const obtenerFallas = async (categoriaId?: number): Promise<FallaItemDTO[
 /**
  * Crear Solicitud de Mantención (Reporte de Conductor)
  * POST /api/v1/mantencion/solicitudes
+ *
+ * Soporte Dual Atómico:
+ * 1. Si payload.foto (File) está presente: Se envía como multipart/form-data en 1 solo request HTTP.
+ *    El backend transfiere directamente a Google Cloud Storage y asocia la foto_url resultante.
+ * 2. Si no hay archivo binario: Se envía como payload tradicional application/json.
  */
 export const crearSolicitud = async (payload: SolicitudCreateDTO): Promise<SolicitudDTO> => {
-  const { data } = await apiClient.post<SolicitudDTO>('/api/v1/mantencion/solicitudes', payload);
+  if (payload.foto) {
+    const formData = new FormData();
+    formData.append('n_bus', payload.n_bus);
+    if (payload.bus_id) {
+      formData.append('bus_id', String(payload.bus_id));
+    }
+    if (payload.descripcion_general) {
+      formData.append('descripcion_general', payload.descripcion_general);
+    }
+    formData.append('foto', payload.foto);
+    if (payload.detalles && payload.detalles.length > 0) {
+      formData.append('detalles', JSON.stringify(payload.detalles));
+    }
+
+    const { data } = await apiClient.post<SolicitudDTO>(
+      '/api/v1/mantencion/solicitudes',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return data;
+  }
+
+  const { data } = await apiClient.post<SolicitudDTO>('/api/v1/mantencion/solicitudes', {
+    n_bus: payload.n_bus,
+    bus_id: payload.bus_id ?? null,
+    descripcion_general: payload.descripcion_general ?? null,
+    foto_url: payload.foto_url ?? null,
+    detalles: payload.detalles,
+  });
   return data;
 };
 
 /**
- * Listar Solicitudes Pendientes (Bandeja 1 del Mecánico)
- * GET /api/v1/mantencion/pendientes
+ * Listar Solicitudes Pendientes (Bandeja 1 del Mecánico con paginación)
+ * GET /api/v1/mantencion/pendientes?limit=20&skip=0
  */
-export const obtenerPendientes = async (): Promise<SolicitudDTO[]> => {
-  const { data } = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/pendientes');
+export const obtenerPendientes = async (limit: number = 20, skip: number = 0): Promise<SolicitudDTO[]> => {
+  const { data } = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/pendientes', {
+    params: { limit, skip },
+  });
   return data;
 };
 
 /**
- * Listar Mis Trabajos (Bandeja 2 del Mecánico)
- * GET /api/v1/mantencion/mis-trabajos
+ * Listar Mis Trabajos (Bandeja 2 del Mecánico con paginación)
+ * GET /api/v1/mantencion/mis-trabajos?limit=20&skip=0
  */
-export const obtenerMisTrabajos = async (): Promise<SolicitudDTO[]> => {
-  const { data } = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/mis-trabajos');
+export const obtenerMisTrabajos = async (limit: number = 20, skip: number = 0): Promise<SolicitudDTO[]> => {
+  const { data } = await apiClient.get<SolicitudDTO[]>('/api/v1/mantencion/mis-trabajos', {
+    params: { limit, skip },
+  });
   return data;
 };
 
@@ -195,15 +285,15 @@ export const asignarFallasSupervisora = async (
 };
 
 /**
- * Marcar / Desmarcar Check de Falla Resuelta
+ * Marcar / Desmarcar Check de Falla Resuelta (Contrato Atómico Nivel 3)
  * PATCH /api/v1/mantencion/{id}/detalles/{detalle_id}/check?resuelto=true
  */
 export const marcarCheckDetalle = async (
   id: number,
   detalleId: number,
   resuelto: boolean
-): Promise<SolicitudDTO> => {
-  const { data } = await apiClient.patch<SolicitudDTO>(
+): Promise<DetalleUpdateDTO> => {
+  const { data } = await apiClient.patch<DetalleUpdateDTO>(
     `/api/v1/mantencion/${id}/detalles/${detalleId}/check`,
     null,
     { params: { resuelto } }
@@ -212,7 +302,7 @@ export const marcarCheckDetalle = async (
 };
 
 /**
- * Reportar Falta de Repuesto en Falla
+ * Reportar Falta de Repuesto en Falla (Contrato Atómico Nivel 3)
  * PATCH /api/v1/mantencion/{id}/detalles/{detalle_id}/repuesto
  */
 export const reportarRepuestoFalla = async (
@@ -220,12 +310,12 @@ export const reportarRepuestoFalla = async (
   detalleId: number,
   faltaRepuesto: boolean,
   comentario?: string
-): Promise<SolicitudDTO> => {
+): Promise<DetalleUpdateDTO> => {
   const payload: ReportarRepuestoDTO = {
     falta_repuesto: faltaRepuesto,
     comentario,
   };
-  const { data } = await apiClient.patch<SolicitudDTO>(
+  const { data } = await apiClient.patch<DetalleUpdateDTO>(
     `/api/v1/mantencion/${id}/detalles/${detalleId}/repuesto`,
     payload
   );
@@ -233,15 +323,15 @@ export const reportarRepuestoFalla = async (
 };
 
 /**
- * Agregar Comentario a la Bitácora
+ * Agregar Comentario a la Bitácora (Contrato Atómico Nivel 3)
  * POST /api/v1/mantencion/{id}/comentarios
  */
 export const agregarComentario = async (
   id: number,
   comentario: string,
   tipo: string = 'GENERAL'
-): Promise<SolicitudDTO> => {
-  const { data } = await apiClient.post<SolicitudDTO>(`/api/v1/mantencion/${id}/comentarios`, {
+): Promise<ComentarioAddedDTO> => {
+  const { data } = await apiClient.post<ComentarioAddedDTO>(`/api/v1/mantencion/${id}/comentarios`, {
     comentario,
     tipo,
   });

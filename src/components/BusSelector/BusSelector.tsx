@@ -1,23 +1,33 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Bus, X, Check } from 'lucide-react';
-import { apiClient } from '../../api/apiClient';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Bus, X, AlertCircle, Check } from 'lucide-react';
+import {
+  obtenerBusPorNumero,
+  obtenerBuses,
+  buscarBuses,
+} from '../../buses/busesService';
 import './BusSelector.css';
 
 export interface BusItem {
   id: number | string;
   n_bus: number | string;
   patente?: string;
+  marca?: string;
+  modelo?: string;
+  tipo_bus?: string;
+  is_active?: boolean;
+  en_taller?: boolean;
 }
 
 export interface BusSelectorProps {
   value: string;
-  onChange: (value: string, busObj?: BusItem | null) => void;
+  onChange: (value: string, busObj?: BusItem | null, isValid?: boolean) => void;
   label?: string;
   placeholder?: string;
   stepNumber?: number | string;
   required?: boolean;
   onClearError?: () => void;
   className?: string;
+  onBusValidated?: (isValid: boolean, bus: BusItem | null) => void;
 }
 
 export default function BusSelector({
@@ -29,71 +39,65 @@ export default function BusSelector({
   required = true,
   onClearError,
   className = "",
+  onBusValidated,
 }: BusSelectorProps) {
   const [busesList, setBusesList] = useState<BusItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedBusObj, setSelectedBusObj] = useState<BusItem | null>(null);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [asyncCheckedValue, setAsyncCheckedValue] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Consultar al backend al cambiar el número o al enfocar/borrar
-  const buscarBusesBackend = async (queryStr: string) => {
+  // Cargar el catálogo completo de buses activos de la flota (con caché en memoria)
+  const cargarCatalogoBuses = useCallback(async () => {
+    if (catalogLoaded) return;
     setLoading(true);
     try {
-      const cleanNum = queryStr.replace(/\D/g, '').trim();
+      // 1. Intentar cargar el catálogo completo desde caché en memoria (0ms si ya se consultó)
+      const buses = await obtenerBuses(true, true);
 
-      // Consumir Endpoint Estandarizado: GET /api/v1/buses/buscar?query=...&solo_flota_taller=true
-      let res;
+      if (buses && Array.isArray(buses) && buses.length > 0) {
+        const parsed: BusItem[] = buses.map((b) => ({
+          id: b.id,
+          n_bus: b.n_bus,
+          patente: b.patente,
+          marca: b.marca,
+          modelo: b.modelo,
+          tipo_bus: b.tipo_bus,
+          is_active: b.is_active,
+          en_taller: b.en_taller,
+        }));
+        setBusesList(parsed);
+        setCatalogLoaded(true);
+      }
+    } catch {
+      // Fallback a buscarBuses optimizado (BusSimpleDTO[])
       try {
-        res = await apiClient.get('/api/v1/buses/buscar', {
-          params: { query: cleanNum, solo_flota_taller: true },
-          timeout: 5000
-        });
-      } catch {
-        // Fallback GET a /api/v1/buses en caso de entorno local
-        res = await apiClient.get('/api/v1/buses', {
-          params: { query: cleanNum, solo_flota_taller: true },
-          timeout: 5000
-        });
+        const fallbackBuses = await buscarBuses('', true);
+        if (fallbackBuses && Array.isArray(fallbackBuses)) {
+          const parsed: BusItem[] = fallbackBuses.map((b) => ({
+            id: b.id,
+            n_bus: b.n_bus,
+            patente: b.patente,
+            en_taller: b.en_taller,
+          }));
+          setBusesList(parsed);
+          setCatalogLoaded(true);
+        }
+      } catch (err) {
+        console.warn('No se pudo precargar el catálogo de buses:', err);
       }
-
-      if (res && res.data) {
-        const rawData = res.data;
-        const itemsArray = Array.isArray(rawData)
-          ? rawData
-          : (rawData.buses || rawData.items || rawData.data || []);
-
-        const parsedList: BusItem[] = itemsArray.map((item: any, index: number) => {
-          if (typeof item === 'number' || typeof item === 'string') {
-            return { id: item, n_bus: item };
-          } else if (typeof item === 'object' && item !== null) {
-            return {
-              id: item.id ?? item.n_bus ?? index,
-              n_bus: item.n_bus ?? item.id ?? item.numero ?? String(item),
-              patente: item.patente
-            };
-          }
-          return { id: index, n_bus: String(item) };
-        });
-
-        setBusesList(parsedList);
-      }
-    } catch (err) {
-      console.warn("No se pudieron cargar los buses del backend:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [catalogLoaded]);
 
-  // Debounce para consultar backend al escribir o borrar un número
+  // Precargar el catálogo al montar el selector
   useEffect(() => {
-    const timer = setTimeout(() => {
-      buscarBusesBackend(value);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [value]);
+    cargarCatalogoBuses();
+  }, [cargarCatalogoBuses]);
 
   // Manejar clic fuera para cerrar el menú flotante
   useEffect(() => {
@@ -106,12 +110,81 @@ export default function BusSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Verificar si el valor actual coincide exactamente con algún bus conocido
+  const cleanNum = useMemo(() => value.replace(/\D/g, '').trim(), [value]);
+
+  const exactMatch = useMemo(() => {
+    if (!cleanNum) return null;
+    return busesList.find((b) => String(b.n_bus).trim() === cleanNum) || null;
+  }, [busesList, cleanNum]);
+
+  // Sincronizar selectedBusObj con exactMatch cuando cambia el catálogo o el input
+  useEffect(() => {
+    if (!cleanNum) {
+      if (selectedBusObj !== null) {
+        setSelectedBusObj(null);
+      }
+      return;
+    }
+
+    if (exactMatch) {
+      if (!selectedBusObj || String(selectedBusObj.n_bus).trim() !== cleanNum) {
+        setSelectedBusObj(exactMatch);
+        onChange(cleanNum, exactMatch, true);
+        if (onBusValidated) onBusValidated(true, exactMatch);
+      }
+    } else if (catalogLoaded && !selectedBusObj) {
+      // Si el catálogo ya cargó y el número no existe en él
+      // Verificación directa en servidor por si el bus es nuevo o no vino en el lote
+      if (cleanNum.length >= 2 && asyncCheckedValue !== cleanNum) {
+        const timer = setTimeout(async () => {
+          setAsyncCheckedValue(cleanNum);
+          try {
+            const busRes = await obtenerBusPorNumero(cleanNum);
+            if (busRes && busRes.n_bus) {
+              const nuevoBus: BusItem = {
+                id: busRes.id,
+                n_bus: busRes.n_bus,
+                patente: busRes.patente,
+                marca: busRes.marca,
+                modelo: busRes.modelo,
+                tipo_bus: busRes.tipo_bus,
+                is_active: busRes.is_active,
+                en_taller: busRes.en_taller,
+              };
+              setBusesList((prev) => [...prev, nuevoBus]);
+              setSelectedBusObj(nuevoBus);
+              onChange(cleanNum, nuevoBus, true);
+              if (onBusValidated) onBusValidated(true, nuevoBus);
+            }
+          } catch {
+            // Bus no existe en el backend
+            setSelectedBusObj(null);
+            onChange(cleanNum, null, false);
+            if (onBusValidated) onBusValidated(false, null);
+          }
+        }, 300);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [cleanNum, exactMatch, catalogLoaded, selectedBusObj, asyncCheckedValue, onChange, onBusValidated]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const soloNumeros = e.target.value.replace(/\D/g, '');
-    setSelectedBusObj(null);
     setShowDropdown(true);
     if (onClearError) onClearError();
-    onChange(soloNumeros, null);
+
+    const match = busesList.find((b) => String(b.n_bus).trim() === soloNumeros);
+    if (match) {
+      setSelectedBusObj(match);
+      onChange(soloNumeros, match, true);
+      if (onBusValidated) onBusValidated(true, match);
+    } else {
+      setSelectedBusObj(null);
+      onChange(soloNumeros, null, false);
+      if (onBusValidated) onBusValidated(false, null);
+    }
   };
 
   const handleSelectOption = (bus: BusItem) => {
@@ -119,28 +192,37 @@ export default function BusSelector({
     setSelectedBusObj(bus);
     setShowDropdown(false);
     if (onClearError) onClearError();
-    onChange(numStr, bus);
+    onChange(numStr, bus, true);
+    if (onBusValidated) onBusValidated(true, bus);
   };
 
   const handleClear = () => {
     setSelectedBusObj(null);
     setShowDropdown(true);
     if (onClearError) onClearError();
-    onChange('', null);
+    onChange('', null, false);
+    if (onBusValidated) onBusValidated(false, null);
   };
 
-  // Listado completo de buses retornado por el backend
+  // Filtrar catálogo por número o patente
   const filteredBuses = useMemo(() => {
-    if (!value || !value.trim()) {
+    if (!cleanNum) {
       return busesList;
     }
-    const q = value.trim().toLowerCase();
+    const q = cleanNum.toLowerCase();
     return busesList.filter((b) => {
       const nBus = String(b.n_bus || '').toLowerCase();
       const patente = String(b.patente || '').toLowerCase();
       return nBus.includes(q) || patente.includes(q);
     });
-  }, [busesList, value]);
+  }, [busesList, cleanNum]);
+
+  // Determinar si el bus actual es válido
+  const isBusValido = Boolean(selectedBusObj && String(selectedBusObj.n_bus).trim() === cleanNum);
+  const isBusInvalido = Boolean(cleanNum && !isBusValido && !loading);
+
+  // Solo mostrar mensaje de error cuando el usuario cerró la lista y el bus no existe
+  const mostrarBadgeInvalido = !showDropdown && isBusInvalido;
 
   return (
     <div className={`bus-selector-container ${className}`} ref={containerRef}>
@@ -161,21 +243,21 @@ export default function BusSelector({
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
-          placeholder={loading && busesList.length === 0 ? "Cargando buses..." : placeholder}
+          placeholder={loading && busesList.length === 0 ? "Cargando buses de la flota..." : placeholder}
           value={value}
           onChange={handleInputChange}
           onFocus={() => {
             setShowDropdown(true);
-            if (busesList.length === 0) {
-              buscarBusesBackend(value);
+            if (!catalogLoaded) {
+              cargarCatalogoBuses();
             }
           }}
-          className="bus-selector-input"
+          className={`bus-selector-input ${mostrarBadgeInvalido ? 'bus-selector-input-invalid' : ''}`}
         />
-        <Bus size={20} className="bus-selector-icon" />
+        <Bus size={20} className={`bus-selector-icon ${mostrarBadgeInvalido ? 'text-red-500' : ''}`} />
 
         {loading ? (
-          <div className="bus-selector-spinner" title="Buscando en servidor..." />
+          <div className="bus-selector-spinner" title="Buscando en flota Narbus..." />
         ) : value ? (
           <button
             type="button"
@@ -188,12 +270,22 @@ export default function BusSelector({
         ) : null}
       </div>
 
+      {/* Solo alertar si el bus ingresado NO existe en la flota */}
+      {mostrarBadgeInvalido && (
+        <div className="bus-selector-status-badge bus-selector-status-invalid">
+          <AlertCircle size={16} className="shrink-0 text-red-600" />
+          <span>
+            ⚠️ El Bus N° <strong>{cleanNum}</strong> no existe en la flota Narbus. Selecciona un bus de la lista.
+          </span>
+        </div>
+      )}
+
       {/* Desplegable de Resultados */}
       {showDropdown && !loading && (
         <div className="bus-selector-dropdown">
           {filteredBuses.length > 0 ? (
             filteredBuses.map((b) => {
-              const isSelected = selectedBusObj?.id === b.id || String(b.n_bus) === value;
+              const isSelected = selectedBusObj?.id === b.id || String(b.n_bus) === cleanNum;
               return (
                 <button
                   key={b.id}
@@ -209,14 +301,24 @@ export default function BusSelector({
                         ({b.patente})
                       </span>
                     )}
+                    {b.tipo_bus && (
+                      <span className="text-[11px] font-normal text-slate-400">
+                        • {b.tipo_bus}
+                      </span>
+                    )}
                   </div>
                   {isSelected && <Check size={18} className="text-blue-600 shrink-0" />}
                 </button>
               );
             })
           ) : (
-            <div className="bus-selector-empty">
-              {value ? `Se usará: Bus N° ${value}` : 'No hay buses disponibles'}
+            <div className="bus-selector-empty bus-selector-empty-error">
+              <AlertCircle size={18} className="inline mr-1.5 text-red-500 shrink-0" />
+              <span>
+                {cleanNum
+                  ? `El Bus N° ${cleanNum} no existe en la flota activa Narbus.`
+                  : 'No hay buses disponibles en la flota.'}
+              </span>
             </div>
           )}
         </div>
@@ -224,3 +326,4 @@ export default function BusSelector({
     </div>
   );
 }
+

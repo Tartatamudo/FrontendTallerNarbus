@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { obtenerDato } from '../utils/storage';
+import { obtenerDato, eliminarDato } from '../utils/storage';
 
 // Determinar la URL base de la API del Backend FastAPI
 const getBaseUrl = (): string => {
@@ -36,3 +36,33 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Interceptor de respuesta para detectar expiración de sesión (401 Unauthorized)
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const url = error.config?.url || '';
+      // Evitar interceptar el login para permitir mostrar mensaje de credenciales incorrectas en el formulario
+      const isLoginRequest = url.includes('/auth/login') || url.includes('/auth/register');
+      if (!isLoginRequest) {
+        console.warn('[apiClient] Sesión expirada o token revocado (401). Limpiando credenciales locales...');
+        await eliminarDato('access_token');
+        await eliminarDato('user_data');
+        await eliminarDato('sesion_activa');
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('narbus:auth-unauthorized', {
+              detail: {
+                message: 'Tu sesión ha expirado en el servidor. Por favor, inicia sesión nuevamente.'
+              }
+            })
+          );
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+

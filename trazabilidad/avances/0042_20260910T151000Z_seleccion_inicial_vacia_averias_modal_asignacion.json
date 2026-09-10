@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 42,
+  "id": "AV-0042",
+  "timestamp": "2026-09-10T15:10:00Z",
+  "phase": "modulo_supervision_auditoria_buses",
+  "milestone": {
+    "id": "FRONT-SUPERVISION-ASIGNAR",
+    "name": "Selección inicial en 0 averías en modal de asignación supervisora",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Modificación del modal de asignación de averías (ModalAsignarFallas) en la pantalla de auditoría de buses del supervisor. Ahora la lista de averías se inicializa con 0 checks seleccionados en lugar de preseleccionar automáticamente todas las averías pendientes. Se incorporó además un botón de conveniencia para Marcar todas / Desmarcar todas con conteo dinámico.",
+  "scope": {
+    "planned": [
+      "Cambiar estado inicial de detallesIds a vacío cuando no exista detallePreseleccionadoId",
+      "Agregar botón para marcar y desmarcar todas las averías pendientes",
+      "Actualizar conteo y estilos para modo oscuro y claro"
+    ],
+    "completed": [
+      "detallesIds inicializado como [] (0 seleccionadas) si detallePreseleccionadoId es undefined/null",
+      "Botón toggle Marcar todas / Desmarcar todas implementado con estilos responsivos",
+      "Conteo dinámico de averías seleccionadas",
+      "Validación de al menos 1 avería seleccionada antes de enviar al backend",
+      "Verificación TypeScript (tsc --noEmit) exitosa"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Cambios en backend FastAPI",
+      "Límites en nginx.conf"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.tsx",
+      "action": "modified",
+      "summary": "Inicializa detallesIds en [] cuando no hay detallePreseleccionadoId. Agrega función toggleSeleccionarTodas, conteo y botón interactivo Marcar todas / Desmarcar todas."
+    },
+    {
+      "path": "src/supervisores/supervision/ModalAsignarFallas.css",
+      "action": "modified",
+      "summary": "Agrega estilos .maf-btn-toggle-todas con soporte para temas oscuro y claro."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-042-01",
+      "title": "Selección explícita de averías por el supervisor (Default 0 checks)",
+      "rationale": "El supervisor necesita decidir conscientemente cuáles averías encargar en lugar de que el sistema asuma que todas se asignan al mismo mecánico en un solo lote.",
+      "consequences": "Mayor precisión operativa en el taller; previene asignaciones involuntarias de averías múltiples a un mecánico que solo resolverá una parte."
+    },
+    {
+      "id": "DEC-042-02",
+      "title": "Botón de conveniencia Marcar todas / Desmarcar todas",
+      "rationale": "Para auditorías con múltiples averías donde el supervisor efectivamente desee encargar la totalidad al mismo mecánico, se provee un toggle rápido de un clic.",
+      "consequences": "UX ágil sin perder el control inicial de 0 checks."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "exit code 0, sin errores TypeScript"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Pruebas visuales en la pestaña Auditoría del Dashboard de Supervisión verificando el flujo de asignación con 0 checks iniciales.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "pending",
+    "dirty": true
+  },
+  "notes": [
+    "La preselección singular desde la pestaña Alertas (detallePreseleccionadoId) se preserva intacta.",
+    "Las averías ya marcadas como 'resueltas' siguen bloqueadas e inmutables."
+  ]
+}

@@ -9,6 +9,8 @@ export interface CategoriaFalla {
   id: number;
   nombre: string;
   is_active: boolean;
+  falla_id?: number | null;
+  falla_nombre?: string | null;
 }
 
 export interface FallaItemDTO {
@@ -22,6 +24,7 @@ export interface FallaItemDTO {
 export interface DetalleSolicitudCreateDTO {
   categoria_id?: number | null;
   falla_id?: number | null;
+  falla_nombre?: string | null;
   descripcion_personalizada: string;
 }
 
@@ -30,6 +33,10 @@ export interface SolicitudCreateDTO {
   bus_id?: number | null;
   descripcion_general?: string | null;
   foto_url?: string | null;
+  /** @deprecated Usar fotos[] para soporte multi-evidencia */
+  foto?: File | null;
+  /** Array de archivos de evidencia. Se envían todos en 1 solo request multipart/form-data bajo la clave 'fotos'. */
+  fotos?: File[];
   detalles: DetalleSolicitudCreateDTO[];
 }
 
@@ -82,6 +89,22 @@ export interface SolicitudMecanicoDTO {
   duracion_minutos?: number | null; // Minutos exactos trabajados cronometrados
 }
 
+/**
+ * Registro de una fotografía de evidencia adjunta a una solicitud.
+ * Retornado por el backend tras subida a Google Cloud Storage.
+ */
+export interface SolicitudEvidenciaDTO {
+  id: number;
+  solicitud_id: number;
+  detalle_id?: number | null;
+  usuario_id?: number | null;
+  url: string; // URL pública de Google Cloud Storage
+  original_filename?: string | null;
+  size_bytes?: number | null;
+  content_type?: string | null;
+  fecha_creacion?: string | null;
+}
+
 export interface SolicitudDTO {
   id: number;
   n_bus: string;
@@ -92,7 +115,10 @@ export interface SolicitudDTO {
   mecanico_cierre_id?: number | null;
   mecanico_cierre_nombre?: string | null;
   descripcion_general?: string | null;
+  /** URL de la fotografía principal (primera evidencia). Mantenida para retrocompatibilidad. */
   foto_url?: string | null;
+  /** Array completo de todas las fotografías de evidencia adjuntas (3NF). */
+  evidencias?: SolicitudEvidenciaDTO[];
   estado: string; // 'REPORTADO' | 'PENDIENTE' | 'PENDIENTE_REASIGNACION' | 'EN_REPARACION' | 'FINALIZADO'
   pauta_completada?: boolean;
   total_fallas?: number;
@@ -202,3 +228,83 @@ export interface ReportarRepuestoDTO {
   falta_repuesto: boolean;
   comentario?: string;
 }
+
+/**
+ * Respuesta devuelta por contratos atómicos (Nivel 3):
+ * - PATCH /mantencion/{id}/detalles/{detalle_id}/check
+ * - PATCH /mantencion/{id}/detalles/{detalle_id}/repuesto
+ */
+export interface DetalleUpdateDTO {
+  detalle_id: number;
+  solicitud_id: number;
+  resuelto: boolean;
+  falta_repuesto: boolean;
+  mecanico_resolvio_id: number | null;
+  mecanico_resolvio_nombre: string | null;
+  comentario_repuesto: string | null;
+  fecha_resolucion: string | null; // Formato ISO 8601 UTC
+}
+
+/**
+ * Respuesta devuelta por contratos atómicos (Nivel 3):
+ * - POST /mantencion/{id}/comentarios
+ */
+export interface ComentarioAddedDTO {
+  comentario_id: number;
+  solicitud_id: number;
+  usuario_id: number;
+  usuario_nombre: string | null;
+  tipo: string; // "GENERAL" | "AVANCE" | "ENTREGA_TURNO" | etc.
+  comentario: string;
+  fecha_registro: string; // Formato ISO 8601 UTC
+}
+
+/**
+ * Determina si un mecánico específico tiene asignada una orden de trabajo completa
+ * o al menos una de sus averías / tareas técnicas.
+ */
+export function tieneAsignacionMecanico(
+  solicitud: SolicitudDTO | null | undefined,
+  currentUserId: number | null | undefined
+): boolean {
+  if (!solicitud || !currentUserId) return false;
+
+  // 1. Mecánico líder de la orden
+  if (solicitud.mecano_lider_id === currentUserId) return true;
+
+  // 2. Colaborador registrado en la orden
+  if (solicitud.colaboradores_ids && solicitud.colaboradores_ids.includes(currentUserId)) {
+    return true;
+  }
+
+  // 3. Mecánico con asignación activa en la cuadrilla cronometrada
+  if (
+    solicitud.mecanicos &&
+    solicitud.mecanicos.some(
+      (m) => m.mecanico_id === currentUserId && m.is_activo !== false
+    )
+  ) {
+    return true;
+  }
+
+  // 4. Mecánico asignado a al menos una avería técnica (detalle) de la OT
+  if (solicitud.detalles && solicitud.detalles.length > 0) {
+    const tieneDetalle = solicitud.detalles.some((det) => {
+      if (det.mecanico_id === currentUserId) return true;
+      if (det.mecanico_resolvio_id === currentUserId) return true;
+      if (det.mecanicos_asignados && det.mecanicos_asignados.length > 0) {
+        return det.mecanicos_asignados.some(
+          (ma) =>
+            ma.mecanico_id === currentUserId ||
+            (ma as unknown as { id?: number }).id === currentUserId
+        );
+      }
+      return false;
+    });
+    if (tieneDetalle) return true;
+  }
+
+  return false;
+}
+
+

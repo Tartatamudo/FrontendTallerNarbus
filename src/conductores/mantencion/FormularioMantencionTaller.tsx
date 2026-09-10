@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Trash2,
   CheckCircle2,
@@ -9,19 +9,23 @@ import {
   Send,
   ClipboardList,
   X,
-  Edit3
+  Edit3,
+  Camera,
+  ImagePlus
 } from 'lucide-react';
 import './FormularioMantencionTaller.css';
 import BusSelector, { type BusItem } from '../../components/BusSelector/BusSelector';
-import PhotoSelector from '../../components/PhotoSelector/PhotoSelector';
 import { guardarDato, obtenerDato } from '../../utils/storage';
-import { crearSolicitud, type SolicitudCreateDTO } from './mantencionService';
+import { capturarFotoCamara, seleccionarFotoGaleria } from '../../utils/capacitorCamera';
+import { crearSolicitud, obtenerCategorias, type SolicitudCreateDTO, type CategoriaFalla } from './mantencionService';
 import { getApiErrorMessage } from '../../utils/apiErrors';
 
 interface FallaItem {
   id: number;
   nombre: string;
   categoriaId?: number | null;
+  fallaId?: number | null;
+  fallaNombre?: string | null;
   resuelto: string;
 }
 
@@ -48,6 +52,7 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
   // Bus Selection State
   const [busSearchInput, setBusSearchInput] = useState('');
   const [selectedBusObj, setSelectedBusObj] = useState<BusItem | null>(null);
+  const [isBusValido, setIsBusValido] = useState(false);
 
   // Form Fields
   const [conductorNombre, setConductorNombre] = useState('');
@@ -56,10 +61,12 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
   // Dynamic Items list (MANDATORY)
   const [newItemText, setNewItemText] = useState('');
   const [itemsList, setItemsList] = useState<FallaItem[]>([]);
+  const [categoriasDb, setCategoriasDb] = useState<CategoriaFalla[]>([]);
 
-  // Photo upload
-  const [fotoBase64, setFotoBase64] = useState('');
-  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  // Photo upload — múltiples fotos de evidencia
+  const [fotos, setFotos] = useState<File[]>([]);
+  const [fotoPreviews, setFotoPreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Submit & Modal State
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -67,7 +74,7 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
   const [errorMsg, setErrorMsg] = useState('');
   const [submittedSuccess, setSubmittedSuccess] = useState<SubmittedSuccess | null>(null);
 
-  // Cargar conductor o usuario guardado localmente en el celular
+  // Cargar conductor o usuario guardado localmente en el celular y categorías desde caché
   useEffect(() => {
     const cargarDatosGuardados = async () => {
       const rutGuardado = await obtenerDato('usuario_rut');
@@ -78,7 +85,25 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
       }
     };
     cargarDatosGuardados();
+
+    // Cargar categorías optimizadas con falla_id en memoria (0ms si está en caché)
+    obtenerCategorias()
+      .then((cats) => {
+        if (cats && cats.length > 0) {
+          setCategoriasDb(cats);
+        }
+      })
+      .catch((err) => console.warn('No se pudieron precargar categorías de taller:', err));
   }, []);
+
+  const resolverCategoria = (nombreOClave: string): CategoriaFalla | undefined => {
+    const norm = (s: string) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const query = norm(nombreOClave);
+    return categoriasDb.find((c) => {
+      const dbNorm = norm(c.nombre);
+      return dbNorm.includes(query) || query.includes(dbNorm);
+    });
+  };
 
   const getEffectiveBusNumber = () => {
     if (selectedBusObj) {
@@ -94,9 +119,21 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
     if (itemsList.some((item) => item.nombre.toLowerCase() === cat.label.toLowerCase())) {
       setItemsList((prev) => prev.filter((item) => item.nombre.toLowerCase() !== cat.label.toLowerCase()));
     } else {
+      const catDb = resolverCategoria(cat.id) || resolverCategoria(cat.label);
+      const catId = catDb ? catDb.id : cat.categoriaId;
+      const fallaId = catDb?.falla_id ?? catId;
+      const fallaNombre = catDb?.falla_nombre ?? `Avería de ${cat.label}`;
+
       setItemsList((prev) => [
         ...prev,
-        { id: Date.now(), nombre: cat.label, categoriaId: cat.categoriaId, resuelto: 'NO' },
+        {
+          id: Date.now(),
+          nombre: cat.label,
+          categoriaId: catId,
+          fallaId: fallaId,
+          fallaNombre: fallaNombre,
+          resuelto: 'NO',
+        },
       ]);
     }
   };
@@ -109,9 +146,21 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
       setNewItemText('');
       return;
     }
+    const catOtro = resolverCategoria('otro');
+    const catId = catOtro ? catOtro.id : 6;
+    const fallaId = catOtro?.falla_id ?? catId;
+    const fallaNombre = catOtro?.falla_nombre ?? 'Otra Avería';
+
     setItemsList((prev) => [
       ...prev,
-      { id: Date.now(), nombre: cleanText, categoriaId: 6, resuelto: 'NO' }, // 6 = OTRO en backend
+      {
+        id: Date.now(),
+        nombre: cleanText,
+        categoriaId: catId,
+        fallaId: fallaId,
+        fallaNombre: fallaNombre,
+        resuelto: 'NO',
+      },
     ]);
     setNewItemText('');
   };
@@ -126,7 +175,12 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
 
     const busNumber = getEffectiveBusNumber();
     if (!busNumber) {
-      setErrorMsg('⚠️ OBLIGATORIO: Debes seleccionar o indicar el número de bus.');
+      setErrorMsg('⚠️ OBLIGATORIO: Debes ingresar o seleccionar el número de bus.');
+      return;
+    }
+
+    if (!isBusValido || !selectedBusObj) {
+      setErrorMsg(`⚠️ El Bus N° ${busNumber} no existe en la flota activa de Narbus. Debes seleccionar un bus registrado.`);
       return;
     }
 
@@ -139,7 +193,7 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
   };
 
   const handleFinalSubmit = async () => {
-    const busNumber = getEffectiveBusNumber();
+    const busNumber = selectedBusObj ? String(selectedBusObj.n_bus) : getEffectiveBusNumber();
     const cleanBusNumber = busNumber.replace(/\D/g, '') || busNumber.trim();
     const conductorFinal = conductorNombre.trim() || 'CONDUCTOR-NARBUS';
 
@@ -147,16 +201,18 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
       setSubmitting(true);
       const payload: SolicitudCreateDTO = {
         n_bus: cleanBusNumber,
+        bus_id: selectedBusObj?.id ? Number(selectedBusObj.id) : undefined,
         descripcion_general: descripcion.trim() || `Reporte de mantención para bus ${cleanBusNumber}`,
-        foto_url: fotoBase64 || null,
+        fotos: fotos.length > 0 ? fotos : undefined,
         detalles: itemsList.map((it) => ({
           categoria_id: it.categoriaId ?? null,
-          falla_id: null,
+          falla_id: it.fallaId ?? null,
+          falla_nombre: it.fallaNombre ?? null,
           descripcion_personalizada: it.nombre,
         })),
       };
 
-      console.log('Enviando Solicitud Taller (POST /api/v1/mantencion/solicitudes):', payload);
+      console.log(`Enviando Solicitud Taller (POST /api/v1/mantencion/solicitudes) con ${fotos.length} foto(s):`, payload);
       const resData = await crearSolicitud(payload);
       const solicitudId = resData?.id || 1;
 
@@ -190,14 +246,69 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
     }
   };
 
+  // ─── Manejo de fotos múltiples ─────────────────────────────────────────────
+
+  const agregarFotoDesdeArchivo = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setFotos((prev) => [...prev, file]);
+      setFotoPreviews((prev) => [...prev, base64]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAgregarFoto = async () => {
+    try {
+      // 1. Intentar cámara nativa (Android con Capacitor)
+      let dataUrl = await capturarFotoCamara();
+      if (!dataUrl) {
+        // 2. Intentar galería nativa
+        dataUrl = await seleccionarFotoGaleria();
+      }
+
+      if (dataUrl) {
+        // Convertir DataURL a File
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const bstr = atob(arr[1]);
+        const u8arr = new Uint8Array(bstr.length);
+        for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+        const file = new File([u8arr], `evidencia_${Date.now()}.jpg`, { type: mime });
+        setFotos((prev) => [...prev, file]);
+        setFotoPreviews((prev) => [...prev, dataUrl!]);
+      } else {
+        // 3. Fallback: selector de archivos web (múltiple)
+        fileInputRef.current?.click();
+      }
+    } catch {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    Array.from(e.target.files).forEach((file) => agregarFotoDesdeArchivo(file));
+    // Limpiar el input para permitir volver a seleccionar los mismos archivos
+    e.target.value = '';
+  };
+
+  const handleEliminarFoto = (index: number) => {
+    setFotos((prev) => prev.filter((_, i) => i !== index));
+    setFotoPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const handleResetForm = () => {
     setSelectedBusObj(null);
     setBusSearchInput('');
+    setIsBusValido(false);
     setConductorNombre('');
     setDescripcion('');
     setItemsList([]);
-    setFotoBase64('');
-    setFotoPreview(null);
+    setFotos([]);
+    setFotoPreviews([]);
     setSubmittedSuccess(null);
     setErrorMsg('');
     setShowConfirmModal(false);
@@ -295,9 +406,11 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
             label="Identificación del Bus"
             placeholder="Escribir N° de bus (ej: 420)..."
             value={busSearchInput}
-            onChange={(val, busObj) => {
+            onChange={(val, busObj, isValid) => {
               setBusSearchInput(val);
               setSelectedBusObj(busObj || null);
+              setIsBusValido(Boolean(isValid));
+              if (errorMsg) setErrorMsg('');
             }}
             onClearError={() => setErrorMsg('')}
           />
@@ -418,19 +531,81 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
               className="fmt-input text-xs resize-none"
             />
 
-            {/* Fotografía de evidencia opcional */}
+            {/* Fotografías de evidencia múltiple */}
             <div className="space-y-2 pt-1">
-              <label className="text-xs font-black text-slate-700 block uppercase tracking-wider">
-                Adjuntar Fotografía de Evidencia (Opcional):
-              </label>
-              <PhotoSelector
-                fotoPreview={fotoPreview}
-                onChange={(base64) => {
-                  setFotoBase64(base64 || '');
-                  setFotoPreview(base64);
-                }}
-                buttonText="Tomar o Seleccionar Foto"
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-slate-700 block uppercase tracking-wider">
+                  Fotos de Evidencia (Opcional):
+                </label>
+                {fotos.length > 0 && (
+                  <span className="text-[11px] font-black text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                    {fotos.length} foto{fotos.length !== 1 ? 's' : ''} seleccionada{fotos.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+
+              {/* Botón principal de agregar foto */}
+              <button
+                type="button"
+                onClick={handleAgregarFoto}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 rounded-xl transition cursor-pointer group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center shrink-0 transition">
+                  <ImagePlus size={20} className="text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-black text-slate-700 block">
+                    {fotos.length === 0 ? '📷 Agregar Foto de Evidencia' : '📷 Agregar Otra Foto'}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">
+                    Cámara nativa o galería del dispositivo
+                  </span>
+                </div>
+              </button>
+
+              {/* Input de archivo fallback oculto — acepta múltiples */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/*"
+                multiple
+                onChange={handleFileInputChange}
+                className="hidden"
               />
+
+              {/* Grilla de previews con botón de eliminación */}
+              {fotoPreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {fotoPreviews.map((preview, i) => (
+                    <div key={i} className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm aspect-square">
+                      <img
+                        src={preview}
+                        alt={`Evidencia ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Overlay con nombre de archivo */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1">
+                        <span className="text-[10px] font-bold text-white truncate block">
+                          {fotos[i]?.name || `Foto ${i + 1}`}
+                        </span>
+                      </div>
+                      {/* Botón eliminar */}
+                      <button
+                        type="button"
+                        onClick={() => handleEliminarFoto(i)}
+                        className="absolute top-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md transition cursor-pointer"
+                        title="Eliminar foto"
+                      >
+                        <X size={13} />
+                      </button>
+                      {/* Número de foto */}
+                      <div className="absolute top-1 left-1 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow">
+                        {i + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -504,9 +679,14 @@ export default function FormularioMantencionTaller({ onVolver: _onVolver }: Form
               )}
 
               <div className="flex justify-between items-center pt-0.5">
-                <span className="font-black text-slate-500 uppercase text-[11px]">Foto Evidencia:</span>
-                <span className={`font-black ${fotoPreview ? 'text-emerald-700' : 'text-slate-400'}`}>
-                  {fotoPreview ? 'Foto Adjunta ✓' : 'Sin foto'}
+                <span className="font-black text-slate-500 uppercase text-[11px]">Fotos Evidencia:</span>
+                <span className={`font-black flex items-center gap-1 ${fotos.length > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>
+                  {fotos.length > 0 ? (
+                    <>
+                      <Camera size={13} className="text-emerald-600" />
+                      <span>{fotos.length} foto{fotos.length !== 1 ? 's' : ''} adjunta{fotos.length !== 1 ? 's' : ''} ✓</span>
+                    </>
+                  ) : 'Sin fotos'}
                 </span>
               </div>
             </div>

@@ -29,3 +29,14 @@ export function validarMaquinaBus(maquina: string | undefined | null): {
   const limpia = maquina.replace(/\D/g, '') || maquina.trim();
   return { valido: true, maquinaLimpia: limpia };
 }
+
+export function verificarBusEnLista(
+  maquina: string | undefined | null,
+  buses: Array<{ n_bus: string | number }>
+): boolean {
+  if (!maquina || !maquina.trim()) return false;
+  const limpia = maquina.replace(/\D/g, '') || maquina.trim();
+  return buses.some(
+    (b) => String(b.n_bus).trim() === limpia || String(b.n_bus).trim() === maquina.trim()
+  );
+}

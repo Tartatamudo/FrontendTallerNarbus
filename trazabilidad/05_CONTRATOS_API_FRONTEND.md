@@ -446,3 +446,51 @@ interface PautaRespuestaDTO {
     datos_recibidos: Record<string, any>;
   }
   ```
+
+---
+
+## 10. Optimización de Rendimiento y Paginación Uniforme (`skip` y `limit`)
+
+Para evitar la sobrecarga del canal móvil de taller y consultas masivas sin límite, el backend ha habilitado paginación estándar por Query String:
+
+### 10.1 Endpoints con Paginación:
+- `GET /api/v1/mantencion/pendientes?skip=0&limit=20` (Pestaña 1 del Mecánico)
+- `GET /api/v1/mantencion/mis-trabajos?skip=0&limit=20` (Pestaña 2 del Mecánico)
+- `GET /api/v1/supervision/auditoria/buses-taller?skip=0&limit=20&n_bus=...&estado=...&mecanico_nombre=...` (Auditoría de Supervisión)
+
+### 10.2 Parámetros Query:
+- `skip` *(integer $\ge 0$, default: 0)*: Número de registros a omitir desde el origen (`(page - 1) * pageSize`).
+- `limit` *(integer entre 1 y 100, default: 50)*: Tamaño del bloque de registros (Frontend utiliza 20 por página para ergonomía táctil en tablets).
+
+### 10.3 Desacoplamiento de Alertas y Telemetría:
+- `GET /api/v1/supervision/alertas`: Consulta exclusivamente alertas activas (`REPUESTO_FALTANTE`, `DEFECTO_PAUTA`, `BUS_SIN_MECANICOS`) en órdenes no finalizadas.
+- `GET /api/v1/supervision/resumen-taller`: Procesa KPIs mediante agregaciones directas SQL en una única consulta analítica rápida.
+
+---
+
+## 11. Almacenamiento Cloud de Imágenes en Google Cloud Storage (Zero Bottlenecks)
+
+### 11.1 Arquitectura Atómica en 1 Solo Request HTTP
+Para eliminar cuellos de botella en redes móviles, transferencias dobles e imágenes huérfanas:
+- **Sin endpoint previo de subida:** El cliente móvil o de escritorio envía la evidencia fotográfica y los datos del formulario de mantención en **una única petición atómica (`multipart/form-data`)**.
+- **Backend como Gestor Cloud:** El servidor backend transfiere el binario a Google Cloud Storage mediante hilos asíncronos y persiste en PostgreSQL la URL pública HTTPS definitiva (`foto_url` o `evidencia_url`).
+- **Compatibilidad Dual:** Si no se adjunta fotografía, el endpoint acepta el payload tradicional `application/json`.
+
+### 11.2 Especificación de Creación de Solicitud con Fotografía:
+- **Ruta:** `POST /api/v1/mantencion/solicitudes`
+- **Modalidad Multipart (`multipart/form-data`):**
+  - `n_bus` *(string, obligatorio)*: Número de máquina (ej: `"339"`).
+  - `bus_id` *(string/number, opcional)*: ID primario del bus para optimización zero-queries.
+  - `descripcion_general` *(string, opcional)*: Resumen de la avería.
+  - `foto` *(File/Blob binario, opcional)*: Archivo de imagen adjunto (.jpg, .jpeg, .png, .webp).
+  - `detalles` *(string JSON, opcional)*: `JSON.stringify(detalles)` con el desglose de averías declaradas.
+- **Modalidad JSON (`application/json`):**
+  - Payload tradicional con `foto_url: string | null`.
+
+### 11.3 Resolución Universal de URLs (`getFullImageUrl`):
+Las entidades en BD retornan `foto_url` o `evidencia_url` con soporte dual:
+- **Producción (Cloud Run):** `https://storage.googleapis.com/narbus-taller-media/...`
+- **Desarrollo Local:** `/uploads/...`
+El frontend utiliza la función utilitaria `getFullImageUrl(url)` en `src/utils/imageUrl.ts` para resolver de forma transparente ambos formatos sin errores 404.
+
+
