@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 44,
+  "id": "AV-0044",
+  "timestamp": "2026-09-11T02:58:00Z",
+  "phase": "modulo_mecanicos",
+  "milestone": {
+    "id": "MEC-05",
+    "name": "Ordenamiento y Paginación Integral en Consola del Mecánico",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Corrección integral de la paginación y del algoritmo de ordenamiento reactivo en la Consola del Mecánico (DashboardMecanico.tsx). Se elevó PAGE_SIZE a 50 (compatible con el límite de backend) para cargar en memoria la totalidad de órdenes activas de taller (42+ solicitudes), se implementó ordenamiento numérico estricto para números de bus (1 → 999 y 999 → 1) con desempate por OT más nueva, y se incorporó la suite de pruebas automatizadas E2E en Playwright validando los 4 criterios de ordenamiento.",
+  "scope": {
+    "planned": [
+      "Ampliar PAGE_SIZE de 20 a 50 en DashboardMecanico.tsx para abarcar toda la flota de órdenes activas",
+      "Corregir comparador de bus_asc a ordenamiento numérico parseInt con desempate por OT",
+      "Agregar opción bus_desc (999 → 1) con desempate por OT",
+      "Reforzar consistencia de fechas con desempate por OT",
+      "Añadir prueba automatizada Playwright E2E para los 4 criterios de ordenamiento"
+    ],
+    "completed": [
+      "src/mecanicos/revisiones/DashboardMecanico.tsx: Actualizado PAGE_SIZE a 50, agregada opción 'bus_desc' al tipo CriterioOrden y al selector <select>, refactorizada función de ordenamiento reactivo con desempate b.id - a.id.",
+      "tests/e2e-docker/07_mecanicos_dashboard_modales.spec.ts: Agregado test E2E 'Ordenamiento reactivo por OT y N° de Bus (ascendente y descendente)' comprobando selectOption y validando orden en el DOM.",
+      "Reconstrucción del contenedor Docker 'narbus-frontend:test' y validación al 100% de la suite de 31 pruebas en verde."
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones directas en el repositorio BackendTallerNarbus (manejado de forma autónoma por el usuario)"
+    ]
+  },
+  "changes": [
+    {
+      "path": "src/mecanicos/revisiones/DashboardMecanico.tsx",
+      "action": "modified",
+      "summary": "Ampliación de PAGE_SIZE a 50, incorporación de bus_desc y comparadores numéricos con desempate por OT."
+    },
+    {
+      "path": "tests/e2e-docker/07_mecanicos_dashboard_modales.spec.ts",
+      "action": "modified",
+      "summary": "Inclusión de prueba E2E validando ordenamiento reactivo por OT y por N° de bus ascendente y descendente."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-044",
+      "title": "Aumento de PAGE_SIZE a 50 y Comparación Numérica Pura con Desempate",
+      "rationale": "El backend entrega lotes ordenados ascendentemente y limitaba la visibilidad en frontend a las 20 órdenes más viejas. Aumentando PAGE_SIZE a 50 se recupera el universo completo de solicitudes activas en una sola petición. Además, comparar números de bus como enteros con desempate por b.id - a.id garantiza que si un bus tiene múltiples averías, la más reciente se posicione primero.",
+      "consequences": "Las órdenes más recientes (como OTs #44, #43, #42) y los buses de menor numeración (como Bus 282) ahora aparecen de forma inmediata y ordenada en la consola técnica."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm run test:docker",
+      "result": "passed",
+      "evidence": "31 passed (22.0s) en contenedor Docker de producción"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "Compilación limpia de TypeScript sin errores"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "Notificar al usuario el resultado de las pruebas y la disponibilidad de los nuevos filtros en el contenedor local.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "HEAD",
+    "dirty": true
+  },
+  "notes": [
+    "Todas las 31 pruebas E2E pasaron exitosamente.",
+    "El contenedor narbus-frontend-container se encuentra activo y saludable en http://localhost:8080."
+  ]
+}

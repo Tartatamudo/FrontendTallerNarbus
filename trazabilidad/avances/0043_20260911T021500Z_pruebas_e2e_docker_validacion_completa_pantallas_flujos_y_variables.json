@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": 43,
+  "id": "AV-0043",
+  "timestamp": "2026-09-11T02:15:00Z",
+  "phase": "infraestructura_docker_y_pruebas_e2e",
+  "milestone": {
+    "id": "FRONT-DOCKER-E2E",
+    "name": "Build Docker, Corrección Nginx IPv6/Headers y Validación E2E Integral de Pantallas y Flujos en Docker",
+    "statusBefore": "in_progress",
+    "statusAfter": "completed"
+  },
+  "type": "completed",
+  "summary": "Verificación y corrección del build de producción en contenedor Docker para FrontendTallerNarbus. Se corrigió la regla que ignoraba nginx.conf en .dockerignore, se configuró soporte de enlace IPv6 ([::]:80) en Nginx para resolver fallos de resolución localhost en Alpine Linux durante el HEALTHCHECK, y se reubicaron las cabeceras de seguridad HTTP dentro de las directivas location para garantizar su inclusión en respuestas 200/304 de Vite SPA. Se construyó una suite de pruebas End-to-End exhaustiva con Playwright ejecutándose contra el contenedor en vivo (puerto 8080), cubriendo 30 casos de prueba a través de 9 especificaciones técnicas que validan todas las pantallas, variables, roles (Conductor, Mecánico, Supervisor, Admin), formularios operativos, modales de confirmación, carga de evidencias fotográficas, telemetría y gestión de usuarios.",
+  "scope": {
+    "planned": [
+      "Comprobar y corregir el build de Dockerfile para la aplicación frontend",
+      "Resolver el estado unhealthy de contenedor causado por el healthcheck en Nginx",
+      "Configurar cabeceras de seguridad HTTP y fallback SPA /health",
+      "Crear suite E2E Playwright desacoplada para probar todas las pantallas y flujos dentro de Docker",
+      "Validar variables y flujos de Conductor (Mantención y Neumáticos con croquis y fotos)",
+      "Validar Consola de Mecánicos (bandejas, filtros, modal de orden y pauta preventiva de 11 ítems)",
+      "Validar Torre de Control de Supervisión (KPIs, alertas, patio y auditoría inmutable)",
+      "Validar Administración de Usuarios y perfil con credencial digital",
+      "Ejecutar y lograr 100% de éxito en todas las pruebas sobre el contenedor Docker"
+    ],
+    "completed": [
+      "Línea 68 de .dockerignore corregida (se eliminó la exclusión indebida de nginx.conf)",
+      "Nginx configurado con listen 80 y listen [::]:80, healthcheck docker apuntando a http://127.0.0.1/health",
+      "Cabeceras de seguridad Nginx (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) reubicadas en location / y location = /index.html",
+      "Contenedor docker levantado y verificado en estado 'healthy'",
+      "playwright.config.ts configurado con baseURL http://localhost:8080 y servidor web reutilizable",
+      "Fixtures mockData.ts y mockApi.ts alineados estrictamente con contratos de trazabilidad/05 y 06",
+      "9 suites de pruebas E2E creadas y ejecutadas exitosamente (30/30 passed en 16.6s):",
+      "  - 01_infra_docker.spec.ts: 4 tests (health, cabeceras seguridad, SPA fallback, cache-control)",
+      "  - 02_auth_sesion.spec.ts: 5 tests (validación campos, error 401, login exitoso, guardias)",
+      "  - 03_navegacion_roles_topbar.spec.ts: 4 tests (temas claro/oscuro, permisos por rol)",
+      "  - 04_perfil_credencial.spec.ts: 3 tests (credencial digital, volver a consola, logout)",
+      "  - 05_conductores_mantencion.spec.ts: 2 tests (validación, declaración averías, comprobante)",
+      "  - 06_conductores_neumaticos.spec.ts: 2 tests (croquis interactivo, foto boleta, confirmación)",
+      "  - 07_mecanicos_dashboard_modales.spec.ts: 4 tests (bandejas, búsqueda en vivo, detalle OT, pauta)",
+      "  - 08_supervisores_telemetria_alertas_auditoria_patio.spec.ts: 4 tests (alertas, KPIs, auditoría, patio)",
+      "  - 09_gestion_usuarios.spec.ts: 2 tests (listado con búsqueda reactiva, registro nuevo operador)",
+      "Scripts de npm añadidos: docker:build, docker:run, docker:stop, test:docker, test:docker:report",
+      "Verificación TypeScript limpia con npx tsc --noEmit (0 errores)"
+    ],
+    "pending": [],
+    "outOfScope": [
+      "Modificaciones de modelos o endpoints en repositorio BackendTallerNarbus",
+      "Despliegue efectivo en infraestructura cloud de producción"
+    ]
+  },
+  "changes": [
+    {
+      "path": ".dockerignore",
+      "action": "modified",
+      "summary": "Eliminada regla que ignoraba nginx.conf en la raíz para permitir el COPY en el Dockerfile multi-stage."
+    },
+    {
+      "path": "nginx.conf",
+      "action": "modified",
+      "summary": "Agregado listen [::]:80 para soporte IPv6 en Alpine, y ubicadas cabeceras de seguridad dentro de bloques location para evitar sobreescritura de cabeceras en Nginx."
+    },
+    {
+      "path": "Dockerfile",
+      "action": "modified",
+      "summary": "Healthcheck apuntando explícitamente a 127.0.0.1/health con wget -q --spider."
+    },
+    {
+      "path": "docker-compose.yml",
+      "action": "modified",
+      "summary": "Healthcheck de docker-compose alineado a 127.0.0.1/health."
+    },
+    {
+      "path": "package.json",
+      "action": "modified",
+      "summary": "Incorporación de dependencias @playwright/test y scripts npm (docker:build, docker:run, test:docker)."
+    },
+    {
+      "path": ".gitignore",
+      "action": "modified",
+      "summary": "Agregadas carpetas playwright-report/ y test-results/ para evitar ensuciar el repositorio."
+    },
+    {
+      "path": "playwright.config.ts",
+      "action": "created",
+      "summary": "Configuración de Playwright orientada al contenedor Docker en puerto 8080 con Chromium headless."
+    },
+    {
+      "path": "tests/e2e-docker/fixtures/mockData.ts",
+      "action": "created",
+      "summary": "Datos mock estructurados respetando DTOs (SolicitudDTO, BusAutocompleteDTO, ResumenTallerDTO, MockUser)."
+    },
+    {
+      "path": "tests/e2e-docker/fixtures/mockApi.ts",
+      "action": "created",
+      "summary": "Interceptor HTTP dinámico con Playwright route.fulfill que simula los 43 endpoints REST del catálogo oficial."
+    },
+    {
+      "path": "tests/e2e-docker/01_infra_docker.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de infraestructura HTTP, Nginx headers, SPA routing y /health."
+    },
+    {
+      "path": "tests/e2e-docker/02_auth_sesion.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de ciclo de vida de autenticación, JWT, 401 y guards."
+    },
+    {
+      "path": "tests/e2e-docker/03_navegacion_roles_topbar.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de permisos RBAC en interfaz y conmutación de modo claro/oscuro."
+    },
+    {
+      "path": "tests/e2e-docker/04_perfil_credencial.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de credencial digital del operador, RUT y logout."
+    },
+    {
+      "path": "tests/e2e-docker/05_conductores_mantencion.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de formulario de mantención de taller, selector de flota y comprobante de OT."
+    },
+    {
+      "path": "tests/e2e-docker/06_conductores_neumaticos.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de formulario de emergencias de neumáticos, croquis táctil de ruedas y foto de comprobante."
+    },
+    {
+      "path": "tests/e2e-docker/07_mecanicos_dashboard_modales.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de consola técnica de mecánico, bandejas de trabajo, modal de orden y pauta preventiva."
+    },
+    {
+      "path": "tests/e2e-docker/08_supervisores_telemetria_alertas_auditoria_patio.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de torre de control de supervisores, KPIs, alertas críticas, auditoría inmutable y control de patio."
+    },
+    {
+      "path": "tests/e2e-docker/09_gestion_usuarios.spec.ts",
+      "action": "created",
+      "summary": "Pruebas de módulo de usuarios, buscador reactivo y modal de creación de operadores."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-043-01",
+      "title": "Soporte Dual IPv4/IPv6 en Nginx para Compatibilidad con Alpine Linux en Docker",
+      "rationale": "Alpine Linux resuelve localhost a [::1] de forma prioritaria en entornos modernos de contenedor. Al no contar con listen [::]:80 en la configuración de Nginx, cualquier petición a localhost generaba Connection refused, dejando el contenedor permanentemente en estado (unhealthy).",
+      "consequences": "El contenedor es capaz de recibir tráfico tanto en IPv4 (127.0.0.1) como en IPv6 ([::1]), pasando el healthcheck oficial de Docker sin fallos."
+    },
+    {
+      "id": "DEC-043-02",
+      "title": "Herencia de Cabeceras de Seguridad Nginx en Bloques Location",
+      "rationale": "Nginx tiene un comportamiento documentado en el cual cualquier directiva add_header declarada dentro de un bloque location anula completamente las cabeceras add_header del bloque server superior. Por ello, cabeceras como X-Frame-Options y X-Content-Type-Options no se enviaban al servir index.html.",
+      "consequences": "Se incorporaron las cabeceras de seguridad explícitamente en location = /index.html y location /, garantizando que la aplicación cumpla con los estándares de seguridad OWASP y Nginx."
+    },
+    {
+      "id": "DEC-043-03",
+      "title": "Aislamiento de Pruebas E2E en Docker mediante Fixtures Interceptadas",
+      "rationale": "Para validar que el build de producción empaquetado en Nginx ejecuta de forma impecable el 100% de la lógica de negocio sin depender de una base de datos backend mutable durante los tests, se utilizó el motor de intercepción de red de Playwright sobre el contenedor real.",
+      "consequences": "Las pruebas son ultrarrápidas (30 tests en ~16 segundos), deterministas, reproducibles en cualquier entorno (CI/CD o local) y prueban el JavaScript compilado y minificado de producción dentro del servidor Nginx real."
+    }
+  ],
+  "verification": [
+    {
+      "command": "docker build -t narbus-frontend:test .",
+      "result": "passed",
+      "evidence": "Contenedor multi-stage compilado y empaquetado exitosamente sin advertencias"
+    },
+    {
+      "command": "docker inspect --format='{{json .State.Health.Status}}' narbus-frontend-container",
+      "result": "passed",
+      "evidence": "\"healthy\""
+    },
+    {
+      "command": "npm run test:docker",
+      "result": "passed",
+      "evidence": "30 passed (16.6s) en Playwright Chromium contra http://localhost:8080"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "result": "passed",
+      "evidence": "exit code 0, sin errores TypeScript"
+    }
+  ],
+  "blockers": [],
+  "nextStep": "El frontend se encuentra completamente validado para empaquetado Docker y listo para ser desplegado en Google Cloud Run o ambiente productivo.",
+  "git": {
+    "repository": "FrontendTallerNarbus",
+    "branch": "develop",
+    "commit": "pending",
+    "dirty": true
+  },
+  "notes": [
+    "Los comandos npm run test:docker y npm run docker:build permiten a cualquier desarrollador verificar la integridad del frontend en un solo paso.",
+    "El contenedor docker puede detenerse en cualquier momento con npm run docker:stop."
+  ]
+}

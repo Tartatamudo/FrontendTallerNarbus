@@ -33,6 +33,7 @@ Su objetivo operacional es digitalizar la gestión integral de mantenimiento de 
 | **Módulo Supervisores: Control Físico de Patio** | `src/supervisores/supervision/DashboardSupervision.tsx` | `COMPLETADO` | Pestaña de patio de taller que lista la flota operativa (rango 200-899) y permite conmutar el flag `en_taller` con registro de motivo de ingreso/egreso. |
 | **Módulo Supervisores: Gestión de Usuarios** | `src/supervisores/gestion_usuarios/ListaUsuarios.tsx`<br>`src/supervisores/gestion_usuarios/CrearUsuario.tsx` | `COMPLETADO` | Listado general de usuarios, filtrado por nombre/rol, creación de nuevos operadores y soft-delete (`DELETE /usuarios/{id}`). |
 | **Core & Utilidades Compartidas** | `src/api/apiClient.ts`<br>`src/utils/token.ts`<br>`src/utils/apiErrors.ts`<br>`src/utils/imageUrl.ts`<br>`src/utils/storage.ts`<br>`src/utils/capacitorCamera.ts`<br>`src/components/PaginationControl/PaginationControl.tsx`<br>`src/components/PhotoSelector/PhotoSelector.tsx` | `COMPLETADO` | Interceptor de tokens y respuesta 401 para expiración de sesión, decodificador JWT de cliente autónomo, parser uniforme de errores `NarbusException`, normalizador universal de URLs de imágenes (`getFullImageUrl`), abstracción de almacenamiento híbrido, cámara dual nativa/web y barra de paginación táctil operacional. |
+| **Contenedor Docker & Suite E2E** | `Dockerfile`<br>`nginx.conf`<br>`tests/e2e-docker/` | `COMPLETADO` | Empaquetado multi-stage (Node 22 + Nginx Alpine) para producción y Cloud Run. Servidor Nginx con soporte IPv6 ([::]:80), healthcheck activo (/health), cabeceras de seguridad OWASP en bloques location y fallback SPA. Suite automatizada de 30 pruebas Playwright (9 especificaciones técnicas) ejecutándose contra el contenedor en vivo con 100% de tasa de éxito en todos los roles y flujos. |
 
 ---
 
@@ -48,4 +49,8 @@ Su objetivo operacional es digitalizar la gestión integral de mantenimiento de 
    - Cumplimiento total de la especificación de los endpoints REST del Backend Taller Narbus.
 5. **Almacenamiento Cloud de Imágenes (GCS Zero-Bottlenecks):**
    - Transmisión atómica de formularios con fotografías adjuntas en un único viaje HTTP (`multipart/form-data`), evitando subidas previas desacopladas y previniendo imágenes huérfanas en Google Cloud Storage.
+6. **Empaquetado y Verificación Continua en Docker:**
+   - Build multi-stage reproducible listo para Google Cloud Run con variables de entorno inyectadas en tiempo de compilación.
+   - Healthcheck nativo (`wget -q --spider http://127.0.0.1/health`) y comandos de automatización `npm run docker:build`, `npm run test:docker`.
+
 

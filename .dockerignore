@@ -65,7 +65,6 @@ __tests__/
 # ── Docker (evitar recursión) ────────────────────────────────
 Dockerfile*
 docker-compose*.yml
-nginx.conf
 .dockerignore
 
 # ── CI/CD (no necesarios en el bundle) ───────────────────────

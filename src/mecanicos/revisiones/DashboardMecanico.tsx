@@ -63,8 +63,8 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Paginación de bandejas (skip y limit)
-  const PAGE_SIZE = 20;
+  // Paginación de bandejas (skip y limit de 50 para abarcar la flota activa de taller)
+  const PAGE_SIZE = 50;
   const [paginaPendientes, setPaginaPendientes] = useState(1);
   const [paginaMisTrabajos, setPaginaMisTrabajos] = useState(1);
 
@@ -78,7 +78,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
   const [modalReporteAbierto, setModalReporteAbierto] = useState(false);
 
   // Ordenamiento y Búsqueda de Órdenes Pendientes (por OT o Bus)
-  type CriterioOrden = 'ot_desc' | 'ot_asc' | 'bus_asc' | 'fecha_desc';
+  type CriterioOrden = 'ot_desc' | 'ot_asc' | 'bus_asc' | 'bus_desc' | 'fecha_desc';
   const [criterioOrden, setCriterioOrden] = useState<CriterioOrden>('ot_desc');
   const [busquedaPendientes, setBusquedaPendientes] = useState('');
   const [busquedaMisTrabajos, setBusquedaMisTrabajos] = useState('');
@@ -184,12 +184,28 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
         return a.id - b.id;
       }
       if (criterioOrden === 'bus_asc') {
-        return (a.n_bus || '').localeCompare(b.n_bus || '', undefined, { numeric: true });
+        const busA = parseInt(a.n_bus || '0', 10) || 0;
+        const busB = parseInt(b.n_bus || '0', 10) || 0;
+        if (busA !== busB) {
+          return busA - busB;
+        }
+        return b.id - a.id; // Desempate por OT más nueva
+      }
+      if (criterioOrden === 'bus_desc') {
+        const busA = parseInt(a.n_bus || '0', 10) || 0;
+        const busB = parseInt(b.n_bus || '0', 10) || 0;
+        if (busA !== busB) {
+          return busB - busA;
+        }
+        return b.id - a.id; // Desempate por OT más nueva
       }
       if (criterioOrden === 'fecha_desc') {
         const timeA = a.fecha_creacion ? new Date(a.fecha_creacion).getTime() : 0;
         const timeB = b.fecha_creacion ? new Date(b.fecha_creacion).getTime() : 0;
-        return timeB - timeA;
+        if (timeB !== timeA) {
+          return timeB - timeA;
+        }
+        return b.id - a.id;
       }
       return b.id - a.id;
     });
@@ -743,6 +759,7 @@ export default function DashboardMecanico({ onVolver }: DashboardMecanicoProps) 
                   <option value="ot_desc">N° OT (Más nueva primero)</option>
                   <option value="ot_asc">N° OT (Más antigua primero)</option>
                   <option value="bus_asc">N° de Bus (1 → 999)</option>
+                  <option value="bus_desc">N° de Bus (999 → 1)</option>
                   <option value="fecha_desc">Fecha de Reporte (Reciente)</option>
                 </select>
               </div>

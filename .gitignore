@@ -60,6 +60,8 @@ docker-compose.local.yml
 # ── Coverage y tests ─────────────────────────────────────────
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
 
 # ── Capacitor ───────────────────────────────────────────────
 .capacitor/
